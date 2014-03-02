@@ -1,94 +1,7 @@
+import com.clutch.dates.StringToTime;
+import com.clutch.dates.StringToTimeException;
 
-/**
- * Classes for time and date values
- * 
- */
-
-
-class Time {
-    private static final int HOUR_START = 1;
-    private static final int HOUR_END = 12;
-    
-    private static final int MIN_START = 0;
-    private static final int MIN_END = 59;
-    
-    private static final String AM_STR = "AM";
-    private static final String PM_STR = "PM";
-    
-    private int hour, minute;
-    private String ampm;
-   
-    
-    public Time() {
-	
-    }
-    
-    private void calculateDay() {
-
-    }
-    
-    private boolean isValidTime(int hour, int minute, String ampm) {
-	if (hour != (Integer) null && hour < HOUR_START && hour > HOUR_END) {
-	    return false;
-	}
-	
-	if (minute != (Integer) null && minute < MIN_START && minute > MIN_END) {
-	    return false;
-	}
-	
-	if (ampm != (String) null && (!ampm.equalsIgnoreCase(AM_STR) || !ampm.equalsIgnoreCase(PM_STR))) {
-	    return false;
-	}
-	
-	return true;
-    }
-    
-    //Mutators:
-    
-    public CommandFeedback setHour(int hour) {
-	
-	if(isValidTime(hour, (Integer) null, (String) null)) {
-	    hour = this.hour;
-	    return CommandFeedback.SUCCESSFUL_OPERATION;
-	}
-	
-	return CommandFeedback.INVALID_TIME_HR;			
-    }
-    
-    public CommandFeedback setMinute(int minute) {
-	
-	if (isValidTime((Integer) null, minute, (String) null)) {
-	    minute = this.minute;
-	    return CommandFeedback.SUCCESSFUL_OPERATION;
-	}
-	
-	return CommandFeedback.INVALID_TIME_MIN;
-    }
-    
-    public CommandFeedback setAmpm(String ampm) {
-	
-	if (isValidTime((Integer) null, (Integer) null, ampm)) {
-	    ampm = this.ampm;
-	    return CommandFeedback.SUCCESSFUL_OPERATION;
-	}
-	
-	return CommandFeedback.INVALID_TIME_AMPM;
-    }
-    
-}
-
-class Date {
-    private int date, day, month, year;
-    
-    public Date() {
-	
-	//Initialize values:
-    }
-    
-    // Accessor and Modifier functions:
-}
-
-
+// import com.clutch.dates.* //<<If needed>>
 
 /**
  * Class for storing/accessing different parameters of a command (like add, modify, due)
@@ -96,15 +9,109 @@ class Date {
  */
 
 public class Parameters {
-    private String description, location, folder, priority;
-    private Date date;
-    private Time time;
     
+    private static final int PRIORITY_HIGH = 1;
+    private static final int PRIORITY_MEDIUM = 2;
+    private static final int PRIORITY_LOW = 3;
+    private static final int PRIORITY_INVALID_REF = -1;
+    
+    private String description, location, folder;
+    private int priority;
+    private StringToTime dateTime;
+    
+
     public Parameters() {
+	// Initialize all parameters to null
 	
-	// Initialize values;
+	priority = (Integer) null;
     }
     
-    // Accessor and Modifier functions
+    //Mutators:
+    public CommandFeedback setDateTime (String rawInput) {
+	try {
+	    dateTime = new StringToTime(rawInput);
+	} catch (StringToTimeException e) {
+	    System.err.println("Error: " + e);
+	    return CommandFeedback.INVALID_TIME;
+	}
+	
+	return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    public CommandFeedback setDescription(String description) {
+	description = this.description;
+	return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    public CommandFeedback setLocation(String location) {
+	location = this.location;
+	return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    public CommandFeedback setPriority(String priority) {
+	int intPriority = stringToIntPriority(priority);
+	
+	if (intPriority == PRIORITY_INVALID_REF) {
+	    return CommandFeedback.INVALID_PRIORITY;
+	}
+	
+	intPriority = this.priority;
+	return CommandFeedback.SUCCESSFUL_OPERATION;	
+    }
+    
+    public CommandFeedback setFolder(String folder) {
+	if (!isValidFolder(folder)) {
+	    return CommandFeedback.INVALID_FOLDER_REF;
+	}
+	
+	folder = this.folder;
+	return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    // Accessors:
+    
+    public StringToTime getDateTime() {
+	return dateTime;
+    }
+    
+    public String getDescription() {
+	return description;
+    }
+    
+    public String getLocation() {
+	return location;
+    }
+    
+    public String getFolder() {
+	return folder;
+    }
+    
+    public int getPriority() {
+	return priority;
+    }
+    
+    
+    private boolean isValidFolder(String folderName) {
+	//MUST INTEGRATE LATER!!!
+	return true;
+    }
+    
+    private int stringToIntPriority(String priorityString) {
+	if (priorityString.equalsIgnoreCase("HIGH") || priorityString.equalsIgnoreCase("H") || priorityString.equalsIgnoreCase("imp") || priorityString.equalsIgnoreCase("important")) {
+	    return PRIORITY_HIGH;
+	}
+	
+	else if (priorityString.equalsIgnoreCase("MEDIUM") || priorityString.equalsIgnoreCase("MED") || priorityString.equalsIgnoreCase("M")) {
+	    return PRIORITY_MEDIUM;
+	}
+	
+	else if (priorityString.equalsIgnoreCase("LOW") || priorityString.equalsIgnoreCase("not imp") || priorityString.equalsIgnoreCase("L")) {
+	    return PRIORITY_LOW;
+	}
+	
+	
+	return PRIORITY_INVALID_REF;
+		
+    }
     
 }

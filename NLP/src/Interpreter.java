@@ -9,8 +9,6 @@ import java.util.ArrayList;
  */
 
 
-
-
 /**
  * Data structure for a new command: Command + Parameters
  *
