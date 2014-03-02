@@ -9,81 +9,55 @@ import java.util.ArrayList;
  */
 
 
-/**
- * Classes for time and date values
- * 
- */
-
-class Time {
-    private int hour, minute, second;
-    private String ampm;
-    
-    public Time() {
-	//Initialize values:
-    }
-    
-    // Accessor and Modifier functions
-}
-
-class Date {
-    private int day, month, year;
-    
-    public Date() {
-	
-	//Initialize values:
-    }
-    
-    // Accessor and Modifier functions:
-}
-
 
 
 /**
- * Class for storing/accessing different parameters of a command (like add, modify, due)
- * 
+ * Data structure for a new command: Command + Parameters
+ *
  */
 
-class Parameters {
-    private String description, location, folder, priority;
-    private Date date;
-    private Time time;
+class Command {
+    private CommandType command;
+    private Parameters parameters;
     
-    public Parameters() {
-	
-	// Initialize values;
+    public Command() {
+	command = null;
+	parameters = null;
     }
     
-    // Accessor and Modifier functions
+    public Command(CommandType command) {
+	command = this.command;
+	parameters = null;
+    }
+    
+    public Command(CommandType command, Parameters parameters) {
+	command = this.command;
+	parameters = this.parameters;
+    }
+    
+    // Mutators:
+    public void setCommandType(CommandType command) {
+	command = this.command;
+    }
+    
+    public void setParameters(Parameters parameters) {
+	parameters = this.parameters;
+    }
+    
+    //Accessors:
+    public CommandType getCommandType() {
+	return command;
+    }
+    
+    public Parameters getParameters() {
+	return parameters;
+    }
     
 }
+
 
 public class Interpreter {
-    
-    enum CommandType {
-	ADD_DESCRIPTION, ADD_TIME, ADD_DUE_DATE, ADD_LOCATION, ADD_PRIORITY, ADD_TO_FOLDER,
-	MODIFY_DESCRIPTION, MODIFY_TIME, MODIFY_DUE_DATE, MODIFY_LOCATION, MODIFY_PRIORITY, MODIFY_FOLDER,
-	DISPLAY_TODAY, DISPLAY_TOMORROW, DISPLAY_WEEK, DISPLAY_MONTH,
-	
-	CONTEXT_TASK, // Must add/modify
-	
-	DELETE, CLEAR, UNDO, REDO,
-	MARK, SEARCH, QUIT
-    };
-    
-    // Extra added. REMOVE Later if not needed:
-    enum CommandErrorType {
-	INVALID_DESCRIPTION, INVALID_TIME, INVALID_DUE_DATE, INVALID_LOCATION, INVALID_PRIORITY, INVALID_FOLDER_REF,
-	
-	INVALID_DISPLAY_REF, INVALID_DELETE_REF, CANNOT_UNDO, CANNOT_REDO,
-	INVALID_MARK_REF, SEARCH_NOT_FOUND, 
-	
-	CONTEXT_INVALID, // Must add/modify
-		
-	INVALID_COMMAND_FORMAT, INVALID_COMMAND, INVALID_ALREADY_EXISTS,
-	MISSING_QUOTES, MISSING_INFO, 
-	
-	INVALID_DATABASE
-    }
+   
     
     private static ArrayList<CommandType> currentCommands = new ArrayList<CommandType>();
     
@@ -107,7 +81,7 @@ public class Interpreter {
      */
     
     private static void processCommands() {
-	
+
     }
     
     
