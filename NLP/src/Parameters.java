@@ -25,7 +25,7 @@ public class Parameters {
 	
 	priority = (Integer) null;
     }
-    
+  
     //Mutators:
     public CommandFeedback setDateTime (String rawInput) {
 	try {
@@ -99,13 +99,9 @@ public class Parameters {
     private int stringToIntPriority(String priorityString) {
 	if (priorityString.equalsIgnoreCase("HIGH") || priorityString.equalsIgnoreCase("H") || priorityString.equalsIgnoreCase("imp") || priorityString.equalsIgnoreCase("important")) {
 	    return PRIORITY_HIGH;
-	}
-	
-	else if (priorityString.equalsIgnoreCase("MEDIUM") || priorityString.equalsIgnoreCase("MED") || priorityString.equalsIgnoreCase("M")) {
+	} else if (priorityString.equalsIgnoreCase("MEDIUM") || priorityString.equalsIgnoreCase("MED") || priorityString.equalsIgnoreCase("M")) {
 	    return PRIORITY_MEDIUM;
-	}
-	
-	else if (priorityString.equalsIgnoreCase("LOW") || priorityString.equalsIgnoreCase("not imp") || priorityString.equalsIgnoreCase("L")) {
+	} else if (priorityString.equalsIgnoreCase("LOW") || priorityString.equalsIgnoreCase("not imp") || priorityString.equalsIgnoreCase("L")) {
 	    return PRIORITY_LOW;
 	}
 	
