@@ -21,6 +21,6 @@ public class Config
    }
    
    public String[] getSynonyms(String commandType) {
-       return getProperty(commandType).trim().split(","); 
+       return getProperty(commandType).trim().toLowerCase().split(","); 
    }
 }
