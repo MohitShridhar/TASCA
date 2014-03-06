@@ -16,8 +16,9 @@ public class Parameters {
     private static final int PRIORITY_INVALID_REF = -1;
     
     private String description, location, folder;
-    private Integer priority;
-    private StringToTime dateTime;
+    private Integer priority, taskId;
+    private StringToTime startTime, endTime, remindTime;
+    
     
 
     public Parameters() {
@@ -25,24 +26,46 @@ public class Parameters {
     }
   
     //Mutators:
-    public CommandFeedback setDateTime (String rawInput) {
+    public CommandFeedback setStartTime (String rawInput) {
 	try {
-	    dateTime = new StringToTime(rawInput);
+	    startTime = new StringToTime(rawInput);
 	} catch (StringToTimeException e) {
 	    System.err.println("Error: " + e);
-	    return CommandFeedback.INVALID_TIME;
+	    return CommandFeedback.INVALID_START_TIME;
 	}
 	
 	return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
-    public CommandFeedback setDescription(String description) {
-	description = this.description;
+    public CommandFeedback setEndTime (String rawInput) {
+	try {
+	    endTime = new StringToTime(rawInput);
+	} catch (StringToTimeException e) {
+	    System.err.println("Error: " + e);
+	    return CommandFeedback.INVALID_END_TIME;
+	}
+	
+	return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    public CommandFeedback setRemindTime (String rawInput) {
+	try {
+	    remindTime = new StringToTime(rawInput);
+	} catch (StringToTimeException e) {
+	    System.err.println("Error: " + e);
+	    return CommandFeedback.INVALID_REMIND_TIME;
+	}
+	
+	return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    public CommandFeedback setDescription(String description) {	
+	this.description = description;
 	return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
     public CommandFeedback setLocation(String location) {
-	location = this.location;
+	this.location = location;
 	return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
@@ -53,7 +76,7 @@ public class Parameters {
 	    return CommandFeedback.INVALID_PRIORITY;
 	}
 	
-	intPriority = this.priority;
+	this.priority = intPriority;
 	return CommandFeedback.SUCCESSFUL_OPERATION;	
     }
     
@@ -62,15 +85,31 @@ public class Parameters {
 	    return CommandFeedback.INVALID_FOLDER_REF;
 	}
 	
-	folder = this.folder;
+	this.folder = folder;
+	return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    public CommandFeedback setTaskId(int id) {
+	// MUST INTEGRATE VALID CHECKER LATER!!!
+	
+	this.taskId = id;
+	
 	return CommandFeedback.SUCCESSFUL_OPERATION;
     }
 
     
     // Accessors:
     
-    public StringToTime getDateTime() {
-	return dateTime;
+    public StringToTime getStartTime() {
+	return startTime;
+    }
+    
+    public StringToTime getEndTime() {
+	return endTime;
+    }
+    
+    public StringToTime getRemindTime() {
+	return remindTime;
     }
     
     public String getDescription() {
@@ -87,6 +126,10 @@ public class Parameters {
     
     public int getPriority() {
 	return priority;
+    }
+    
+    public int getTaskId() {
+	return taskId;
     }
     
     

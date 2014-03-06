@@ -8,10 +8,11 @@ public enum CommandType {
     	ADD, MODIFY,
     	DISPLAY_TODAY, DISPLAY_TOMORROW, DISPLAY_WEEK, DISPLAY_MONTH,
 	
-	CONTEXT_TASK, // Must add/modify
+	//CONTEXT_TASK, // Must add/modify
 	
-	DELETE, CLEAR, UNDO, REDO,
-	MARK, SEARCH, QUIT,
+	DELETE, MARK, SEARCH, 
+	
+	QUIT, CLEAR, UNDO, REDO,
 	
 	INVALID
 	

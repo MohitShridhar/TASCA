@@ -1,3 +1,5 @@
+
+
 /**
  * Data structure for a new command: Command + Parameters
  *
@@ -9,28 +11,62 @@ public class Command {
     
     public Command() {
 	command = null;
-	parameters = null;
+	parameters = new Parameters();
     }
     
     // Initializers: 
     public Command(CommandType command) {
-	command = this.command;
+	this.command = command;
 	parameters = null;
     }
     
     public Command(CommandType command, Parameters parameters) {
-	command = this.command;
+	this.command = command;
 	parameters = this.parameters;
     }
     
     // Mutators:
     public void setCommandType(CommandType command) {
-	command = this.command;
+	this.command = command;
     }
     
-    public void setParameters(Parameters parameters) {
-	parameters = this.parameters;
+    public void setDescription(String description) {
+	parameters.setDescription(description);
     }
+    
+    public void setLocation(String location) {
+	parameters.setLocation(location);
+    }
+    
+    public CommandFeedback setFolder(String folder) {
+	return parameters.setFolder(folder);
+    }
+    
+    public CommandFeedback setPriority(String priority){
+	return parameters.setPriority(priority);
+    }
+    
+    public void setTaskId(String id) {
+	parameters.setTaskId(Integer.parseInt(id));
+    }
+    
+    public CommandFeedback setStartTime(String time) {
+	return parameters.setStartTime(time);
+    }
+    
+    public CommandFeedback setEndTime(String time) {
+	return parameters.setEndTime(time);
+    }
+    
+    public CommandFeedback setRemindTime(String time) {
+	return parameters.setRemindTime(time);
+    }
+    
+    
+//    private String description, location, folder;
+//    private Integer priority, taskId;
+//    private StringToTime dateTime;
+    
     
     //Accessors:
     public CommandType getCommandType() {
