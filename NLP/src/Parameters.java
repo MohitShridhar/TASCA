@@ -16,14 +16,12 @@ public class Parameters {
     private static final int PRIORITY_INVALID_REF = -1;
     
     private String description, location, folder;
-    private int priority;
+    private Integer priority;
     private StringToTime dateTime;
     
 
     public Parameters() {
-	// Initialize all parameters to null
-	
-	priority = (Integer) null;
+	// Initialize all parameters to null	
     }
   
     //Mutators:
@@ -67,6 +65,7 @@ public class Parameters {
 	folder = this.folder;
 	return CommandFeedback.SUCCESSFUL_OPERATION;
     }
+
     
     // Accessors:
     
