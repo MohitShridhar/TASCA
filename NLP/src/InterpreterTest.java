@@ -16,10 +16,10 @@ public class InterpreterTest {
 	String input = "add FIRST ever task -on next tuesday -remind 12 may 2014 8:30pm -loc LT6 -pri low -id 12 -end sunday 13:12 -folder home";
 	
 	System.out.println("Simulate user command: ");
-	Scanner s = new Scanner(System.in);
-	input = s.nextLine();
-	
-	System.out.println();
+//	Scanner s = new Scanner(System.in);
+//	input = s.nextLine();
+//	
+//	System.out.println();
 	
 	/* ##########
 	 * API for INTERPRETER

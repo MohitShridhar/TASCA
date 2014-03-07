@@ -1,4 +1,5 @@
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,9 +17,22 @@ import java.util.Map;
 
 public class Interpreter {
    
-    //change to private:
-    public static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
-    public static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
+    // Exceptions:
+    private static final String INVALID_COMMAND_TYPE = "Invalid command type";
+    private static final String EXCEPTION_EMPTY_ARGUMENT = "Cannot accept empty parameter argument";
+    private static final String EXCEPTION_DUPLICATE_PARAMETERS = "Duplicate parameters found";
+    private static final String INVALID_START_TIME = "Invalid start time";
+    private static final String INVALID_END_TIME = "Invalid end time";
+    private static final String INVALID_REMINDER_TIME = "Invalid remind time";
+    private static final String INVALID_PRIORITY_REF = "Invalid priority reference";
+    private static final String INVALID_FOLDER_REF = "Invalid folder reference";
+    private static final String INVALID_PARAMETER_TYPE = "Invalid parameter type";
+    
+    
+    private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
+    private static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
+    
+    private static ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>();
     
     private static Command command = new Command();
     
@@ -71,19 +85,12 @@ public class Interpreter {
     }
     
     
-    // To be implemented for color coding
-    public void getCommandKeyword() {
-	
-    }
-    
-    
     /**
      * Reads keywords from txtfile and saves them in the local memory (hash table)
      * 
      */
     
-    // CHANGE TO PRIVATE
-    public CommandFeedback readCommandDatabase() {
+    private CommandFeedback readCommandDatabase() {
 	
 	Config cfg = new Config();
 	
@@ -121,8 +128,7 @@ public class Interpreter {
     
     
     
-    // CHANGE TO PRIVATE
-    public CommandFeedback readParameterDatabase() {
+    private CommandFeedback readParameterDatabase() {
 	Config cfg = new Config();
 	
 	String[] headerKeySet = (String[])( parameterHeaders.keySet().toArray( new String[parameterHeaders.size()] ) );
@@ -167,13 +173,8 @@ public class Interpreter {
 	processCommandArgument(input);
 	
 	if (hasParameters(mainCommand)) {
-	    parseProcessParameters(input);
+	    parseAndProcessParameters(input);
 	}
-	
-	// Check if it has parameters
-	// Parse parameters
-	// process parameters
-	// Return success or exceptions
 	
 	command.setCommandType(mainCommand);
     }
@@ -185,14 +186,14 @@ public class Interpreter {
     }
 
 
-    private void checkCommandValidity(CommandType mainCommand) {
+    private void checkCommandValidity(CommandType mainCommand) throws InvalidParameterException {
 	if (mainCommand == CommandType.INVALID) {
-	    throw new InvalidParameterException("Invalid command type");
+	    throw new InvalidParameterException(INVALID_COMMAND_TYPE);
 	}
     }
     
     
-    private void parseProcessParameters(String input) {
+    private void parseAndProcessParameters(String input) throws IllegalArgumentException {
 	String[] inputParameters = input.split("-");
 	
 	for (int i=1; i<inputParameters.length; i++) { // Ignore the command, focus on the parameter arguments
@@ -200,33 +201,43 @@ public class Interpreter {
 	    String paraArgument = inputParameters[i].substring(paraTypeString.length()).trim();
 	    
 	    if (paraArgument.isEmpty()) {
-		throw new IllegalArgumentException("Cannot accept empty parameter argument");
+		throw new IllegalArgumentException(EXCEPTION_EMPTY_ARGUMENT);
 	    }
 	    
 	    ParameterType parameterType = interpretParameter(paraTypeString);
 	    if (parameterType == ParameterType.INVALID) {
-		throw new IllegalArgumentException("Invalid parameter type");
+		throw new IllegalArgumentException(INVALID_PARAMETER_TYPE);
 	    }
 	    
 	    
 	    CommandFeedback feedback = processParameter(parameterType, paraArgument);
 	    isParameterArgumentValid(feedback);
+	    
+	    checkIfParameterExists(parameterType); 
 	}
 	
     }
+
+
+    private void checkIfParameterExists(ParameterType parameterType) throws IllegalArgumentException {
+	if (currentParameters.contains(parameterType)) {
+	throw new IllegalArgumentException(EXCEPTION_DUPLICATE_PARAMETERS);
+	}
+	currentParameters.add(parameterType);
+    }
     
-    private void isParameterArgumentValid(CommandFeedback feedback) {
+    private void isParameterArgumentValid (CommandFeedback feedback) throws InvalidParameterException {
 	switch (feedback) {
 	case INVALID_START_TIME:
-	    throw new InvalidParameterException("Invalid start time");
+	    throw new InvalidParameterException(INVALID_START_TIME);
 	case INVALID_END_TIME:
-	    throw new InvalidParameterException("Invalid end time");
+	    throw new InvalidParameterException(INVALID_END_TIME);
 	case INVALID_REMIND_TIME:
-	    throw new InvalidParameterException("Invalid remind time");
+	    throw new InvalidParameterException(INVALID_REMINDER_TIME);
 	case INVALID_PRIORITY:
-	    throw new InvalidParameterException("Invalid priority reference");
+	    throw new InvalidParameterException(INVALID_PRIORITY_REF);
 	case INVALID_FOLDER_REF:
-	    throw new InvalidParameterException("Invalid folder reference");
+	    throw new InvalidParameterException(INVALID_FOLDER_REF);
 	default:
 	    return; // Do nothing	    
 	}
@@ -246,10 +257,8 @@ public class Interpreter {
 	return false;
     }
     
-    private CommandFeedback processParameter(ParameterType parameterType, String argument) 
-    {
-//	  START_TIME, END_TIME, REMINDER_TIME, PRIORITY, LOCATION, FOLDER
-	
+    private CommandFeedback processParameter(ParameterType parameterType, String argument) throws InvalidParameterException
+    {	
 	switch(parameterType) {
 	
 	case START_TIME:
@@ -269,18 +278,15 @@ public class Interpreter {
 	    return CommandFeedback.SUCCESSFUL_OPERATION;	    
 	    
 	default:
-	    throw new InvalidParameterException("Invalid parameter type"); 
+	    throw new InvalidParameterException(INVALID_PARAMETER_TYPE); 
 	
 	}
 	
     }
     
-    /**
-     * High-level function which interprets the command from the user input
-     * 
-     * @param userInput
-     * @return
-     */
+    
+    
+    // Can be used for color-coding Ð Validate keywords:
     
     public ParameterType interpretParameter(String parameterString) {
 	if (!parameterKeywords.containsKey(parameterString)) {
@@ -290,7 +296,7 @@ public class Interpreter {
 	return parameterKeywords.get(parameterString);
     }
     
-    private CommandType interpretCommand(String commandString) {
+    public CommandType interpretCommand(String commandString) {
 	if (!commandKeywords.containsKey(commandString)) {
 	    return CommandType.INVALID;
 	}
@@ -298,10 +304,6 @@ public class Interpreter {
 	return commandKeywords.get(commandString);
     }
       
-//    private static boolean paraAlreadyExists(String command) {
-//
-//	return false; // CHANGE
-//    }
     
     public Command getCommandAndPara() {
 	return command;
