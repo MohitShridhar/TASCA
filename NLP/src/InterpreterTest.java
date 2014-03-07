@@ -1,9 +1,8 @@
 import static org.junit.Assert.*;
 
-import java.sql.Date;
-
 import org.junit.Test;
 
+import java.util.Scanner;
 import com.clutch.dates.StringToTime;
 import java.util.Calendar;
 
@@ -16,10 +15,28 @@ public class InterpreterTest {
 	
 	String input = "add FIRST ever task -on next tuesday -remind 12 may 2014 8:30pm -loc LT6 -pri low -id 12 -end sunday 13:12 -folder home";
 	
+	System.out.println("Simulate user command: ");
+	Scanner s = new Scanner(System.in);
+	input = s.nextLine();
+	
+	System.out.println();
+	
+	/* ##########
+	 * API for INTERPRETER
+	 * ##########
+	 */
+	
 	// Create an instance in CONTROLLER class:
 	
+	/* PRECONDITIONS FOR INTERPRETER: (Required inside the Controller Class)
+	 * 	import com.clutch.dates.StringToTime; // Note: You need to add "string-to-time.jar" file to the External JAR libraries in your JAVA Build Path - Project Properties
+	 *	import java.util.Calendar;
+	 * 	
+	 * Format: ("-" is used as the delimiter)
+	 * 	<Main Command> description -<parameter1> parameter1 arguments -<parameter2> parameter2 arguments.... 
+	 */
 	
-	// USAGE ÐÐÐ INPUT
+	// USAGE â€“â€“â€“ INPUT
 	Interpreter newInt = new Interpreter();
 	
 	try {

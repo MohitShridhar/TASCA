@@ -30,7 +30,7 @@ public class Parameters {
 	try {
 	    startTime = new StringToTime(rawInput);
 	} catch (StringToTimeException e) {
-	    System.err.println("Error: " + e);
+	    //System.err.println("Error: " + e);
 	    return CommandFeedback.INVALID_START_TIME;
 	}
 	
@@ -41,7 +41,7 @@ public class Parameters {
 	try {
 	    endTime = new StringToTime(rawInput);
 	} catch (StringToTimeException e) {
-	    System.err.println("Error: " + e);
+	    //System.err.println("Error: " + e);
 	    return CommandFeedback.INVALID_END_TIME;
 	}
 	
@@ -52,7 +52,7 @@ public class Parameters {
 	try {
 	    remindTime = new StringToTime(rawInput);
 	} catch (StringToTimeException e) {
-	    System.err.println("Error: " + e);
+	    //System.err.println("Error: " + e);
 	    return CommandFeedback.INVALID_REMIND_TIME;
 	}
 	
