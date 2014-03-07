@@ -124,12 +124,20 @@ public class Parameters {
 	return folder;
     }
     
-    public int getPriority() {
-	return priority;
+    public String getPriority() {
+	if (priority == null) {
+	    return "null";
+	}
+	
+	return Integer.toString(priority);
     }
     
-    public int getTaskId() {
-	return taskId;
+    public String getTaskId() {
+	if (taskId == null) {
+	    return "null";
+	}
+	
+	return Integer.toString(taskId);
     }
     
     

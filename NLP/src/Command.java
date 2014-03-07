@@ -46,8 +46,8 @@ public class Command {
 	return parameters.setPriority(priority);
     }
     
-    public void setTaskId(String id) {
-	parameters.setTaskId(Integer.parseInt(id));
+    public CommandFeedback setTaskId(String id) {
+	return parameters.setTaskId(Integer.parseInt(id));
     }
     
     public CommandFeedback setStartTime(String time) {

@@ -1,13 +1,72 @@
 import static org.junit.Assert.*;
 
+import java.sql.Date;
+
 import org.junit.Test;
+
+import com.clutch.dates.StringToTime;
+import java.util.Calendar;
 
 
 public class InterpreterTest {
     
     @Test
-    public void testKeywordsHash() {
+    public void testMainInterpreter() 
+    {
 	
+	String input = "add FIRST ever task -on next tuesday -remind 12 may 2014 8:30pm -loc LT6 -pri low -id 12 -end sunday 13:12 -folder home";
+	
+	// Create an instance in CONTROLLER class:
+	
+	
+	// USAGE ÐÐÐ INPUT
+	Interpreter newInt = new Interpreter();
+	
+	try {
+	    newInt.processUserInput(input);
+	} catch (IllegalArgumentException eI) { // Check for exceptions
+	    System.out.println("Exception - " + eI);
+	} 
+	
+	
+	// USAGE --- OUTPUT
+	Command commandAndPara = newInt.getCommandAndPara();
+	
+	System.out.println("Command Type: " + commandAndPara.getCommandType());
+	System.out.println();
+	
+	System.out.println("Parameters: ---------");
+	System.out.println("Description: " + commandAndPara.getParameters().getDescription());
+	System.out.println("Location: " + commandAndPara.getParameters().getLocation());
+	System.out.println("Folder: " + commandAndPara.getParameters().getFolder());
+	System.out.println("Priority: " + commandAndPara.getParameters().getPriority());
+	System.out.println("Task ID: " + commandAndPara.getParameters().getTaskId());
+	System.out.println("Start Time: " + commandAndPara.getParameters().getStartTime());
+	System.out.println("End Time: " + commandAndPara.getParameters().getEndTime());
+	System.out.println("Reminder Time: " + commandAndPara.getParameters().getRemindTime());
+	
+	
+	// USAGE --- DATE & TIME
+	System.out.println();	
+	System.out.println("Start_Time Expansion: -------- (StringToTime Class)");
+	
+	Calendar dateTime = commandAndPara.getParameters().getStartTime().getCal();
+	System.out.println("Year: " + dateTime.get(Calendar.YEAR));
+	System.out.println("Month: " + dateTime.get(Calendar.MONTH));
+	System.out.println("Date: " + dateTime.get(Calendar.DATE));
+	System.out.println("Day: " + dateTime.get(Calendar.DAY_OF_WEEK));
+	System.out.println("Hour: " + dateTime.get(Calendar.HOUR));
+	
+    }
+    
+//    private String description, location, folder;
+//    private Integer priority, taskId;
+//    private StringToTime startTime, endTime, remindTime;
+    
+    
+//    @Test
+//    public void testKeywordsHash() {
+//	
 //	System.out.println(Interpreter.readCommandDatabase().toString());
 //	System.out.println(Interpreter.readParameterDatabase().toString());
 //	
@@ -17,14 +76,9 @@ public class InterpreterTest {
 //	assertEquals("on test", ParameterType.START_TIME, Interpreter.parameterKeywords.get("on"));
 //	assertEquals("location test", ParameterType.LOCATION, Interpreter.parameterKeywords.get("loc"));
 //	assertEquals("reminder test", ParameterType.REMINDER_TIME, Interpreter.parameterKeywords.get("alert"));
-	
-	
-	Interpreter newInt = new Interpreter();
-	
-	newInt.processUserInput("add first ever task -on next tuesday -remind monday 8:35pm -loc LT6");
-	System.out.println(newInt.getCommandAndPara().getCommandType());
-	
-    }
+//	
+//	
+//    }
     
 //    @Test
 //    public void testReadKeywords() {

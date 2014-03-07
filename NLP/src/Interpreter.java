@@ -54,6 +54,7 @@ public class Interpreter {
         parameterHeaders.put("priority",ParameterType.PRIORITY);
         parameterHeaders.put("location", ParameterType.LOCATION);
         parameterHeaders.put("folder", ParameterType.FOLDER);
+        parameterHeaders.put("taskID", ParameterType.TASK_ID);
         
         
     }
@@ -259,11 +260,14 @@ public class Interpreter {
 	    return command.setRemindTime(argument);
 	case PRIORITY:
 	    return command.setPriority(argument);
+	case TASK_ID:
+	    return command.setTaskId(argument);
 	case FOLDER:
 	    return command.setFolder(argument);
 	case LOCATION:
 	    command.setLocation(argument);
-	    return CommandFeedback.SUCCESSFUL_OPERATION;
+	    return CommandFeedback.SUCCESSFUL_OPERATION;	    
+	    
 	default:
 	    throw new InvalidParameterException("Invalid parameter type"); 
 	
@@ -293,12 +297,7 @@ public class Interpreter {
 	
 	return commandKeywords.get(commandString);
     }
-    
-//    private static boolean isValidPara(String userInput) {
-//	
-//	return true; // CHANGE
-//    }
-//    
+      
 //    private static boolean paraAlreadyExists(String command) {
 //
 //	return false; // CHANGE
