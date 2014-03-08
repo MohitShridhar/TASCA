@@ -1,9 +1,14 @@
 package Logic;
 
 import Storage.*;
+import java.util.Date;
+import java.util.Calendar;
 
+//since we use allTasks in all the commands  is it better to use a global variable?
 
 public class Logic {
+	
+	private static final long CONSTANT_MILLISECONDS_IN_A_DAY = 86400000;
 	
 	private static String MESSAGE_TASK_NOT_DELETED = "The task indicated cannot be deleted as it does not exist.";
 	private static String MESSAGE_TASK_INDEX_INVALID = "The given task number is invalid.";
@@ -148,10 +153,13 @@ public class Logic {
 	}
 	
 	public static void displayTask(AllTasks allTasks, int index) {
-		int indexOfReminder = allTasks.searchForCorrespondingReminder(allTasks.getTask(index));
-		if (allTasks.getSize() <= index) {
-			System.out.printf("%s/n", MESSAGE_TASK_INDEX_INVALID);
-		} else {
+		
+		int totalNumOfTasks = allTasks.getSize();
+		
+		if (index < totalNumOfTasks) {
+		Task task = allTasks.getTask(index);
+		int indexOfReminder = allTasks.searchForCorrespondingReminder(task);
+		
 			System.out.printf("Task Number: %d Start Time: %d:%d %d/%d/%d End Time: %d:%d %d/%d/%d\n"
 					+ "Name: %s\nTask is done: %b\nTask is all day event: %b\n"
 					+ "Remarks: %s\nReminder Time: %d:%d %d/%d/%d\n", allTasks.getTask(index).getTaskID(), allTasks.getTask(index).getStartTime().getHour(),
@@ -164,15 +172,53 @@ public class Logic {
 					allTasks.getReminder(indexOfReminder).getReminderTime().getYear());
 			
 		}
-		return;
+		
+	else {
+		System.out.printf("%s/n", MESSAGE_TASK_INDEX_INVALID);
+	}
 	}
 	
-	public static void displayAllTasks (AllTasks allTasks) {
-		int counter = 0;
-		while (counter < allTasks.getSize()) {
-			displayTask(allTasks, counter) ;
+	
+	public static void displayAllTasks(AllTasks allTasks) {
+		int totalNumOfTasks = allTasks.getSize();
+		for (int count = 0; count < totalNumOfTasks; count++) {
+			displayTask(allTasks, count);
 		}
-		return;
+	}
+	
+	public static void displayTasksAtPeriod(AllTasks allTasks, Date startDateSpecified, Date endDateSpecified) {
+		int totalNumOfTasks = allTasks.getSize();
+		
+		Date startTime, endTime;
+		for (int count = 0; count < totalNumOfTasks; count++) {
+			Task task = allTasks.getTask(count);
+			
+			//convert 'Calendar' to 'Date' to compare
+			startTime = task.getStartTime.getTime();
+			endTime = task.getEndTime.getTime();
+			
+			boolean hasTaskStarted = startTime.after(startDateSpecified);
+			boolean hasTaskNotEnded = endTime.before(endDateSpecified);
+			
+			if (hasTaskStarted && hasTaskNotEnded) {
+			displayTask(allTasks, count);
+			}
+		}	
+	}
+	
+	public static void displayTasksAtDate(AllTasks allTasks, Date dateSpecified) {
+	displayTasksAtPeriod(allTasks, dateSpecified, dateSpecified);
+	}
+	
+	public static void displayToday (AllTasks allTasks) {
+	Date today = new Date();
+	displayTasksAtDate(allTasks, today);
 	}
 
+	public static void displayTomorrow (AllTasks allTasks) {
+    long tomorrowInMillis = System.currentTimeMillis() + CONSTANT_MILLISECONDS_IN_A_DAY;
+	Date tomorrow = new Date(tomorrowInMillis);
+	displayTasksAtDate(allTasks, tomorrow);
+	}	
+	
 }
