@@ -147,7 +147,7 @@ public class Logic {
 	public static void displayAllTasks() {
 		int totalNumOfTasks = _storage.getSize();
 		for (int count = 0; count < totalNumOfTasks; count++) {
-			displayTask(_storage, count);
+			displayTask(count);
 		}
 	}
 
@@ -188,4 +188,17 @@ public class Logic {
 		displayTasksAtDate(tomorrow);
 	}
 
+	public static void searchTask(String searchString) {
+		int totalNumOfTasks = _storage.getSize();
+		for (int index = 0; index < totalNumOfTasks; index++) {
+			String taskTitle = _storage.getTask(index).getTaskTitle();
+			if (isInString(taskTitle, searchString)) {
+				displayTask(index);
+			}
+		}
+	}
+
+	private static boolean isInString(String mainString, String subString) {
+		return (mainString.toLowerCase().contains(subString.toLowerCase()));
+	}
 }
