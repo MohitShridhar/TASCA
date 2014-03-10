@@ -234,4 +234,13 @@ public class Logic {
 				System.out.printf("All search results deleted.");
             }
 		}
+      
+      public static void updateTask(int index, Date start, Date end, boolean isThereReminder, 
+				boolean isTaskDone, boolean isAllDayEvent, String title, 
+				String remarks, Date reminder){
+				deleteTask(index);
+				addTask(start, edn, isThereReminder, isTaskDone, isAllDayEvent, title, remarks, reminder);
+		
+		
+		}
 }
