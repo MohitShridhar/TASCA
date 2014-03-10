@@ -201,4 +201,18 @@ public class Logic {
 	private static boolean isInString(String mainString, String subString) {
 		return (mainString.toLowerCase().contains(subString.toLowerCase()));
 	}
+   
+  public static void deletealldone(){
+			int totalNumOfTasks= _storage.getSize();
+			int index=0; count = 0;
+			while (index < totalNumOfTasks)
+			{
+				if (_storage.getTask(index).getIsTaskDone())
+				{	deleteTask(index);
+					count++;
+				}
+				index++;
+			}
+			System.out.printf("%d Tasks have been done and deleted", count);
+		} 
 }
