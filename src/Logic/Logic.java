@@ -15,6 +15,8 @@ public class Logic {
 
 	private static String MESSAGE_TASK_DELETED = "The Task has been successfully deleted.";
 	private static String MESSAGE_TASK_IS_DONE = "has been completed";
+   
+  private static String MESSAGE_DELETE_SEARCH = "Do you want to delete all search results? (Y/N) ";
 
 	private static AllTasks _storage;
 
@@ -203,10 +205,10 @@ public class Logic {
 	}
    
   public static void deletealldone(){
-			int totalNumOfTasks= _storage.getSize();
-			int index=0; count = 0;
-			while (index < totalNumOfTasks)
-			{
+		 int totalNumOfTasks= _storage.getSize();
+		 int index=0; count = 0;
+		 while (index < totalNumOfTasks)
+		 {
 				if (_storage.getTask(index).getIsTaskDone())
 				{	deleteTask(index);
 					count++;
@@ -215,4 +217,21 @@ public class Logic {
 			}
 			System.out.printf("%d Tasks have been done and deleted", count);
 		} 
+      
+   public static void deletesearch(String searchString) {
+      searchTask(searchString);
+      System.out.printf("%s", MESSAGE_DELETE_SEARCH);
+			Scanner mysc= new Scanner(System.in);
+			String s=sc.nextLine;
+			if (s="Y")
+				{
+				int totalNumOfTasks = _storage.getSize();
+				for (int index = 0; index < totalNumOfTasks; index++) {
+                    String taskTitle = _storage.getTask(index).getTaskTitle();
+                    if (isInString(taskTitle, searchString)) {
+                            deleteTask(index);}
+				}
+				System.out.printf("All search results deleted.");
+            }
+		}
 }
