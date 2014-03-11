@@ -30,8 +30,8 @@ public class Command {
 	this.command = command;
     }
     
-    public void setDescription(String description) {
-	parameters.setDescription(description);
+    public CommandFeedback setDescription(String description) {
+	return parameters.setDescription(description);
     }
     
     public void setLocation(String location) {

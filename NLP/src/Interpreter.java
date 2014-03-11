@@ -27,12 +27,16 @@ public class Interpreter {
     private static final String INVALID_PRIORITY_REF = "Invalid priority reference";
     private static final String INVALID_FOLDER_REF = "Invalid folder reference";
     private static final String INVALID_PARAMETER_TYPE = "Invalid parameter type";
-    
+    private static final String INVALID_COMMAND_ARGUMENT = "The description for this command cannot be empty";
+    private static final String ERROR_DATABASE_DUPLICATE_PARA = "Duplicate keywords were found in the 'parameter' database";
+    private static final String ERROR_DATABASE_DUPLICATE_COMMAND = "Duplicate keywords were found in the 'command' database";
+    private static final String EXCEPTION_EMPTY_LOCATION = "Initiated location parameter cannot have a empty argument";
+    private static final String EXCEPTION_EMPTY_DESCRIPTION = "Description cannot be empty";
     
     private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
     private static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
     
-    private static ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>();
+    private static ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>(); // For duplicates
     
     private static Command command = new Command();
     
@@ -48,6 +52,7 @@ public class Interpreter {
            
         commandHeaders.put("add", CommandType.ADD);
         commandHeaders.put("delete", CommandType.DELETE);
+        commandHeaders.put("clearCompleted", CommandType.DELETE_ALL_COMPLETED);
         commandHeaders.put("clear", CommandType.CLEAR);
         commandHeaders.put("modify", CommandType.MODIFY);
         commandHeaders.put("mark", CommandType.MARK);
@@ -57,6 +62,9 @@ public class Interpreter {
         commandHeaders.put("week", CommandType.DISPLAY_WEEK);
         commandHeaders.put("undo", CommandType.UNDO);
         commandHeaders.put("redo", CommandType.REDO);
+        commandHeaders.put("displayAll", CommandType.DISPLAY_ALL);
+        commandHeaders.put("display", CommandType.DISPLAY_IN_TIME);
+        commandHeaders.put("quit", CommandType.QUIT);
         
         // Parameter Commands:
         
@@ -76,13 +84,14 @@ public class Interpreter {
     
     public Interpreter() {
 	
-	/* If you have time: turn the following functions into an abstract class because they are quite similar */
 	
 	readCommandDatabase();
 	readParameterDatabase();
-
+	
+	currentParameters = new ArrayList<ParameterType>();	
 	
     }
+   
     
     
     /**
@@ -90,7 +99,7 @@ public class Interpreter {
      * 
      */
     
-    private CommandFeedback readCommandDatabase() {
+    private void readCommandDatabase() throws IllegalArgumentException {
 	
 	Config cfg = new Config();
 	
@@ -101,12 +110,11 @@ public class Interpreter {
 	    CommandFeedback feedback = addCommandSynonyms(cfg, headerKeySet[i], commandHeaders.get(headerKeySet[i]));
 
 	    if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
-		return CommandFeedback.INVALID_DATABASE_DUPLICATES;
+		throw new IllegalArgumentException(ERROR_DATABASE_DUPLICATE_COMMAND);
 	    }
 
 	}
 
-	return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
     private CommandFeedback addCommandSynonyms(Config cfg, String type, CommandType commandType) 
@@ -128,7 +136,7 @@ public class Interpreter {
     
     
     
-    private CommandFeedback readParameterDatabase() {
+    private void readParameterDatabase() throws IllegalArgumentException {
 	Config cfg = new Config();
 	
 	String[] headerKeySet = (String[])( parameterHeaders.keySet().toArray( new String[parameterHeaders.size()] ) );
@@ -138,12 +146,10 @@ public class Interpreter {
 	    CommandFeedback feedback = addParameterSynonyms(cfg, headerKeySet[i], parameterHeaders.get(headerKeySet[i]));
 
 	    if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
-		return CommandFeedback.INVALID_DATABASE_DUPLICATES;
+		throw new IllegalArgumentException(ERROR_DATABASE_DUPLICATE_PARA);
 	    }
 
 	}
-
-	return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
     
@@ -179,10 +185,15 @@ public class Interpreter {
 	command.setCommandType(mainCommand);
     }
     
-    private void processCommandArgument(String input) {
+    private void processCommandArgument (String input) throws IllegalArgumentException {
 	String commandArgument = (input.replaceFirst(getFirstWord(input), "").trim()).split("-")[0];
 	
-	command.setDescription(commandArgument);
+	CommandFeedback feedback = command.setDescription(commandArgument);
+	
+	if (hasParameters(interpretCommand(getFirstWord(input))) && feedback == CommandFeedback.EMPTY_DESCRIPTION) {
+	    throw new IllegalArgumentException(INVALID_COMMAND_ARGUMENT);
+	}
+		
     }
 
 
@@ -228,6 +239,10 @@ public class Interpreter {
     
     private void isParameterArgumentValid (CommandFeedback feedback) throws InvalidParameterException {
 	switch (feedback) {
+	case EMPTY_DESCRIPTION:
+	    throw new InvalidParameterException(EXCEPTION_EMPTY_DESCRIPTION);	
+	case EMPTY_LOCATION:
+	    throw new InvalidParameterException(EXCEPTION_EMPTY_LOCATION);	    
 	case INVALID_START_TIME:
 	    throw new InvalidParameterException(INVALID_START_TIME);
 	case INVALID_END_TIME:
@@ -250,7 +265,7 @@ public class Interpreter {
  
     
     public boolean hasParameters(CommandType command) {
-	if (command == CommandType.ADD || command == CommandType.DELETE || command == CommandType.MARK || command == CommandType.MODIFY || command == CommandType.SEARCH) {
+	if (command == CommandType.ADD || command == CommandType.DELETE || command == CommandType.MARK || command == CommandType.MODIFY || command == CommandType.SEARCH || command == CommandType.DISPLAY_IN_TIME) {
 	    return true;
 	}
 	    

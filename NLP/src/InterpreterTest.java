@@ -16,10 +16,10 @@ public class InterpreterTest {
 	String input = "add FIRST ever task -on next tuesday -remind 12 may 2014 8:30pm -loc LT6 -pri low -id 12 -end sunday 13:12 -folder home";
 	
 	System.out.println("Simulate user command: ");
-//	Scanner s = new Scanner(System.in);
-//	input = s.nextLine();
-//	
-//	System.out.println();
+	Scanner s = new Scanner(System.in);
+	input = s.nextLine();
+	
+	System.out.println();
 	
 	/* ##########
 	 * API for INTERPRETER
@@ -36,9 +36,8 @@ public class InterpreterTest {
 	 * 	<Main Command> description -<parameter1> parameter1 arguments -<parameter2> parameter2 arguments.... 
 	 */
 	
-	// USAGE ––– INPUT
 	Interpreter newInt = new Interpreter();
-	
+	// USAGE ––– INPUT
 	try {
 	    newInt.processUserInput(input);
 	} catch (IllegalArgumentException eI) { // Check for exceptions
@@ -67,12 +66,18 @@ public class InterpreterTest {
 	System.out.println();	
 	System.out.println("Start_Time Expansion: -------- (StringToTime Class)");
 	
-	Calendar dateTime = commandAndPara.getParameters().getStartTime().getCal();
-	System.out.println("Year: " + dateTime.get(Calendar.YEAR));
-	System.out.println("Month: " + dateTime.get(Calendar.MONTH));
-	System.out.println("Date: " + dateTime.get(Calendar.DATE));
-	System.out.println("Day: " + dateTime.get(Calendar.DAY_OF_WEEK));
-	System.out.println("Hour: " + dateTime.get(Calendar.HOUR));
+	try { // Check if there are any empty parameters
+	    Calendar dateTime = commandAndPara.getParameters().getStartTime().getCal();
+
+	    System.out.println("Year: " + dateTime.get(Calendar.YEAR));
+	    System.out.println("Month: " + dateTime.get(Calendar.MONTH));
+	    System.out.println("Date: " + dateTime.get(Calendar.DATE));
+	    System.out.println("Day: " + dateTime.get(Calendar.DAY_OF_WEEK));
+	    System.out.println("Hour: " + dateTime.get(Calendar.HOUR));
+	    
+	} catch (NullPointerException eN) {
+	    System.out.println("Some parameters are empty");
+	}
 	
     }
     

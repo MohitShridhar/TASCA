@@ -60,11 +60,19 @@ public class Parameters {
     }
     
     public CommandFeedback setDescription(String description) {	
+	if (description.isEmpty() || description == null) {
+	    return CommandFeedback.EMPTY_DESCRIPTION;
+	}
+	
 	this.description = description;
 	return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
     public CommandFeedback setLocation(String location) {
+	if (location.isEmpty() || location == null) {
+	    return CommandFeedback.EMPTY_LOCATION;
+	}
+	
 	this.location = location;
 	return CommandFeedback.SUCCESSFUL_OPERATION;
     }
