@@ -35,12 +35,12 @@ public class Interpreter {
     private static final String EXCEPTION_EMPTY_LOCATION = "Initiated location parameter cannot have a empty argument";
     private static final String EXCEPTION_EMPTY_DESCRIPTION = "Description cannot be empty";
     
-    private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
-    private static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
+    private Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
+    private Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
     
-    private static ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>(); // For duplicates
+    private ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>(); // For duplicates
     
-    private static Command command = new Command();
+    private Command command = new Command();
     
     
     /* Keyword Headers: Mapping Config file elements to Command & Parameter types */
@@ -86,12 +86,9 @@ public class Interpreter {
     
     public Interpreter() {
 	
-	
 	readCommandDatabase();
 	readParameterDatabase();
-	
-	currentParameters = new ArrayList<ParameterType>();	
-	
+
     }
    
     
