@@ -47,7 +47,7 @@ public class InterpreterTest {
 	
 	
 	// USAGE --- OUTPUT
-	Command commandAndPara = newInt.getCommandAndPara();
+	Command commandAndPara = anotherInt.getCommandAndPara();
 	
 	System.out.println("Command Type: " + commandAndPara.getCommandType());
 	System.out.println();
