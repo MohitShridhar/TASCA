@@ -37,10 +37,10 @@ public class InterpreterTest {
 	 */
 	
 	Interpreter newInt = new Interpreter();
-	Interpreter nInt = new Interpreter();
+	Interpreter anotherInt = new Interpreter();
 	// USAGE ––– INPUT
 	try {
-	    nInt.processUserInput(input);
+	    anotherInt.processUserInput(input);
 	} catch (IllegalArgumentException eI) { // Check for exceptions
 	    System.out.println("Exception - " + eI);
 	} 

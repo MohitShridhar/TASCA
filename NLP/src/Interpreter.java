@@ -40,7 +40,7 @@ public class Interpreter {
     
     private ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>(); // For duplicates
     
-    private Command command = new Command();
+    private static Command command = new Command();
     
     
     /* Keyword Headers: Mapping Config file elements to Command & Parameter types */
