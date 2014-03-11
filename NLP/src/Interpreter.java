@@ -1,3 +1,5 @@
+
+
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -190,10 +192,19 @@ public class Interpreter {
 	
 	CommandFeedback feedback = command.setDescription(commandArgument);
 	
-	if (hasParameters(interpretCommand(getFirstWord(input))) && feedback == CommandFeedback.EMPTY_DESCRIPTION) {
+	if (needsDescription(interpretCommand(getFirstWord(input))) && feedback == CommandFeedback.EMPTY_DESCRIPTION) {
 	    throw new IllegalArgumentException(INVALID_COMMAND_ARGUMENT);
 	}
 		
+    }
+    
+    private boolean needsDescription(CommandType userCommand) {
+	
+	if (userCommand == CommandType.ADD || userCommand == CommandType.SEARCH) {
+	    return true;
+	}
+	
+	return false;
     }
 
 
@@ -232,7 +243,7 @@ public class Interpreter {
 
     private void checkIfParameterExists(ParameterType parameterType) throws IllegalArgumentException {
 	if (currentParameters.contains(parameterType)) {
-	throw new IllegalArgumentException(EXCEPTION_DUPLICATE_PARAMETERS);
+	    throw new IllegalArgumentException(EXCEPTION_DUPLICATE_PARAMETERS);
 	}
 	currentParameters.add(parameterType);
     }
