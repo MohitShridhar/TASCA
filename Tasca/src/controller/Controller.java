@@ -116,6 +116,7 @@ public class Controller {
 			break;
 
 		case "MODIFY":
+			try{
 			Logic.updateTask(
 					Integer.parseInt(command.getParameters().getTaskId()),
 					Integer.parseInt(command.getParameters().getPriority()),
@@ -124,6 +125,15 @@ public class Controller {
 					isThereReminder, command.getParameters().getDescription(),
 					command.getParameters().getLocation(), command
 							.getParameters().getRemindTime().getCal().getTime());
+			} catch (Exception e){
+				Logic.updateTask(
+						Integer.parseInt(command.getParameters().getTaskId()),
+						Integer.parseInt(command.getParameters().getPriority()),
+						command.getParameters().getStartTime().getCal().getTime(),
+						command.getParameters().getEndTime().getCal().getTime(),
+						isThereReminder, command.getParameters().getDescription(),
+						command.getParameters().getLocation(), null);
+			}
 			break;
 
 		case "DISPLAY_TODAY":

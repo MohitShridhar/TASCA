@@ -98,6 +98,7 @@ public class Logic {
 				_storage.addReminder(count, taskReminder);
 			}
 			_undoRedo.addUndo(null, null, task, taskReminder, "add");
+			System.out.printf("Task Added\n");
 			
 		}
 	}
@@ -380,6 +381,7 @@ public class Logic {
 		deleteTask(index);
 		addTask(priority, start, end, isThereReminder, isTaskDone,
 				isAllDayEvent, title, location, reminder);
+		return;
 
 	}
 
