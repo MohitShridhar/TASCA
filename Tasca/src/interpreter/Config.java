@@ -1,4 +1,4 @@
-package nlp;
+package interpreter;
 import java.util.Properties;
  
 public class Config

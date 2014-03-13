@@ -1,4 +1,4 @@
-package nlp;
+package interpreter;
 import com.clutch.dates.StringToTime;
 import com.clutch.dates.StringToTimeException;
 

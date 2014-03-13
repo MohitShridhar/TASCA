@@ -1,18 +1,21 @@
 package controller;
 
+import interpreter.*;
+
 import java.io.FileNotFoundException;
 import java.util.Calendar;
 
 import com.clutch.dates.StringToTime;
 
-import nlp.*;
 
 import java.util.*;
 
-import Storage.AllTasks;
-import Storage.UndoRedo;
-import Logic.Logic;
-import Storage.UndoRedoNode;
+import storage.AllTasks;
+import storage.UndoRedo;
+import storage.UndoRedoNode;
+
+import logic.Logic;
+
 
 public class Controller {
 	private String MESSAGE_FILE_NOT_FOUND = "The system files could not be loaded.";

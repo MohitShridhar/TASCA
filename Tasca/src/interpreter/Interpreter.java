@@ -1,4 +1,5 @@
-package nlp;
+package interpreter;
+
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,9 +38,8 @@ public class Interpreter {
     private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
     private static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
     
-    private static ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>(); // For duplicates
-    
-    private static Command command = new Command();
+    private ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>(); // For duplicates
+    private Command command = new Command();
     
     
     /* Keyword Headers: Mapping Config file elements to Command & Parameter types */
@@ -79,19 +79,15 @@ public class Interpreter {
         parameterHeaders.put("folder", ParameterType.FOLDER);
         parameterHeaders.put("taskID", ParameterType.TASK_ID);
         
+        // Read and Load command/parameter keyword database:
         
+	readCommandDatabase();
+	readParameterDatabase();
     }
     
     
     public Interpreter() {
-    	currentParameters = new ArrayList<ParameterType>();
-    	parameterKeywords = new HashMap<String, ParameterType>();
-    	commandKeywords = new HashMap<String, CommandType>();
-        readCommandDatabase();
-        readParameterDatabase();
-        
-             
-        
+	// Do nothing
     }
    
     
@@ -101,7 +97,7 @@ public class Interpreter {
      * 
      */
     
-    private void readCommandDatabase() throws IllegalArgumentException {
+    private static void readCommandDatabase() throws IllegalArgumentException {
         
         Config cfg = new Config();
         
@@ -119,7 +115,7 @@ public class Interpreter {
 
     }
     
-    private CommandFeedback addCommandSynonyms(Config cfg, String type, CommandType commandType) 
+    private static CommandFeedback addCommandSynonyms(Config cfg, String type, CommandType commandType) 
     {
         String[] keys = cfg.getSynonyms(type);
         
@@ -138,7 +134,7 @@ public class Interpreter {
     
     
     
-    private void readParameterDatabase() throws IllegalArgumentException {
+    private static void readParameterDatabase() throws IllegalArgumentException {
         Config cfg = new Config();
         
         String[] headerKeySet = (String[])( parameterHeaders.keySet().toArray( new String[parameterHeaders.size()] ) );
@@ -155,7 +151,7 @@ public class Interpreter {
     }
     
     
-    private CommandFeedback addParameterSynonyms(Config cfg, String type, ParameterType parameterType) 
+    private static CommandFeedback addParameterSynonyms(Config cfg, String type, ParameterType parameterType) 
     {
         String[] keys = cfg.getSynonyms(type);
         
@@ -312,7 +308,7 @@ public class Interpreter {
     
     
     
-    // Can be used for color-coding Ð Validate keywords:
+    // Can be used for color-coding ??? Validate keywords:
     
     public ParameterType interpretParameter(String parameterString) {
         if (!parameterKeywords.containsKey(parameterString)) {

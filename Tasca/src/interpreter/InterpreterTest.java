@@ -1,4 +1,4 @@
-package nlp;
+package interpreter;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -37,7 +37,7 @@ public class InterpreterTest {
 	 * 	<Main Command> description -<parameter1> parameter1 arguments -<parameter2> parameter2 arguments.... 
 	 */
 	
-	// USAGE ––– INPUT
+	// USAGE ????????? INPUT
 	Interpreter newInt = new Interpreter();
 	
 	try {

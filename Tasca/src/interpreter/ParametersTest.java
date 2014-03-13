@@ -1,4 +1,4 @@
-package nlp;
+package interpreter;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -22,7 +22,7 @@ public class ParametersTest {
 	assertEquals("Date interpretation: Day after tomorrow", "08/03/2014", setAndGetDate("tomorrow +1 day"));
 	assertEquals("Date interpretation: 50 days after tomorrow", "26/04/2014", setAndGetDate("tomorrow +50 day"));
 	
-	/* Failed to parse: dates Ð Add more 
+	/* Failed to parse: dates ? Add more 
 	assertEquals("Date & Time interpretation: Short 'tomorrow'", "05/03/2014", setAndGetDate("tomr"));
 	*/
 	

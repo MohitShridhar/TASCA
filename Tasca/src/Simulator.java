@@ -1,7 +1,7 @@
 import controller.*;
 
 
-public class main {
+public class Simulator {
 	public static void main (String[] args) {
 		boolean quit = false ;
 		Controller controller = new Controller();
