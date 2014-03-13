@@ -1,9 +1,9 @@
-import controller.*;
+import controller.Controller;
 
 
 public class Simulator {
 	public static void main (String[] args) {
-		boolean quit = false ;
+		boolean quit = false;
 		Controller controller = new Controller();
 		
 		String MESSAGE_WELCOME_V0_1 =  "Welcome to Tasca V0.1!\n";

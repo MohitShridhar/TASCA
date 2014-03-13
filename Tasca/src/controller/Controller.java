@@ -3,9 +3,9 @@ package controller;
 import interpreter.*;
 
 import java.io.FileNotFoundException;
-import java.util.Calendar;
-
-import com.clutch.dates.StringToTime;
+//import java.util.Calendar;
+//
+//import com.clutch.dates.StringToTime;
 
 
 import java.util.*;
@@ -85,18 +85,18 @@ public class Controller {
 				if (command.getParameters().getRemindTime() != null) {
 					Logic.addTask(Integer.parseInt(command.getParameters()
 							.getPriority()), command.getParameters()
-							.getStartTime().getCal().getTime(), command
-							.getParameters().getEndTime().getCal().getTime(),
+							.getStartTime().getTime(), command
+							.getParameters().getEndTime().getTime(),
 							isThereReminder, false, false, command
 									.getParameters().getDescription(), command
 									.getParameters().getLocation(), command
-									.getParameters().getRemindTime().getCal()
+									.getParameters().getRemindTime()
 									.getTime());
 				} else {
 					Logic.addTask(Integer.parseInt(command.getParameters()
 							.getPriority()), command.getParameters()
-							.getStartTime().getCal().getTime(), command
-							.getParameters().getEndTime().getCal().getTime(),
+							.getStartTime().getTime(), command
+							.getParameters().getEndTime().getTime(),
 							isThereReminder, false, false, command
 									.getParameters().getDescription(), command
 									.getParameters().getLocation(), null);
@@ -123,17 +123,17 @@ public class Controller {
 			Logic.updateTask(
 					Integer.parseInt(command.getParameters().getTaskId()),
 					Integer.parseInt(command.getParameters().getPriority()),
-					command.getParameters().getStartTime().getCal().getTime(),
-					command.getParameters().getEndTime().getCal().getTime(),
+					command.getParameters().getStartTime().getTime(),
+					command.getParameters().getEndTime().getTime(),
 					isThereReminder, command.getParameters().getDescription(),
 					command.getParameters().getLocation(), command
-							.getParameters().getRemindTime().getCal().getTime());
+							.getParameters().getRemindTime().getTime());
 			} catch (Exception e){
 				Logic.updateTask(
 						Integer.parseInt(command.getParameters().getTaskId()),
 						Integer.parseInt(command.getParameters().getPriority()),
-						command.getParameters().getStartTime().getCal().getTime(),
-						command.getParameters().getEndTime().getCal().getTime(),
+						command.getParameters().getStartTime().getTime(),
+						command.getParameters().getEndTime().getTime(),
 						isThereReminder, command.getParameters().getDescription(),
 						command.getParameters().getLocation(), null);
 			}
@@ -158,8 +158,8 @@ public class Controller {
 
 		case "DISPLAY_WEEK":
 			Logic.displayTasksAtPeriod(command.getParameters().getStartTime()
-					.getCal().getTime(), command.getParameters().getEndTime()
-					.getCal().getTime());
+					.getTime(), command.getParameters().getEndTime()
+					.getTime());
 			break;
 
 		case "DISPLAY_ALL":
@@ -167,8 +167,8 @@ public class Controller {
 			break;
 
 		case "DISPLAY_IN_TIME":
-			Logic.displayTasksAtPeriod(command.getParameters().getStartTime(),
-					command.getParameters().getEndTime());
+			Logic.displayTasksAtPeriod(command.getParameters().getStartTime().getTime(),
+					command.getParameters().getEndTime().getTime());
 			break;
 
 		case "QUIT":

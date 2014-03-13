@@ -1,13 +1,15 @@
 package interpreter;
-import com.clutch.dates.StringToTime;
-import com.clutch.dates.StringToTimeException;
 
-// import com.clutch.dates.* //<<If needed>>
+import com.joestelmach.natty.*;
 
-import com.clutch.dates.StringToTime;
-import com.clutch.dates.StringToTimeException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
-// import com.clutch.dates.* //<<If needed>>
+
+// OLD Time NLP
+// import com.clutch.dates.* //<<If needed>> 
+
 
 /**
  * Class for storing/accessing different parameters of a command (like add, modify, due)
@@ -16,6 +18,8 @@ import com.clutch.dates.StringToTimeException;
 
 public class Parameters {
     
+    private static final int FIRST_DATE = 0;
+    
     private static final int PRIORITY_HIGH = 1;
     private static final int PRIORITY_MEDIUM = 2;
     private static final int PRIORITY_LOW = 3;
@@ -23,44 +27,65 @@ public class Parameters {
     
     private String description, location, folder;
     private Integer priority, taskId;
-    private StringToTime startTime, endTime, remindTime;
+    private Calendar startTime, endTime, remindTime, recurEndTime;
     
-    
+    Parser parser;    
 
     public Parameters() {
-        // Initialize all parameters to null    
+        // Initialize all parameters to null
+	
+	parser = new Parser(); 
+    }
+    
+    public static Calendar dateToCal(Date date){ 
+	  Calendar cal = Calendar.getInstance();
+	  
+	  if (date == null) {
+	      return null;
+	  }
+	  
+	  cal.setTime(date);
+	  return cal;
     }
   
     //Mutators:
     public CommandFeedback setStartTime (String rawInput) {
-        try {
-            startTime = new StringToTime(rawInput);
-        } catch (StringToTimeException e) {
-            //System.err.println("Error: " + e);
-            return CommandFeedback.INVALID_START_TIME;
-        }
+	List<DateGroup> groups = parser.parse(rawInput);
+	
+	if (groups.isEmpty()) {
+	    return CommandFeedback.INVALID_START_TIME;
+	} 
+	
+	startTime = dateToCal(groups.get(FIRST_DATE).getDates().get(FIRST_DATE));
         
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
     public CommandFeedback setEndTime (String rawInput) {
-        try {
-            endTime = new StringToTime(rawInput);
-        } catch (StringToTimeException e) {
-            //System.err.println("Error: " + e);
-            return CommandFeedback.INVALID_END_TIME;
-        }
+	List<DateGroup> groups = parser.parse(rawInput);
+	
+	if (groups.isEmpty()) {
+	    return CommandFeedback.INVALID_END_TIME;
+	} 
+	
+	endTime = dateToCal(groups.get(FIRST_DATE).getDates().get(FIRST_DATE));
         
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
     public CommandFeedback setRemindTime (String rawInput) {
-        try {
-            remindTime = new StringToTime(rawInput);
-        } catch (StringToTimeException e) {
-            //System.err.println("Error: " + e);
-            return CommandFeedback.INVALID_REMIND_TIME;
-        }
+	List<DateGroup> groups = parser.parse(rawInput);
+	
+	if (groups.isEmpty()) {
+	    return CommandFeedback.INVALID_REMIND_TIME;
+	} 
+	
+	remindTime = dateToCal(groups.get(FIRST_DATE).getDates().get(FIRST_DATE));
+	
+	
+	if (groups.get(FIRST_DATE).isRecurring()) {
+	    recurEndTime = dateToCal(groups.get(FIRST_DATE).getRecursUntil());
+	}
         
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
@@ -114,16 +139,21 @@ public class Parameters {
     
     // Accessors:
     
-    public StringToTime getStartTime() {
+    public Calendar getStartTime() {
         return startTime;
     }
     
-    public StringToTime getEndTime() {
+    public Calendar getEndTime() {
         return endTime;
     }
     
-    public StringToTime getRemindTime() {
+    public Calendar getRemindTime() {
         return remindTime;
+    }
+    
+    // only for reminders:
+    public Calendar getRecurEndTime() {
+	return recurEndTime;
     }
     
     public String getDescription() {
