@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
-import com.clutch.dates.StringToTime;
+
 import java.util.Calendar;
 
 import com.joestelmach.natty.*;
