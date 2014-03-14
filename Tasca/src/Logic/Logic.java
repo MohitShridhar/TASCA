@@ -63,7 +63,7 @@ public class Logic {
 			}
 
 
-			Task task = new Task(priority, TaskId, taskStart, taskEnd,
+			Task task = new Task(TaskId, priority, taskStart, taskEnd,
 					isThereReminder, isTaskDone, isAllDayEvent, title, remarks);
 
 			_storage.addTask(count, task);
