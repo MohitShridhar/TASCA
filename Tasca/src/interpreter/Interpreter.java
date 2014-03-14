@@ -65,6 +65,8 @@ public class Interpreter {
         commandHeaders.put("redo", CommandType.REDO);
         commandHeaders.put("displayAll", CommandType.DISPLAY_ALL);
         commandHeaders.put("display", CommandType.DISPLAY_IN_TIME);
+        commandHeaders.put("export", CommandType.EXPORT);
+        commandHeaders.put("import", CommandType.IMPORT);
         commandHeaders.put("quit", CommandType.QUIT);
         
         // Parameter Commands:

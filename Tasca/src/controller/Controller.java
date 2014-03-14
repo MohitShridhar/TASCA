@@ -82,7 +82,8 @@ public class Controller {
 
 		case "ADD":
 			try {
-				if (command.getParameters().getRemindTime() != null) {
+				if (command.getParameters().getRemindTime() != null) {    
+				    	
 					Logic.addTask(Integer.parseInt(command.getParameters()
 							.getPriority()), command.getParameters()
 							.getStartTime().getTime(), command
@@ -214,7 +215,13 @@ public class Controller {
 			}
 
 			break;
-
+			
+		case "EXPORT":
+		    String savePath = command.getParameters().getDescription();
+		    Logic.export(savePath);
+		    System.out.println("All events were successfully exported to " + savePath);
+		    
+		    break;
 		default:
 			System.out.printf("%s\n", MESSAGE_INVALID_COMMAND);
 			break;

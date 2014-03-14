@@ -12,6 +12,8 @@ public class Reminder {
 		return;
 	}
 	
+	// Note: The export to ics feature is designed to output only one reminder per task.
+	// if recurring reminders are implemented, then notify MOHIT
 	public Calendar getReminderTime () {
 		return reminderTime;
 	}

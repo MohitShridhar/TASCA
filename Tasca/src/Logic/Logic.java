@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import storage.*;
+import exporter.Exporter;
 
 public class Logic {
 
@@ -296,7 +297,11 @@ public class Logic {
 			}
 		}
 	}
-
+	
+	public static void export(String savePath) {
+	    new Exporter(savePath);
+	}
+	
 	public static void displayTasksAtDate(Date dateSpecified) {
 		Calendar endDate = Calendar.getInstance();
 		endDate.setTime(dateSpecified);

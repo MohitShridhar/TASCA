@@ -10,6 +10,8 @@ public enum CommandType {
     
     QUIT, CLEAR, UNDO, REDO,
     
+    EXPORT, IMPORT,
+    
     INVALID
     
 }

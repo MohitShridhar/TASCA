@@ -66,7 +66,7 @@ public class AllTasks {
             
             out2 = new FileOutputStream("system_saved_reminders.txt");
             prt2 = new PrintStream(out2);
-            while (counter < allTasks.size()){
+            while (isValidTaskId(counter)){
             	prt.printf("%d %d %d %d %d %d %d %d %d %d %d %d %b %b %b %s", counter, allTasks.get(counter).getPriority(), allTasks.get(counter).getStartTime().get(Calendar.YEAR),
             			allTasks.get(counter).getStartTime().get(Calendar.MONTH), allTasks.get(counter).getStartTime().get(Calendar.DAY_OF_MONTH), allTasks.get(counter).getStartTime().get(Calendar.HOUR_OF_DAY),
             			allTasks.get(counter).getStartTime().get(Calendar.MINUTE), allTasks.get(counter).getEndTime().get(Calendar.YEAR),allTasks.get(counter).getEndTime().get(Calendar.MONTH),
@@ -181,11 +181,15 @@ public class AllTasks {
 	}
 	
 	private void updateTaskID (int index) {
-		while (index < allTasks.size()) {
+		while (isValidTaskId(index)) {
 			allTasks.get(index).setTaskID(index);
 			index = index + 1;
 		}
 		return;
+	}
+
+	public boolean isValidTaskId(int index) {
+	    return index < allTasks.size();
 	}
 	
 	private void setCurrentTime() {
@@ -199,7 +203,7 @@ public class AllTasks {
 		boolean check=true;
 		
 		setCurrentTime();
-		while (counter < allTasks.size() && check) {
+		while (isValidTaskId(counter) && check) {
 			if (currentTime.get(Calendar.YEAR) <= allTasks.get(counter).getStartTime().get(Calendar.YEAR)) {
 				check = false;
 				counter = counter - 1;
@@ -208,7 +212,7 @@ public class AllTasks {
 		}
 		
 		check = true;
-		while (counter < allTasks.size() && check) {
+		while (isValidTaskId(counter) && check) {
 			if (currentTime.get(Calendar.MONTH) <= allTasks.get(counter).getStartTime().get(Calendar.MONTH)) {
 				check = false;
 				counter = counter - 1;
@@ -217,7 +221,7 @@ public class AllTasks {
 		}
 		
 		check = true;
-		while (counter < allTasks.size() && check) {
+		while (isValidTaskId(counter) && check) {
 			if (currentTime.get(Calendar.DAY_OF_MONTH) <= allTasks.get(counter).getStartTime().get(Calendar.DAY_OF_MONTH)) {
 				check = false;
 				counter = counter - 1;
@@ -226,7 +230,7 @@ public class AllTasks {
 		}
 		
 		check = true;
-		while (counter < allTasks.size() && check) {
+		while (isValidTaskId(counter) && check) {
 			if (currentTime.get(Calendar.HOUR_OF_DAY) <= allTasks.get(counter).getStartTime().get(Calendar.HOUR_OF_DAY)) {
 				check = false;
 				counter = counter - 1;
@@ -235,7 +239,7 @@ public class AllTasks {
 		}
 		
 		check = true;
-		while (counter < allTasks.size() && check) {
+		while (isValidTaskId(counter) && check) {
 			if (currentTime.get(Calendar.MINUTE) <= allTasks.get(counter).getStartTime().get(Calendar.MINUTE)) {
 				check = false;
 				counter = counter - 1;
@@ -266,7 +270,7 @@ public class AllTasks {
 		}
 		
 		check = true;
-		while (counter < allTasks.size() && check) {
+		while (isValidTaskId(counter) && check) {
 			if (currentTime.get(Calendar.MONTH) == allReminders.get(counter).getReminderTime().get(Calendar.MONTH)) {
 				check = false;
 				counter = counter - 1;
@@ -275,7 +279,7 @@ public class AllTasks {
 		}
 		
 		check = true;
-		while (counter < allTasks.size() && check) {
+		while (isValidTaskId(counter) && check) {
 			if (currentTime.get(Calendar.DAY_OF_MONTH) == allReminders.get(counter).getReminderTime().get(Calendar.DAY_OF_MONTH)) {
 				check = false;
 				counter = counter - 1;
@@ -284,7 +288,7 @@ public class AllTasks {
 		}
 		
 		check = true;
-		while (counter < allTasks.size() && check) {
+		while (isValidTaskId(counter) && check) {
 			if (currentTime.get(Calendar.HOUR_OF_DAY) == allReminders.get(counter).getReminderTime().get(Calendar.HOUR_OF_DAY)) {
 				check = false;
 				counter = counter - 1;
@@ -293,7 +297,7 @@ public class AllTasks {
 		}
 		
 		check = true;
-		while (counter < allTasks.size() && check) {
+		while (isValidTaskId(counter) && check) {
 			if (currentTime.get(Calendar.MINUTE) == allReminders.get(counter).getReminderTime().get(Calendar.MINUTE)) {
 				check = false;
 				counter = counter - 1;

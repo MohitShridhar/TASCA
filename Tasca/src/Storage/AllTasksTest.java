@@ -13,6 +13,8 @@ public class AllTasksTest {
 	@Test
 	public void test() {
 		AllTasks allTasks = new AllTasks();
+		
+		// What is x?
 		int x=0;
 		
 		Task task1 = new Task(0,1,Calendar.getInstance(), Calendar.getInstance(), false ,false, false,"go home", "buy eggs");

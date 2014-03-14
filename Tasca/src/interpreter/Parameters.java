@@ -1,10 +1,11 @@
 package interpreter;
 
-import com.joestelmach.natty.*;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+import com.joestelmach.natty.DateGroup;
+import com.joestelmach.natty.Parser;
 
 
 // OLD Time NLP
@@ -129,7 +130,6 @@ public class Parameters {
     }
     
     public CommandFeedback setTaskId(int id) {
-        // MUST INTEGRATE VALID CHECKER LATER!!!
         
         this.taskId = id;
         
