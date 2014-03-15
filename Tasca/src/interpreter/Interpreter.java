@@ -311,7 +311,7 @@ public class Interpreter {
     
     
     
-    // Can be used for color-coding ??? Validate keywords:
+    // Can be used for Validating keywords (for color coding):
     
     public ParameterType interpretParameter(String parameterString) {
         if (!parameterKeywords.containsKey(parameterString)) {
