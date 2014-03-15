@@ -21,9 +21,9 @@ import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Version;
 import net.fortuna.ical4j.util.UidGenerator;
 
-import storage.AllTasks;
-import storage.Reminder;
-import storage.Task;
+import torage.AllTasks;
+import torage.Reminder;
+import torage.Task;
 
 public class Exporter {
     private static final String EXPORT_FILE_NAME = "TASCA_Export.ics";

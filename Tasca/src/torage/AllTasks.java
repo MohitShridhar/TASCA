@@ -1,4 +1,4 @@
-package storage;
+package torage;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

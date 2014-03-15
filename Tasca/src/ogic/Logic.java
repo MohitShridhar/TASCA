@@ -1,4 +1,4 @@
-package logic;
+package ogic;
 
 
 import ics.Exporter;
@@ -7,7 +7,7 @@ import ics.Importer;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import storage.*;
+import torage.*;
 
 public class Logic {
 

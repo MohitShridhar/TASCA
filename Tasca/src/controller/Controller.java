@@ -10,11 +10,12 @@ import java.io.FileNotFoundException;
 
 import java.util.*;
 
-import storage.AllTasks;
-import storage.UndoRedo;
-import storage.UndoRedoNode;
+import ogic.Logic;
 
-import logic.Logic;
+import torage.AllTasks;
+import torage.UndoRedo;
+import torage.UndoRedoNode;
+
 
 
 public class Controller {
