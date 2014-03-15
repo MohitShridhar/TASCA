@@ -1,4 +1,4 @@
-package ics;
+package io;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -21,9 +21,9 @@ import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Version;
 import net.fortuna.ical4j.util.UidGenerator;
 
-import torage.AllTasks;
-import torage.Reminder;
-import torage.Task;
+import storage.AllTasks;
+import storage.Reminder;
+import storage.Task;
 
 public class Exporter {
     private static final String EXPORT_FILE_NAME = "TASCA_Export.ics";
