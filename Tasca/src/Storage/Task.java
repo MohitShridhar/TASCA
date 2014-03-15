@@ -11,6 +11,8 @@ public class Task {
 	private String taskTitle;
 	private String location;
 	
+	// Note for NARIN: The convention used for NLP: if a parameter is not specified then it's NULL. 
+	
 	public Task (int taskID, int priority, Calendar startTime, Calendar endTime, boolean isThereReminder, boolean isTaskDone, 
 			boolean isAllDayEvent, String taskTitle, String remarks) {
 		this.taskID = taskID;

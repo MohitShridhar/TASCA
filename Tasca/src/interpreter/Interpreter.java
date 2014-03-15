@@ -58,6 +58,7 @@ public class Interpreter {
         commandHeaders.put("modify", CommandType.MODIFY);
         commandHeaders.put("mark", CommandType.MARK);
         commandHeaders.put("search", CommandType.SEARCH);
+        commandHeaders.put("now", CommandType.DISPLAY_NOW);
         commandHeaders.put("today", CommandType.DISPLAY_TODAY);
         commandHeaders.put("tomorrow", CommandType.DISPLAY_TOMORROW);
         commandHeaders.put("week", CommandType.DISPLAY_WEEK);

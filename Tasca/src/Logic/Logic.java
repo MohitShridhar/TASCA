@@ -1,11 +1,13 @@
 package logic;
 
 
+import ics.Exporter;
+import ics.Importer;
+
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import storage.*;
-import exporter.Exporter;
 
 public class Logic {
 
@@ -299,7 +301,11 @@ public class Logic {
 	}
 	
 	public static void export(String savePath) {
-	    new Exporter(savePath);
+	    new Exporter(savePath); // TODO: implement singleton
+	}
+	
+	public static void importFile(String filePath) {
+	    new Importer().importIcs(filePath); //TODO: implement singleton + be consistent with exporter
 	}
 	
 	public static void displayTasksAtDate(Date dateSpecified) {

@@ -1,4 +1,4 @@
-package exporter;
+package ics;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -27,9 +27,11 @@ import storage.Task;
 
 public class Exporter {
     private static final String EXPORT_FILE_NAME = "TASCA_Export.ics";
+    private static final String ERROR_ALL_FLOATING_TASKS = ".ics files are not used for storing ONLY floating tasks";
+    
     private static final int EMPTY_PRIORITY_REF = 0;
     private static final int INVALID_PRIORITY_REF = -1;
-    private static final String ERROR_ALL_FLOATING_TASKS = ".ics files are not used for storing ONLY floating tasks";
+    
     private static final int PRIORITY_HIGH = 1;
     private static final int PRIORITY_MEDIUM = 2;
     private static final int PRIORITY_LOW = 3;
@@ -38,27 +40,23 @@ public class Exporter {
 	exportToIcs(savePath);
     }
     
-    private static VEvent extractCalEventAllDay(java.util.Calendar startTime, String description) {
+    private static VEvent extractCalEvent(java.util.Calendar startTime, String description) {
 	// initialise as an all-day event..
-	VEvent newEvent = new VEvent(new Date(startTime.getTime()), description);
+	VEvent newEvent = new VEvent(new DateTime(startTime.getTime()), description);
 
-	// Generate a UID for the event..
-	UidGenerator ug = null;
-	try {
-	    ug = new UidGenerator("1");
-	} catch (SocketException e1) {
-	    // TODO Auto-generated catch block
-	    e1.printStackTrace();
-	}
-	newEvent.getProperties().add(ug.generateUid());
+	generateUid(newEvent);
 	return newEvent;
     }
     
     private static VEvent extractCalEvent(java.util.Calendar startTime, java.util.Calendar endTime, String description) {
 	// initialise non-all-day event
-	VEvent newEvent = new VEvent(new Date(startTime.getTime()), new Date(endTime.getTime()), description);
+	VEvent newEvent = new VEvent(new DateTime(startTime.getTime()), new DateTime(endTime.getTime()), description);
 
-	// Generate a UID for the event..
+	generateUid(newEvent);
+	return newEvent;
+    }
+    
+    public static void generateUid(VEvent newEvent) {
 	UidGenerator ug = null;
 	try {
 	    ug = new UidGenerator("1");
@@ -67,7 +65,6 @@ public class Exporter {
 	    e1.printStackTrace();
 	}
 	newEvent.getProperties().add(ug.generateUid());
-	return newEvent;
     }
     
     private static VEvent addOtherProperties(VEvent newEvent, Task newTask, AllTasks allTasks)
@@ -91,7 +88,7 @@ public class Exporter {
 	if (newTask.getIsThereReminder()) {
 	    Reminder reminderTime = allTasks.getReminder(allTasks.searchForCorrespondingReminder(newTask));
 	    
-	    // Reminder properties: CURRENTLY HANDLES ONLY 1 REMINDER. Waiting for recurring reminders
+	    // Reminder properties: CURRENTLY HANDLES ONLY 1 REMINDER. Waiting for recurring reminders support
 	    VAlarm reminder = new VAlarm(new DateTime(reminderTime.getReminderTime().getTime()));
 	    reminder.getProperties().add(Action.DISPLAY);
 	    reminder.getProperties().add(new Description(newTask.getTaskTitle()));
@@ -116,24 +113,7 @@ public class Exporter {
 	
 	int timedTaskCounter = 0;
 	
-	for (int i=0; i<allTasks.getSize(); i++) {
-	    Task newTask = allTasks.getTask(i);
-	    VEvent newEvent;
-	    
-	    if (newTask.getStartTime() != null && newTask.getEndTime() != null) { // Check if it's a floating task
-		if (newTask.getIsAllDayEvent()) {
-		    newEvent = extractCalEventAllDay(newTask.getStartTime(), newTask.getTaskTitle());
-		}
-
-		newEvent = extractCalEvent(newTask.getStartTime(), newTask.getEndTime(), newTask.getTaskTitle());
-		
-		newEvent = addOtherProperties(newEvent, newTask, allTasks);
-		
-		timedTaskCounter++;
-		exportCal.getComponents().add(newEvent);	  
-	    }
-	      
-	}
+	timedTaskCounter = calToEvent(exportCal, allTasks, timedTaskCounter);
 	
 	if (timedTaskCounter == 0) {
 	    throw new InvalidParameterException(ERROR_ALL_FLOATING_TASKS);
@@ -164,12 +144,35 @@ public class Exporter {
 	}
     }
 
+    public static int calToEvent(net.fortuna.ical4j.model.Calendar exportCal,
+	    AllTasks allTasks, int timedTaskCounter) {
+	for (int i=0; i<allTasks.getSize(); i++) {
+	    Task newTask = allTasks.getTask(i);
+	    VEvent newEvent;
+	    
+	    if (newTask.getStartTime() != null && newTask.getEndTime() != null) { // Check if it's a floating task
+		if (newTask.getIsAllDayEvent()) {
+		    newEvent = extractCalEvent(newTask.getStartTime(), newTask.getTaskTitle());
+		}
+
+		newEvent = extractCalEvent(newTask.getStartTime(), newTask.getEndTime(), newTask.getTaskTitle());
+		
+		newEvent = addOtherProperties(newEvent, newTask, allTasks);
+		
+		timedTaskCounter++;
+		exportCal.getComponents().add(newEvent);	  
+	    }
+	      
+	}
+	return timedTaskCounter;
+    }
+
     private static net.fortuna.ical4j.model.Calendar initializeCalExporter() {
-	net.fortuna.ical4j.model.Calendar cal1 = new net.fortuna.ical4j.model.Calendar();
-	cal1.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
-	cal1.getProperties().add(Version.VERSION_2_0);
-	cal1.getProperties().add(CalScale.GREGORIAN);
-	return cal1;
+	net.fortuna.ical4j.model.Calendar ical4j = new net.fortuna.ical4j.model.Calendar();
+	ical4j.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+	ical4j.getProperties().add(Version.VERSION_2_0);
+	ical4j.getProperties().add(CalScale.GREGORIAN);
+	return ical4j;
     }
     
 }

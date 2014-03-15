@@ -18,8 +18,12 @@ import logic.Logic;
 
 
 public class Controller {
+	private static final String MESSAGE_EXPORT_SUCCESSFUL = "All events were successfully exported to ";
+	private static final String MESSAGE_IMPORT_SUCCESSFUL = "All events were successfully imported from ";
+	
 	private String MESSAGE_FILE_NOT_FOUND = "The system files could not be loaded.";
 	private String MESSAGE_INVALID_COMMAND = "The command given was invalid.";
+	
 
 	private AllTasks allTasks;
 	private UndoRedo undoRedo = new UndoRedo();
@@ -219,9 +223,15 @@ public class Controller {
 		case "EXPORT":
 		    String savePath = command.getParameters().getDescription();
 		    Logic.export(savePath);
-		    System.out.println("All events were successfully exported to " + savePath);
-		    
+		    System.out.println(MESSAGE_EXPORT_SUCCESSFUL + savePath);
 		    break;
+		    
+		case "IMPORT":
+		    String filePath = command.getParameters().getDescription();
+		    Logic.importFile(filePath);
+		    System.out.println(MESSAGE_IMPORT_SUCCESSFUL + filePath);
+		    break;
+		    
 		default:
 			System.out.printf("%s\n", MESSAGE_INVALID_COMMAND);
 			break;
