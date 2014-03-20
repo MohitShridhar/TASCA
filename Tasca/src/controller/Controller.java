@@ -2,38 +2,43 @@ package controller;
 
 import interpreter.*;
 
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.io.FileNotFoundException;
-//import java.util.Calendar;
-//
-//import com.clutch.dates.StringToTime;
-
-
+import java.util.logging.Level;
 import java.util.*;
 
 import logic.Logic;
-
-
 import storage.AllTasks;
 import storage.UndoRedo;
-import storage.UndoRedoNode;
-
-
 
 public class Controller {
 	private static final String MESSAGE_EXPORT_SUCCESSFUL = "All events were successfully exported to ";
 	private static final String MESSAGE_IMPORT_SUCCESSFUL = "All events were successfully imported from ";
-	
+
 	private String MESSAGE_FILE_NOT_FOUND = "The system files could not be loaded.";
 	private String MESSAGE_INVALID_COMMAND = "The command given was invalid.";
-	
 
 	private AllTasks allTasks;
-	private UndoRedo undoRedo = new UndoRedo();
+	private UndoRedo undoRedo = UndoRedo.getInstance();
 	private Scanner myScanner = new Scanner(System.in);
+
+	private Handler handler;
+	private Logger logger = Logger.getLogger("Controller");
 
 	public Controller() {
 		initialiseTasks();
-		Logic.initStorage(allTasks, undoRedo);
+		Logic.initStorage(allTasks);
+		try {
+			handler = new FileHandler("log.txt");
+		} catch (Exception e) {
+
+		}
+		SimpleFormatter formatter = new SimpleFormatter();
+		handler.setFormatter(formatter);
+		logger.addHandler(handler);
 		return;
 	}
 
@@ -55,6 +60,9 @@ public class Controller {
 		try {
 			newInt.processUserInput(input);
 			Command command = newInt.getCommandAndPara();
+			assert (command.getCommandType() != null);
+			logger.log(Level.SEVERE, "Entering executeLogic",
+					command.getCommandType());
 			return executeLogic(command);
 		} catch (IllegalArgumentException eI) {
 			System.out.println("Exception - " + eI + "\n");
@@ -74,76 +82,34 @@ public class Controller {
 
 	private boolean executeLogic(Command command) {
 		boolean isThereReminder = true, quit = false;
+		Calendar startTime = Calendar.getInstance();
 
-		try {
-
-			if (command.getParameters().getRemindTime() == null) {
+		if (!command.getCommandType().name().equals("MODIFY")) {
+			isThereReminder = checkForNulls(command, isThereReminder, startTime);
+		} else {
+			startTime =null;
+			if (command.getParameters().getRemindTime() == null){
 				isThereReminder = false;
 			}
-		} catch (NullPointerException e) {
-			isThereReminder = false;
 		}
+		
+			
 
 		switch (command.getCommandType().name()) {
 
 		case "ADD":
-			try {
-				if (command.getParameters().getRemindTime() != null) {    
-				    	
-					Logic.addTask(Integer.parseInt(command.getParameters()
-							.getPriority()), command.getParameters()
-							.getStartTime().getTime(), command
-							.getParameters().getEndTime().getTime(),
-							isThereReminder, false, false, command
-									.getParameters().getDescription(), command
-									.getParameters().getLocation(), command
-									.getParameters().getRemindTime()
-									.getTime());
-				} else {
-					Logic.addTask(Integer.parseInt(command.getParameters()
-							.getPriority()), command.getParameters()
-							.getStartTime().getTime(), command
-							.getParameters().getEndTime().getTime(),
-							isThereReminder, false, false, command
-									.getParameters().getDescription(), command
-									.getParameters().getLocation(), null);
-				}
-			} catch (NullPointerException e) {
-				System.out.println("Exception - " + e + "\n");
-			}
+			undoRedo.addUndo(allTasks);
+			execute_add(command, isThereReminder, startTime);
 			break;
 
 		case "DELETE":
-			try {
-				if (command.getParameters().getTaskId() != null) {
-					Logic.deleteTask(Integer.parseInt(command.getParameters()
-							.getTaskId()));
-				}
-			} catch (Exception e) {
-				Logic.deleteSearch(command.getParameters().getDescription(),
-						myScanner);
-			}
+			undoRedo.addUndo(allTasks);
+			execute_delete(command);
 			break;
 
 		case "MODIFY":
-			try{
-			Logic.updateTask(
-					Integer.parseInt(command.getParameters().getTaskId()),
-					Integer.parseInt(command.getParameters().getPriority()),
-					command.getParameters().getStartTime().getTime(),
-					command.getParameters().getEndTime().getTime(),
-					isThereReminder, command.getParameters().getDescription(),
-					command.getParameters().getLocation(), command
-							.getParameters().getRemindTime().getTime());
-			} catch (Exception e){
-				Logic.updateTask(
-						Integer.parseInt(command.getParameters().getTaskId()),
-						Integer.parseInt(command.getParameters().getPriority()),
-						command.getParameters().getStartTime().getTime(),
-						command.getParameters().getEndTime().getTime(),
-						isThereReminder, command.getParameters().getDescription(),
-						command.getParameters().getLocation(), null);
-			}
+			undoRedo.addUndo(allTasks);
+			execute_modify(command, isThereReminder, startTime);
 			break;
 
 		case "DISPLAY_TODAY":
@@ -151,6 +117,7 @@ public class Controller {
 			break;
 
 		case "MARK":
+			undoRedo.addUndo(allTasks);
 			Logic.taskIsDone(Integer.parseInt(command.getParameters()
 					.getTaskId()));
 			break;
@@ -165,8 +132,7 @@ public class Controller {
 
 		case "DISPLAY_WEEK":
 			Logic.displayTasksAtPeriod(command.getParameters().getStartTime()
-					.getTime(), command.getParameters().getEndTime()
-					.getTime());
+					.getTime(), command.getParameters().getEndTime().getTime());
 			break;
 
 		case "DISPLAY_ALL":
@@ -174,8 +140,8 @@ public class Controller {
 			break;
 
 		case "DISPLAY_IN_TIME":
-			Logic.displayTasksAtPeriod(command.getParameters().getStartTime().getTime(),
-					command.getParameters().getEndTime().getTime());
+			Logic.displayTasksAtPeriod(command.getParameters().getStartTime()
+					.getTime(), command.getParameters().getEndTime().getTime());
 			break;
 
 		case "QUIT":
@@ -184,56 +150,43 @@ public class Controller {
 			break;
 
 		case "DELETE_ALL_COMPLETED":
+			undoRedo.addUndo(allTasks);
 			Logic.deleteAlldone();
 			break;
 
 		case "UNDO":
-			UndoRedoNode node = undoRedo.undo();
-			if(node!= null){
-				if (node.getCommand().equals("add")){
-					Logic.deleteTaskUndoRedo(node.getNewTask().getTaskID());
-				} else {
-					if (node.getCommand().equals("delete")){
-						Logic.addTaskUndo(node);
-					}else {
-						Logic.deleteTaskUndoRedo(node.getNewTask()
-								.getTaskID());
-						Logic.addTaskUndo(node);
-					}
-				}
+			if (!undoRedo.isUndoEmpty()) {
+				allTasks = undoRedo.undo(allTasks);
+				Logic.initStorage(allTasks);
 			}
 			break;
 
 		case "REDO":
-			UndoRedoNode node2 = undoRedo.redo();
-			if(node2!= null){
-				if (node2.getCommand().equals("add")){
-					Logic.addTaskRedo(node2);
-				} else {
-					if (node2.getCommand().equals("delete")){
-						Logic.deleteTaskUndoRedo(node2.getOldTask().getTaskID());
-					}else {
-						Logic.deleteTaskUndoRedo(node2.getOldTask()
-								.getTaskID());
-						Logic.addTaskRedo(node2);
-					}
-				}
+			if (!undoRedo.isRedoEmpty()) {
+				allTasks = undoRedo.redo(allTasks);
+				Logic.initStorage(allTasks);
 			}
 
 			break;
-			
+
 		case "EXPORT":
-		    String savePath = command.getParameters().getDescription();
-		    Logic.export(savePath);
-		    System.out.println(MESSAGE_EXPORT_SUCCESSFUL + savePath);
-		    break;
-		    
+			String savePath = command.getParameters().getDescription();
+			Logic.export(savePath);
+			System.out.println(MESSAGE_EXPORT_SUCCESSFUL + savePath);
+			break;
+
 		case "IMPORT":
-		    String filePath = command.getParameters().getDescription();
-		    Logic.importFile(filePath);
-		    System.out.println(MESSAGE_IMPORT_SUCCESSFUL + filePath);
-		    break;
-		    
+			undoRedo.addUndo(allTasks);
+			String filePath = command.getParameters().getDescription();
+			Logic.importFile(filePath);
+			System.out.println(MESSAGE_IMPORT_SUCCESSFUL + filePath);
+			break;
+
+		case "CLEAR":
+			undoRedo.addUndo(allTasks);
+			Logic.clearAll();
+			break;
+
 		default:
 			System.out.printf("%s\n", MESSAGE_INVALID_COMMAND);
 			break;
@@ -241,6 +194,86 @@ public class Controller {
 		}
 
 		return quit;
+	}
+
+
+	private boolean checkForNulls(Command command, boolean isThereReminder,
+			Calendar startTime) {
+		if (command.getParameters().getRemindTime() == null) {
+			isThereReminder = false;
+		}
+		if (command.getParameters().getLocation() == null) {
+			command.getParameters().setLocation("NIL");
+		}
+		if (command.getParameters().getPriority() == "null") {
+			command.setPriority("LOW");
+		}
+		if (command.getParameters().getFolder() == null) {
+			command.setFolder("default");
+		}
+		if (command.getParameters().getStartTime() == null
+				&& command.getParameters().getEndTime() != null) {
+			startTime = Calendar.getInstance();
+		} else { 
+			if(command.getParameters().getStartTime() != null
+				&& command.getParameters().getEndTime() != null){
+				
+			startTime = Calendar.getInstance();
+			startTime.setTime(command.getParameters().getStartTime().getTime());
+			}
+		}
+		return isThereReminder;
+	}
+
+	private void execute_add(Command command, boolean isThereReminder,
+			Calendar startTime) {
+		if (isThereReminder) {
+			
+			Logic.addTask(Integer.parseInt(command.getParameters()
+					.getPriority()), startTime.getTime(), command
+					.getParameters().getEndTime().getTime(), isThereReminder,
+					false, false, command.getParameters().getDescription(),
+					command.getParameters().getLocation(), command
+							.getParameters().getRemindTime().getTime());
+		} else {
+			Logic.addTask(Integer.parseInt(command.getParameters()
+					.getPriority()), startTime.getTime(), command
+					.getParameters().getEndTime().getTime(), isThereReminder,
+					false, false, command.getParameters().getDescription(),
+					command.getParameters().getLocation(), null);
+		}
+	}
+
+	private void execute_modify(Command command, boolean isThereReminder,
+			Calendar startTime) {
+		try {
+			Logic.updateTask(command.getParameters()
+					.getTaskId(), command.getParameters()
+					.getPriority(), startTime, command
+					.getParameters().getEndTime(), isThereReminder,
+					command.getParameters().getDescription(), command
+							.getParameters().getLocation(), command
+							.getParameters().getRemindTime().getTime());
+		} catch (Exception e) {
+			Logic.updateTask(command.getParameters()
+					.getTaskId(), command.getParameters()
+					.getPriority(), startTime, command
+					.getParameters().getEndTime(), isThereReminder,
+					command.getParameters().getDescription(), command
+							.getParameters().getLocation(), null);
+		}
+	}
+
+	private void execute_delete(Command command) {
+		try {
+			if (command.getParameters().getTaskId() != null) {
+				Logic.deleteTask(Integer.parseInt(command.getParameters()
+						.getTaskId()));
+			}
+		} catch (Exception e) {
+			Logic.deleteSearch(command.getParameters().getDescription(),
+					myScanner);
+		}
 	}
 
 }

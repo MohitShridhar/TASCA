@@ -1,39 +1,70 @@
 package storage;
 
+import java.io.FileNotFoundException;
 import java.util.*;
 
 
 public class UndoRedo {
-	private Stack <UndoRedoNode> undo;
-	private Stack <UndoRedoNode> redo;
+	private static UndoRedo instance= null;
+	private static Stack <AllTasks> undo;
+	private static Stack <AllTasks> redo;
 	
-	public UndoRedo () {
-		undo =  new Stack<UndoRedoNode>();
-		redo = new Stack<UndoRedoNode>();
+	private UndoRedo () {
+		instance = this;
+		undo =  new Stack<AllTasks>();
+		redo = new Stack<AllTasks>();
 	}
 	
-	public void addUndo ( Task oldTask, Reminder oldReminder, Task newTask, Reminder newReminder, String command) {
-		UndoRedoNode node = new UndoRedoNode(oldTask, oldReminder, newTask, newReminder,command);
-		undo.push(node);
-		redo = new Stack<UndoRedoNode>();
+	public static UndoRedo getInstance () {
+		if (instance == null){
+			return new UndoRedo();
+		} else {
+			return instance;
+		}
+	}
+	
+	public void addUndo ( AllTasks node) {
+		AllTasks newNode = new AllTasks();
+		try{
+		node.saveData();
+		newNode.loadData();
+		} catch (FileNotFoundException e){
+			
+		}
+		undo.push(newNode);
+		redo = new Stack<AllTasks>();
 		return;
 	}
 	
-	public UndoRedoNode undo (){
+	public AllTasks undo (AllTasks node){
 		if(!undo.empty()){
-		redo.push(undo.pop());
-		return redo.peek();
+		redo.push(node);
+		return undo.pop();
 		} else {
 			return null;
 		}
 	}
 	
-	public UndoRedoNode redo () {
+	public AllTasks redo (AllTasks node) {
 		if(redo.empty()){
 			return null;
 		}else {
-			undo.push(redo.pop());
-			return undo.peek();
+			undo.push(node);
+			return redo.pop();
+		}
+	}
+	public boolean isUndoEmpty () {
+		if (undo.empty()){
+			return true;
+		}else {
+			return false;
+		}
+	}
+	public boolean isRedoEmpty () {
+		if (redo.empty()){
+			return true;
+		}else {
+			return false;
 		}
 	}
 

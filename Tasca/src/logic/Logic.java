@@ -11,8 +11,6 @@ import storage.*;
 
 public class Logic {
 
-	private static final long CONSTANT_MILLISECONDS_IN_A_DAY = 86400000;
-
 	private static String MESSAGE_TASK_NOT_DELETED = "The task indicated cannot be deleted as it does not exist.";
 	private static String MESSAGE_TASK_INDEX_INVALID = "The given task number is invalid.";
 	private static String MESSAGE_TASK_DELETED = "The Task has been successfully deleted.";
@@ -20,13 +18,12 @@ public class Logic {
 	private static String MESSAGE_DELETE_SEARCH = "Do you want to delete all search results? (Y/N) ";
 
 	private static AllTasks _storage;
-	private static UndoRedo _undoRedo;
+
 
 	// private static Scanner sc = new Scanner(System.in);
 
-	public static void initStorage(AllTasks alltasks, UndoRedo undoRedo) {
+	public static void initStorage(AllTasks alltasks) {
 		_storage = alltasks;
-		_undoRedo = undoRedo;
 		return;
 	}
 
@@ -98,83 +95,14 @@ public class Logic {
 
 				_storage.addReminder(count, taskReminder);
 			}
-			_undoRedo.addUndo(null, null, task, taskReminder, "add");
 			System.out.printf("Task Added\n");
 			
 		}
 	}
 	
-	public static void addTaskUndo(UndoRedoNode node) {
-
-		Calendar taskStart = Calendar.getInstance();
-		taskStart.setTime(node.getOldTask().getStartTime().getTime());
-
-		Calendar taskEnd = Calendar.getInstance();
-		taskEnd.setTime(node.getOldTask().getEndTime().getTime());
-
-		Date current = new Date();
-
-		boolean isValidDuration = node.getOldTask().getStartTime().getTime().before(node.getOldTask().getEndTime().getTime());
-		boolean isEventNotEnded = current.before(node.getOldTask().getEndTime().getTime());
-
-		if (isValidDuration && isEventNotEnded) {
-			int totalNumOfTasks = _storage.getSize();
-			int count = 0;
-			// taskStart will have a larger time then the i task, incremental i
-			// task till taskStart smaller.
-			boolean IsTaskNotInCorrectPosition = true;
-			while ((count < totalNumOfTasks) && (IsTaskNotInCorrectPosition)) {
-
-				IsTaskNotInCorrectPosition = taskStart.compareTo(_storage
-						.getTask(count).getStartTime()) > 0;
-				count++;
-			}
-			if (count != 0) { // correct position
-				count--;
-			}
-			if(count == totalNumOfTasks -1){
-				count++;
-			}
-
-			Task task =node.getOldTask();
-			_storage.addTask(count, task);
-			
-			Reminder taskReminder = null;
-
-			if (task.getIsThereReminder()) {
-
-				Calendar reminderTime = Calendar.getInstance();
-				reminderTime.setTime(node.getOldReminder().getReminderTime().getTime());
-
-				taskReminder = new Reminder(reminderTime, task);
-
-				count = 0;
-
-				boolean IsReminderNotInCorrectPosition = true;
-				int totalNumOfReminders = _storage.getReminderSize();
-
-				while ((count < totalNumOfReminders)
-						&& (IsReminderNotInCorrectPosition)) {
-					IsReminderNotInCorrectPosition = reminderTime
-							.compareTo(_storage.getReminder(count)
-									.getReminderTime()) > 0;
-					count++;
-				}
-				if (count != 0) { // correct position
-					count--;
-				}
-
-				_storage.addReminder(count, taskReminder);
-			}
-			
-		}
-	}
 	
-	public static void addTaskRedo (UndoRedoNode node) {
-		UndoRedoNode newNode= new UndoRedoNode(node.getNewTask(), node.getNewReminder(),null,null, node.getCommand());
-		addTaskUndo(newNode);
-		return;
-	}
+	
+	
 	
 	public static void deleteTaskUndoRedo (int index) {
 		int totalNumOfTasks = _storage.getSize();
@@ -196,10 +124,7 @@ public class Logic {
 		if (index < totalNumOfTasks) {
 
 			if (_storage.getTask(index).getIsThereReminder()) {
-				_undoRedo.addUndo(_storage.getTask(index), _storage.getReminder(_storage.searchForCorrespondingReminder(_storage.getTask(index))), null, null,"delete");
 				_storage.deleteReminder(_storage.getTask(index));
-			}else {
-				_undoRedo.addUndo(_storage.getTask(index),null, null, null,"delete");
 			}
 			_storage.deleteTask(index);
 			System.out.printf("%s\n", MESSAGE_TASK_DELETED);
@@ -213,15 +138,7 @@ public class Logic {
 	public static void taskIsDone(int index) {
 		int totalNumOfTasks = _storage.getSize();
 		if (index < totalNumOfTasks) {
-			Task oldTask = _storage.getTask(index);
-			Reminder oldReminder;
-			if(_storage.getTask(index).getIsThereReminder()){
-			oldReminder =  _storage.getReminder(_storage.searchForCorrespondingReminder(_storage.getTask(index)));
-			} else {
-				oldReminder = null;
-			}
 			_storage.getTask(index).setIsTaskDone(true);
-			_undoRedo.addUndo(oldTask, oldReminder, _storage.getTask(index), _storage.getReminder(_storage.searchForCorrespondingReminder(_storage.getTask(index))), "modify");
 			System.out.printf("Task Number %d %s\n", index,
 					MESSAGE_TASK_IS_DONE);
 		} else {
@@ -257,7 +174,7 @@ public class Logic {
 						+ display.format(_storage.getReminder(indexOfReminder)
 								.getReminderTime().getTime()));
 			} catch (Exception e2) {
-				System.out.println("reminder: none");
+				System.out.println("reminder: nil");
 			}
 			System.out.printf("Is Task Done: ");
 			System.out.println((task.getIsTaskDone()) ? "YES" : "NO");
@@ -382,13 +299,33 @@ public class Logic {
 		}
 	}
 
-	public static void updateTask(int index, int priority, Date start,
-			Date end, boolean isThereReminder, String title, String location,
+	public static void updateTask(String indexString, String priority, Calendar start,
+			Calendar end, boolean isThereReminder, String title, String location,
 			Date reminder) {
+		int priorityInt, index = Integer.parseInt(indexString);
 		boolean isTaskDone = _storage.getTask(index).getIsTaskDone(), isAllDayEvent = _storage
 				.getTask(index).getIsAllDayEvent();
+		if (priority == "null"){
+			priorityInt = _storage.getTask(index).getPriority();
+		}else {
+			priorityInt = _storage.getTask(index).getPriority();
+		}
+		if (start == null){
+			start = Calendar.getInstance();
+			start.setTime( _storage.getTask(index).getStartTime().getTime());
+		}
+		if(end == null) {
+			end = Calendar.getInstance();
+			end.setTime(_storage.getTask(index).getEndTime().getTime());
+		}
+		if (title == null){
+			title =  _storage.getTask(index).getTaskTitle();
+		}
+		if (location == null) {
+			location =  _storage.getTask(index).getLocation();
+		}
 		deleteTask(index);
-		addTask(priority, start, end, isThereReminder, isTaskDone,
+		addTask(priorityInt, start.getTime(), end.getTime(), isThereReminder, isTaskDone,
 				isAllDayEvent, title, location, reminder);
 		return;
 
@@ -402,5 +339,11 @@ public class Logic {
 			count = count + 1;
 		}
 		return;
+	}
+	
+	public static void clearAll() {
+		_storage = new AllTasks();
+		return;
+				
 	}
 }
