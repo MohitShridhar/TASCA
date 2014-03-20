@@ -111,6 +111,7 @@ public class InterpreterTest {
 	System.out.println("End Time: " + commandAndPara.getParameters().getEndTime().getTime());
 	System.out.println("Reminder Time: " + commandAndPara.getParameters().getRemindTime().getTime());
 	
+	
 	// New function:
 	System.out.println("Recurring End Time:" + commandAndPara.getParameters().getRecurEndTime().getTime());
 	

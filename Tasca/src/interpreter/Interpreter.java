@@ -65,6 +65,7 @@ public class Interpreter {
         commandHeaders.put("undo", CommandType.UNDO);
         commandHeaders.put("redo", CommandType.REDO);
         commandHeaders.put("displayAll", CommandType.DISPLAY_ALL);
+        commandHeaders.put("displayFloat", CommandType.DISPLAY_ALL_FLOAT);
         commandHeaders.put("display", CommandType.DISPLAY_IN_TIME);
         commandHeaders.put("export", CommandType.EXPORT);
         commandHeaders.put("import", CommandType.IMPORT);
@@ -183,7 +184,7 @@ public class Interpreter {
             parseAndProcessParameters(input);
         }
         
-        command.setCommandType(mainCommand);
+        command.setCommandType(mainCommand); 
     }
     
     private void processCommandArgument (String input) throws IllegalArgumentException {
