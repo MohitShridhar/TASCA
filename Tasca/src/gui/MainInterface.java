@@ -23,7 +23,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FontFormatException;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -34,8 +36,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -210,7 +215,7 @@ class HighlightDocumentFilter extends DocumentFilter {
 	
 
 	try {
-	    interpreter.processUserInput(allText);
+	    interpreter.processUserInput(allText);;
 	    successParse = true;
 	    
 	    if (MainInterface.activeFeedbackEnabled) {
@@ -399,6 +404,12 @@ public class MainInterface {
   private static JButton btnFolder4 = new JButton("");
   private static JButton btnFolder5 = new JButton("");
   
+  public static Font menloReg16 = null;
+  public static Font latoReg15 = null;
+  
+  public static Font menloReg = null;
+  public static Font latoReg = null;
+  
   public static boolean activeFeedbackEnabled = true;
   
   private static Folder currFolder, prevFolder;
@@ -408,6 +419,36 @@ public class MainInterface {
   }
   
   public MainInterface() {
+      
+      try {
+	menloReg = Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Menlo.ttf"));
+	latoReg = Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Lato-Reg.ttf"));
+    } catch (FontFormatException | IOException e1) {
+	// TODO Auto-generated catch block
+	e1.printStackTrace();
+    }
+      
+      try {
+	     GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	     ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Menlo.ttf")));
+	     ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Lato-Reg.ttf")));
+	} catch (IOException|FontFormatException e) {
+	     //Handle exception
+	    e.printStackTrace();
+	}
+      
+      
+      menloReg16 = new Font("Menlo", Font.PLAIN, 16);
+      latoReg15 = new Font("Lato", Font.PLAIN, 15);
+      
+      
+//      InputStream is = MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Menlo.ttf");
+//      try {
+//	  menloReg = Font.createFont(Font.TRUETYPE_FONT, is);
+//      } catch (FontFormatException | IOException e) {
+//	  // TODO Auto-generated catch block
+//	  e.printStackTrace();
+//      }
       
   }
 
@@ -536,6 +577,7 @@ public class MainInterface {
 
 public static void initGui(final JFrame frame) {
     
+    new MainInterface();
     
     currFolder = Folder.folder1;
      prevFolder = Folder.folder1;
@@ -591,7 +633,7 @@ public static void initGui(final JFrame frame) {
     MyTextPane textPane = new MyTextPane(new DefaultStyledDocument());
     textPane.setOpaque(false);
     textPane.setText("add task");
-    textPane.setFont(new Font("Menlo", Font.PLAIN, 16));
+    textPane.setFont(menloReg16);
     textPane.setForeground(Color.WHITE);
     
     // COLOR CODING--------------------------------------------------------
@@ -760,7 +802,7 @@ public static void initGui(final JFrame frame) {
     
     feedbackText.setHorizontalAlignment(SwingConstants.CENTER);
     feedbackText.setForeground(Color.WHITE);
-    feedbackText.setFont(new Font("Lato", Font.PLAIN, 15));
+    feedbackText.setFont(latoReg15);
     feedbackText.setBounds(99, 373, 694, 18);
     frame.getContentPane().add(feedbackText);
     

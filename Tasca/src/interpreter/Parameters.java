@@ -70,7 +70,7 @@ public class Parameters {
 	} 
 	
 	endTime = dateToCal(groups.get(FIRST_DATE).getDates().get(FIRST_DATE));
-        
+	
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
@@ -82,8 +82,7 @@ public class Parameters {
 	} 
 	
 	remindTime = dateToCal(groups.get(FIRST_DATE).getDates().get(FIRST_DATE));
-	
-	
+
 	if (groups.get(FIRST_DATE).isRecurring()) {
 	    recurEndTime = dateToCal(groups.get(FIRST_DATE).getRecursUntil());
 	}
