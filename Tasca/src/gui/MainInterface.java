@@ -93,7 +93,7 @@ class HighlightDocumentFilter extends DocumentFilter {
     private JTextPane textPane;
     private AttributeSet duplicateParameter, normalSetting, parameterSetting, commandSetting;
     private Interpreter interpreter;
-    private JLabel background;
+    private JLabel background, feedbackBackground, feedbackText;
     private Map<CommandType, Color> commandColors = new HashMap<CommandType, Color>();
     private Map<ParameterType, Color> parameterColors = new HashMap<ParameterType, Color>();
     private boolean hasColor = false;
@@ -112,7 +112,7 @@ class HighlightDocumentFilter extends DocumentFilter {
 	commandColors.put(CommandType.DISPLAY_MONTH, Color.cyan.darker());
 	commandColors.put(CommandType.DISPLAY_ALL, Color.cyan);
 	commandColors.put(CommandType.DISPLAY_IN_TIME, Color.cyan.darker());
-	commandColors.put(CommandType.DISPLAY_ALL_FLOAT, Color.MAGENTA.darker());
+	commandColors.put(CommandType.DISPLAY_ALL_FLOAT, Color.MAGENTA.brighter());
 	commandColors.put(CommandType.DELETE, Color.getHSBColor(0.97f, 0.66f, 0.94f));
 	commandColors.put(CommandType.DELETE_ALL_COMPLETED, Color.getHSBColor(0.97f, 0.66f, 0.94f));
 	commandColors.put(CommandType.SEARCH, Color.getHSBColor(0.52f, 0.9f, 0.92f));
@@ -139,10 +139,12 @@ class HighlightDocumentFilter extends DocumentFilter {
 	// START_TIME, END_TIME, REMINDER_TIME, PRIORITY, LOCATION, FOLDER, TASK_ID,
     }
     
-    public HighlightDocumentFilter(JTextPane textPane, Interpreter interpreter, JLabel background) {
+    public HighlightDocumentFilter(JTextPane textPane, Interpreter interpreter, JLabel background, JLabel feedbackText, JLabel feedbackBackground) {
         this.textPane = textPane;
         this.interpreter = interpreter;
         this.background = background;
+        this.feedbackBackground = feedbackBackground;
+        this.feedbackText = feedbackText;
         
         initColorMap();
         
@@ -203,22 +205,44 @@ class HighlightDocumentFilter extends DocumentFilter {
     public void updateBar(FilterBypass fb, Interpreter interpreter) throws BadLocationException {
 	String allText = fb.getDocument().getText(0, fb.getDocument().getLength());
 	Boolean successParse = false;
+	String exceptionMsg = null;	
+	Boolean emptyInput = checkEmptyInput(allText);
 	
+
 	try {
 	    interpreter.processUserInput(allText);
 	    successParse = true;
+	    
+	    if (MainInterface.activeFeedbackEnabled) {
+		feedbackText.setVisible(false);
+		feedbackBackground.setVisible(false);
+	    }
+	    
 	} catch(IllegalArgumentException | RewriteEmptyStreamException e) {
 //	    System.out.println("Exception " + e);
 	    successParse = false;
+
+	    if (MainInterface.activeFeedbackEnabled) {
+		feedbackBackground.setVisible(true);
+		feedbackText.setVisible(true);
+		feedbackText.setText(e.getMessage());
+	    }
+
 	}
         
-        if (allText.trim().isEmpty() || allText == null) {
+        if (emptyInput) {
             background.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Empty Input Bar.gif")));
+	    feedbackText.setVisible(false);
+	    feedbackBackground.setVisible(false);
         } else if (successParse) {
             background.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Success Input Bar.gif")));
         } else {
             background.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Failed Input Bar.gif")));
         }
+    }
+
+    public boolean checkEmptyInput(String allText) {
+	return allText.trim().isEmpty() || allText == null;
     }
     
     
@@ -366,6 +390,7 @@ public class MainInterface {
 
   // TODO: Fix minimize flickering
   // TODO: not imp: fix dual screen drag
+  // TODO: Add more help error messages. And integrate ID & Folder validity checkers
     
   private static int posX=0,posY=0;
   private static JButton btnFolder2 = new JButton("");
@@ -373,6 +398,8 @@ public class MainInterface {
   private static JButton btnFolder3 = new JButton("");
   private static JButton btnFolder4 = new JButton("");
   private static JButton btnFolder5 = new JButton("");
+  
+  public static boolean activeFeedbackEnabled = true;
   
   private static Folder currFolder, prevFolder;
   
@@ -570,7 +597,10 @@ public static void initGui(final JFrame frame) {
     // COLOR CODING--------------------------------------------------------
     Interpreter interpreter = new Interpreter();
     JLabel lblNewLabel = new JLabel("New label");
-    HighlightDocumentFilter filter = (new HighlightDocumentFilter(textPane, interpreter, lblNewLabel));
+    JLabel feedbackText = new JLabel("Feed");
+    JLabel feedbackBackground = new JLabel("");
+    
+    HighlightDocumentFilter filter = (new HighlightDocumentFilter(textPane, interpreter, lblNewLabel, feedbackText, feedbackBackground));
     
     ((AbstractDocument) textPane.getDocument()).setDocumentFilter(filter);
     
@@ -727,19 +757,19 @@ public static void initGui(final JFrame frame) {
     
     frame.getContentPane().add(btnFolder5);
     
-    JLabel feedbackText = new JLabel("Feed");
+    
     feedbackText.setHorizontalAlignment(SwingConstants.CENTER);
     feedbackText.setForeground(Color.WHITE);
-    feedbackText.setFont(new Font("Lato", Font.PLAIN, 16));
-    feedbackText.setBounds(99, 374, 694, 16);
+    feedbackText.setFont(new Font("Lato", Font.PLAIN, 15));
+    feedbackText.setBounds(99, 373, 694, 18);
     frame.getContentPane().add(feedbackText);
     
-    JLabel feedbackBackground = new JLabel("");
-    feedbackBackground.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Untitled-19.png")));
+    feedbackBackground.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Error Feedback Background.png")));
     feedbackBackground.setBounds(77, 361, 750, 52);
     frame.getContentPane().add(feedbackBackground);
     
-    
+    feedbackText.setVisible(false);
+    feedbackBackground.setVisible(false);
     
     lblNewLabel.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Empty Input Bar.gif")));
     lblNewLabel.setBounds(37, 412, 814, 46);

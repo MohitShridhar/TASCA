@@ -188,8 +188,15 @@ public class Interpreter {
     }
     
     private void processCommandArgument (String input) throws IllegalArgumentException {
-        String commandArgument = (input.replaceFirst(getFirstWord(input), "").trim()).split("-")[0];
-        
+	
+	String commandArgument = null;
+	
+	try {
+		commandArgument = (input.replaceFirst(getFirstWord(input), "").trim()).split("-")[0];
+	} catch (ArrayIndexOutOfBoundsException aE) {
+	    return;
+	}
+		
         CommandFeedback feedback = command.setDescription(commandArgument);
         
         if (needsDescription(interpretCommand(getFirstWord(input))) && feedback == CommandFeedback.EMPTY_DESCRIPTION) {
