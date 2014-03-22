@@ -62,6 +62,7 @@ public class Interpreter {
         commandHeaders.put("today", CommandType.DISPLAY_TODAY);
         commandHeaders.put("tomorrow", CommandType.DISPLAY_TOMORROW);
         commandHeaders.put("week", CommandType.DISPLAY_WEEK);
+        commandHeaders.put("month", CommandType.DISPLAY_MONTH);
         commandHeaders.put("undo", CommandType.UNDO);
         commandHeaders.put("redo", CommandType.REDO);
         commandHeaders.put("displayAll", CommandType.DISPLAY_ALL);
@@ -116,7 +117,6 @@ public class Interpreter {
             }
 
         }
-
     }
     
     private static CommandFeedback addCommandSynonyms(Config cfg, String type, CommandType commandType) 
@@ -218,6 +218,8 @@ public class Interpreter {
     private void parseAndProcessParameters(String input) throws IllegalArgumentException {
         String[] inputParameters = input.split("-");
         
+        currentParameters.clear();
+        
         for (int i=1; i<inputParameters.length; i++) { // Ignore the command, focus on the parameter arguments
             String paraTypeString = getFirstWord(inputParameters[i]);
             String paraArgument = inputParameters[i].substring(paraTypeString.length()).trim();
@@ -241,11 +243,12 @@ public class Interpreter {
     }
 
 
-    private void checkIfParameterExists(ParameterType parameterType) throws IllegalArgumentException {
-        if (currentParameters.contains(parameterType)) {
+    public void checkIfParameterExists(ParameterType parameterType) throws IllegalArgumentException {
+	if (currentParameters.contains(parameterType)) {
             throw new IllegalArgumentException(EXCEPTION_DUPLICATE_PARAMETERS);
         }
         currentParameters.add(parameterType);
+        
     }
     
     private void isParameterArgumentValid (CommandFeedback feedback) throws InvalidParameterException {
@@ -270,7 +273,7 @@ public class Interpreter {
         
     }
     
-    private String getFirstWord(String input) {
+    public String getFirstWord(String input) {
         return input.trim().split("\\s+")[0].toLowerCase();
     }
  

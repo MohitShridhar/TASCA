@@ -1,16 +1,10 @@
 package interpreter;
-import static org.junit.Assert.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Scanner;
 
 import org.antlr.runtime.tree.RewriteEmptyStreamException;
 import org.junit.Test;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Scanner;
-
-import java.util.Calendar;
-
-import com.joestelmach.natty.*;
 
 
 
@@ -83,7 +77,7 @@ public class InterpreterTest {
 	
 
 	// USAGE INPUT
-	Interpreter newInt = new Interpreter();
+//	Interpreter newInt = new Interpreter();
 	Interpreter secondInt = new Interpreter();
 	
 	try {

@@ -9,9 +9,10 @@ public class Config
     configFile = new java.util.Properties();
     try {
       configFile.load(this.getClass().getClassLoader().
-      getResourceAsStream("config.cfg"));
+      getResourceAsStream("Config.cfg"));
     }catch(Exception eta){
         eta.printStackTrace();
+        System.out.println("Reading config file failed");
     }
    }
  
