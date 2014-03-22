@@ -185,6 +185,16 @@ public class Interpreter {
         }
         
         command.setCommandType(mainCommand); 
+        
+    
+    }
+    
+    public boolean isFloatingTask() {
+	if (currentParameters.contains(ParameterType.START_TIME) || currentParameters.contains(ParameterType.END_TIME) || currentParameters.contains(ParameterType.REMINDER_TIME)) {
+	    return false;
+	}
+	
+	return true;
     }
     
     private void processCommandArgument (String input) throws IllegalArgumentException {
@@ -231,15 +241,15 @@ public class Interpreter {
             String paraTypeString = getFirstWord(inputParameters[i]);
             String paraArgument = inputParameters[i].substring(paraTypeString.length()).trim();
             
-            if (paraArgument.isEmpty()) {
-                throw new IllegalArgumentException(EXCEPTION_EMPTY_ARGUMENT);
-            }
             
             ParameterType parameterType = interpretParameter(paraTypeString);
             if (parameterType == ParameterType.INVALID) {
                 throw new IllegalArgumentException(INVALID_PARAMETER_TYPE);
             }
             
+            if (paraArgument.isEmpty()) {
+                throw new IllegalArgumentException(EXCEPTION_EMPTY_ARGUMENT);
+            }
             
             CommandFeedback feedback = processParameter(parameterType, paraArgument);
             isParameterArgumentValid(feedback);
