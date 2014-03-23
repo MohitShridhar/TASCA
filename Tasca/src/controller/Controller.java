@@ -1,5 +1,6 @@
 package controller;
 
+import gui.MainInterface;
 import interpreter.*;
 
 import java.util.logging.FileHandler;
@@ -60,24 +61,30 @@ public class Controller {
 		return;
 	}
 
-	public boolean executeCommands() {
+	public boolean executeCommands(String input) {
 		Interpreter newInt = new Interpreter();
-		String input;
+		
+//		String input;
+//
+//		input = myScanner.nextLine();
+		
+		
+		if (input != null) {
 
-		input = myScanner.nextLine();
-
-		try {
+		    try {
 			newInt.processUserInput(input);
 			Command command = newInt.getCommandAndPara();
 			assert (command.getCommandType() != null);
 			logger.log(Level.SEVERE, "Entering executeLogic",
-					command.getCommandType());
+				command.getCommandType());
 			return executeLogic(command);
-		} catch (IllegalArgumentException eI) {
+		    } catch (IllegalArgumentException eI) {
 			System.out.println("Exception - " + eI + "\n");
 			return false;
-		}
-
+		    }
+		} 
+		
+		return false;
 	}
 
 	private void executeQuit() {

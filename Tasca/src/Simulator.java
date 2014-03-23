@@ -10,7 +10,7 @@ public class Simulator {
 		
 		System.out.printf("%s", MESSAGE_WELCOME_V0_1);
 		while (!quit) {
-			quit = controller.executeCommands();
+			quit = controller.executeCommands("add akjdw");
 		}
 		
 		return;

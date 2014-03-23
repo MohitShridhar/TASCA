@@ -18,6 +18,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -26,16 +28,19 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FontFormatException;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -71,9 +76,13 @@ import org.antlr.runtime.tree.RewriteEmptyStreamException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
+import controller.Controller;
+
 import storage.AllTasks;
 import storage.Task;
 import javax.swing.SwingConstants;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 
 class MyTextPane extends JTextPane {
@@ -91,6 +100,20 @@ class MyTextPane extends JTextPane {
 	    getInputAttributes().removeAttribute(StyleConstants.Bold);
 	    super.replaceSelection(content);
     }
+    
+    // Not working on windows:
+//    @Override
+//    public void paint (Graphics g){
+//	
+//	Graphics2D g2 = (Graphics2D) g;
+//	
+//	g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//	g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+//	g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+//	
+//	super.paint(g2);
+//    }
+    
 }
 
 
@@ -98,12 +121,16 @@ class HighlightDocumentFilter extends DocumentFilter {
 
     private DefaultHighlightPainter highlightPainter = new DefaultHighlightPainter(Color.YELLOW);
     private JTextPane textPane;
+    private JFrame mainFrame;
     private AttributeSet duplicateParameter, normalSetting, parameterSetting, commandSetting;
     private Interpreter interpreter;
     private JLabel background, feedbackBackground, feedbackText;
     private Map<CommandType, Color> commandColors = new HashMap<CommandType, Color>();
     private Map<ParameterType, Color> parameterColors = new HashMap<ParameterType, Color>();
     private boolean hasColor = false;
+    private String userInput = null;
+    
+    private Controller controller = new Controller();
     
     private StyledDocument doc;
     
@@ -147,13 +174,17 @@ class HighlightDocumentFilter extends DocumentFilter {
 	// START_TIME, END_TIME, REMINDER_TIME, PRIORITY, LOCATION, FOLDER, TASK_ID,
     }
     
-    public HighlightDocumentFilter(JTextPane textPane, Interpreter interpreter, JLabel background, JLabel feedbackText, JLabel feedbackBackground) {
+    public Controller getController() {
+	return controller;
+    }
+    
+    public HighlightDocumentFilter(JFrame frame, final JTextPane textPane, Interpreter interpreter, JLabel background, JLabel feedbackText, JLabel feedbackBackground) {
         this.textPane = textPane;
+        this.mainFrame = frame;
         this.interpreter = interpreter;
         this.background = background;
         this.feedbackBackground = feedbackBackground;
-        this.feedbackText = feedbackText;
-        
+        this.feedbackText = feedbackText;      
         
         initColorMap();
         
@@ -171,11 +202,37 @@ class HighlightDocumentFilter extends DocumentFilter {
         
         commandSetting = new SimpleAttributeSet();
         StyleConstants.setBold((MutableAttributeSet) commandSetting, true);
+        
+        textPane.addKeyListener(new KeyAdapter() {
+        	@Override
+        	public void keyPressed(KeyEvent e) {
+        	    if (e.getKeyCode() == KeyEvent.VK_ENTER)
+        	    {
+        		processUserAction();
+        	    }
+        	}
+
+        	public void processUserAction() {
+        	    userInput = getUserInput();
+
+        	    if (userInput != null) {
+        		boolean quit = false;
+        		
+        		quit = controller.executeCommands(userInput);
+        		textPane.setText("");
+        		
+        		if (quit) {
+        		    mainFrame.dispose();
+        		    System.exit(0);        			
+        		}
+        	    }
+        	}
+        });
     }
 
     @Override
     public void insertString(FilterBypass fb, int offset, String text, AttributeSet attr) throws BadLocationException {
-        super.insertString(fb, offset, text, attr);
+        super.insertString(fb, offset, text.replaceAll("\\n", ""), attr);
     }
 
     @Override
@@ -191,8 +248,8 @@ class HighlightDocumentFilter extends DocumentFilter {
 	
 	 // TODO: intial spaces are considered when remove format 
 	// TODO: Add duplicate parameters highlighting
-	
-        super.replace(fb, offset, length, text, attrs);
+        super.replace(fb, offset, length, text.replaceAll("\\n", ""), attrs);
+        
 	
         String allText = fb.getDocument().getText(0, fb.getDocument().getLength()).toLowerCase();
 	String commandMatch = interpreter.getFirstWord(allText).toLowerCase();
@@ -223,6 +280,8 @@ class HighlightDocumentFilter extends DocumentFilter {
 	String exceptionMsg = null;	
 	Boolean emptyInput = checkEmptyInput(allText);
 	
+	
+	userInput = null;
 
 	try {
 	    interpreter.processUserInput(allText);;
@@ -232,6 +291,9 @@ class HighlightDocumentFilter extends DocumentFilter {
 		feedbackText.setVisible(false);
 		feedbackBackground.setVisible(false);
 	    }
+	    
+	    userInput = allText;
+	    
 	    
 	} catch(IllegalArgumentException | RewriteEmptyStreamException e) {
 //	    System.out.println("Exception " + e);
@@ -255,7 +317,11 @@ class HighlightDocumentFilter extends DocumentFilter {
             background.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Failed Input Bar.gif")));
         }
     }
-
+    
+    public String getUserInput(){
+	return userInput;
+    }
+    
     public boolean checkEmptyInput(String allText) {
 	return allText.trim().isEmpty() || allText == null;
     }
@@ -425,9 +491,7 @@ public class MainInterface {
 
   // TODO: Fix minimize flickering
   // TODO: not imp: fix dual screen drag
-  // TODO: Add more help error messages. And integrate ID & Folder validity checkers
-  // TODO: Fix captial color coding
-  // TODO: Brute-force command coloring
+  // TODO: Add more help error messages. And integrate ID & Folder & time validity checkers. Implement all user exceptions
     
   private static int posX=0,posY=0;
   private static JButton btnFolder2 = new JButton("");
@@ -435,6 +499,10 @@ public class MainInterface {
   private static JButton btnFolder3 = new JButton("");
   private static JButton btnFolder4 = new JButton("");
   private static JButton btnFolder5 = new JButton("");
+  private static String userInput = null;
+  private static HighlightDocumentFilter filter = null;
+  
+  private static JFrame frame = null;
   
   public static Font menloReg16 = null;
   public static Font latoReg15 = null;
@@ -452,22 +520,25 @@ public class MainInterface {
   
   public MainInterface() {
       
-      try {
-	menloReg = Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Menlo.ttf"));
-	latoReg = Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Lato-Reg.ttf"));
-    } catch (FontFormatException | IOException e1) {
-	// TODO Auto-generated catch block
-	e1.printStackTrace();
-    }
+//      try {
+//	menloReg = Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Menlo.ttf"));
+//	latoReg = Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Lato-Reg.ttf"));
+//    } catch (FontFormatException | IOException e1) {
+//	// TODO Auto-generated catch block
+//	e1.printStackTrace();
+//    }
       
       try {
 	     GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 	     ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Menlo.ttf")));
 	     ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Lato-Reg.ttf")));
+	     
+	     
 	} catch (IOException|FontFormatException e) {
 	     //Handle exception
 	    e.printStackTrace();
 	}
+      
       
       
       menloReg16 = new Font("Menlo", Font.PLAIN, 16);
@@ -476,6 +547,10 @@ public class MainInterface {
       
   }
 
+  
+  public static String getUserInput() {
+      return filter.getUserInput();
+  }
   
   private static void clearPreviousTab (Folder prevFolder) {
       switch (prevFolder) {
@@ -544,19 +619,6 @@ public class MainInterface {
 //      
 //  }
   
-  private static void appendToPane(JTextPane tp, String msg, Color c)
-  {
-      StyleContext sc = StyleContext.getDefaultStyleContext();
-      AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c);
-
-      aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Lucida Console");
-      aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
-
-      int len = tp.getDocument().getLength();
-      tp.setCaretPosition(len);
-      tp.setCharacterAttributes(aset, false);
-      tp.replaceSelection(msg);
-  }
 
     
   public static void main(String[] args)  {
@@ -566,7 +628,9 @@ public class MainInterface {
       SwingUtilities.invokeLater(new Runnable() {
           public void run() {
 
-	      JFrame frame = new JFrame("TitleLessJFrame");
+	      frame = new JFrame("TitleLessJFrame");
+	      
+	      frame.setBackground(UIManager.getColor("Label.disabledShadow"));
 	      frame.getContentPane().setLayout(null);
 	      frame.setUndecorated(true); 
 	      frame.setSize(888, 500);
@@ -574,6 +638,7 @@ public class MainInterface {
 	      frame.setLocationRelativeTo(null); 
 	      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	      initGui(frame);
+	      
 	      
 	      frame.setVisible(true);
           }
@@ -615,6 +680,8 @@ public static void initGui(final JFrame frame) {
     btnClose.setBackground(Color.BLACK);
     btnClose.addActionListener(new ActionListener() {
     	public void actionPerformed(ActionEvent e) {
+    	    Controller controller = filter.getController();
+    	    controller.executeCommands("quit");
     	    frame.dispose();
     	    System.exit(0);
     	}
@@ -656,7 +723,7 @@ public static void initGui(final JFrame frame) {
     
     MyTextPane textPane = new MyTextPane(new DefaultStyledDocument());
     textPane.setOpaque(false);
-    textPane.setText("add task");
+    textPane.setText("memora vivere");
     textPane.setFont(menloReg16);
     textPane.setForeground(Color.WHITE);
     
@@ -666,9 +733,10 @@ public static void initGui(final JFrame frame) {
     JLabel feedbackText = new JLabel("Feed");
     JLabel feedbackBackground = new JLabel("");
     
-    HighlightDocumentFilter filter = (new HighlightDocumentFilter(textPane, interpreter, lblNewLabel, feedbackText, feedbackBackground));
+    filter = (new HighlightDocumentFilter(frame, textPane, interpreter, lblNewLabel, feedbackText, feedbackBackground));
     
     ((AbstractDocument) textPane.getDocument()).setDocumentFilter(filter);
+   
     
     //textPane.setMargin(new Insets(13, 10, 13, 25));
     
@@ -707,12 +775,16 @@ public static void initGui(final JFrame frame) {
     	    prevFolder = currFolder;
     	    currFolder = Folder.folder1;
     	    
-    	    // Clear previous:
-    	    clearPreviousTab(prevFolder);
-    	        	    
-    	    // Update:
-    	    btnFolder1.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab Clicked.gif")));	    
-    	    frame.setComponentZOrder(btnFolder1, 0);
+		if (prevFolder != currFolder) {
+		    // Clear previous:
+		    clearPreviousTab(prevFolder);
+
+		    // Update:
+		    btnFolder1.setIcon(new ImageIcon(MainInterface.class
+			    .getResource("/GUI Graphics/Tab Clicked.gif")));
+		    frame.setComponentZOrder(btnFolder1, 0);
+
+		}
     	}
     });
     btnFolder1.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
@@ -758,6 +830,8 @@ public static void initGui(final JFrame frame) {
 
 	    btnFolder3.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab Clicked.gif")));	    
 	    frame.setComponentZOrder(btnFolder3, 0);
+	    
+	    
 
     	}
     });
