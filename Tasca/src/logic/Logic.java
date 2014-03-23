@@ -340,10 +340,15 @@ public class Logic {
 		}
 	}
 
-	public static void updateFloatingTask(String indexString, String priority,
-			String title, String location) {
+	public static void updateFloatingTask (String indexString, String priority,
+			String title, String location) throws IndexOutOfBoundsException {
 		int priorityInt, index = Integer.parseInt(indexString);
+		if (index < _storage.getTaskSize()){
+			throw new IndexOutOfBoundsException();
+		}
 		boolean isTaskDone = _storage.getFloatingTask(index).getIsTaskDone();
+		
+		
 
 		if (priority == "null") {
 			priorityInt = _storage.getFloatingTask(index).getPriority();
@@ -367,6 +372,7 @@ public class Logic {
 			String title, String location, Date reminder) {
 
 		int priorityInt, index = Integer.parseInt(indexString);
+		if(_storage.isValidTaskId(index)){
 		boolean isTaskDone = _storage.getTask(index).getIsTaskDone(), isAllDayEvent = _storage
 				.getTask(index).getIsAllDayEvent();
 
@@ -392,6 +398,9 @@ public class Logic {
 		deleteTask(index);
 		addTask(priorityInt, start.getTime(), end.getTime(), isThereReminder,
 				isTaskDone, isAllDayEvent, title, location, reminder);
+		} else {
+			System.out.printf("The given ID is not valid \n");
+		}
 		return;
 
 	}
