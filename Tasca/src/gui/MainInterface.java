@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
 
 import java.awt.BorderLayout;
@@ -47,6 +48,7 @@ import java.util.Map;
 
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
+import javax.swing.event.DocumentEvent;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
@@ -186,7 +188,7 @@ class HighlightDocumentFilter extends DocumentFilter {
     public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
 	
 	 // TODO: intial spaces are considered when remove format 
-	// TODO: Add duplicate parameters highlighting;
+	// TODO: Add duplicate parameters highlighting
 	
         String commandMatch = interpreter.getFirstWord(fb.getDocument().getText(0, fb.getDocument().getLength()));
         super.replace(fb, offset, length, text, attrs);
@@ -206,6 +208,8 @@ class HighlightDocumentFilter extends DocumentFilter {
         
         updateBar(fb, interpreter);
     }
+
+    
 
     public void updateBar(FilterBypass fb, Interpreter interpreter) throws BadLocationException {
 	String allText = fb.getDocument().getText(0, fb.getDocument().getLength());
@@ -396,6 +400,7 @@ public class MainInterface {
   // TODO: Fix minimize flickering
   // TODO: not imp: fix dual screen drag
   // TODO: Add more help error messages. And integrate ID & Folder validity checkers
+  // TODO: Fix captial color coding  
     
   private static int posX=0,posY=0;
   private static JButton btnFolder2 = new JButton("");
