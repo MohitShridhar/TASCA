@@ -17,6 +17,7 @@ import storage.UndoRedo;
 public class Controller {
 	private static final String MESSAGE_EXPORT_SUCCESSFUL = "All events were successfully exported to ";
 	private static final String MESSAGE_IMPORT_SUCCESSFUL = "All events were successfully imported from ";
+	private static final long SYSTEM_TIMER_TASK_PERIOD = 5000;
 
 	private String MESSAGE_FILE_NOT_FOUND = "The system files could not be loaded.";
 	private String MESSAGE_INVALID_COMMAND = "The command given was invalid.";
@@ -27,6 +28,9 @@ public class Controller {
 
 	private Handler handler;
 	private Logger logger = Logger.getLogger("Controller");
+	
+	private Timer systemTimer;
+	private ReminderTimerTask reminderTimerTask;
 
 	public Controller() {
 		initialiseTasks();
@@ -44,11 +48,16 @@ public class Controller {
 
 	private void initialiseTasks() {
 		allTasks = new AllTasks();
+		systemTimer = new Timer(true);
 		try {
 			allTasks.loadData();
 		} catch (FileNotFoundException e) {
 			System.out.printf("%s\n", MESSAGE_FILE_NOT_FOUND);
 		}
+		allTasks.clearAllMissedReminders();
+		reminderTimerTask = new ReminderTimerTask(allTasks);
+		systemTimer.scheduleAtFixedRate(reminderTimerTask, SYSTEM_TIMER_TASK_PERIOD, SYSTEM_TIMER_TASK_PERIOD);
+		return;
 	}
 
 	public boolean executeCommands() {
@@ -87,19 +96,25 @@ public class Controller {
 		if (!command.getCommandType().name().equals("MODIFY")) {
 			isThereReminder = checkForNulls(command, isThereReminder, startTime);
 		} else {
-			startTime =null;
-			if (command.getParameters().getRemindTime() == null){
+			startTime = null;
+			if (command.getParameters().getRemindTime() == null) {
 				isThereReminder = false;
 			}
 		}
-		
-			
 
 		switch (command.getCommandType().name()) {
 
 		case "ADD":
 			undoRedo.addUndo(allTasks);
-			execute_add(command, isThereReminder, startTime);
+			if (command.getParameters().getStartTime() == null
+					&& command.getParameters().getEndTime() == null) {
+				Logic.addFloatingTask(
+						Integer.parseInt(command.getParameters().getPriority()),
+						false, command.getParameters().getDescription(),
+						command.getParameters().getLocation());
+			} else {
+				execute_add(command, isThereReminder, startTime);
+			}
 			break;
 
 		case "DELETE":
@@ -109,7 +124,15 @@ public class Controller {
 
 		case "MODIFY":
 			undoRedo.addUndo(allTasks);
-			execute_modify(command, isThereReminder, startTime);
+			if (command.getParameters().getStartTime() == null
+					&& command.getParameters().getEndTime() == null) {
+				Logic.updateFloatingTask(command.getParameters().getTaskId(),
+						command.getParameters().getPriority(), command
+								.getParameters().getDescription(), command
+								.getParameters().getLocation());
+			} else {
+				execute_modify(command, isThereReminder, startTime);
+			}
 			break;
 
 		case "DISPLAY_TODAY":
@@ -137,6 +160,10 @@ public class Controller {
 
 		case "DISPLAY_ALL":
 			Logic.displayAll();
+			break;
+
+		case "DISPLAY_ALL_FLOAT":
+			Logic.displayAllFloat();
 			break;
 
 		case "DISPLAY_IN_TIME":
@@ -196,7 +223,6 @@ public class Controller {
 		return quit;
 	}
 
-
 	private boolean checkForNulls(Command command, boolean isThereReminder,
 			Calendar startTime) {
 		if (command.getParameters().getRemindTime() == null) {
@@ -214,12 +240,13 @@ public class Controller {
 		if (command.getParameters().getStartTime() == null
 				&& command.getParameters().getEndTime() != null) {
 			startTime = Calendar.getInstance();
-		} else { 
-			if(command.getParameters().getStartTime() != null
-				&& command.getParameters().getEndTime() != null){
-				
-			startTime = Calendar.getInstance();
-			startTime.setTime(command.getParameters().getStartTime().getTime());
+		} else {
+			if (command.getParameters().getStartTime() != null
+					&& command.getParameters().getEndTime() != null) {
+
+				startTime = Calendar.getInstance();
+				startTime.setTime(command.getParameters().getStartTime()
+						.getTime());
 			}
 		}
 		return isThereReminder;
@@ -228,7 +255,7 @@ public class Controller {
 	private void execute_add(Command command, boolean isThereReminder,
 			Calendar startTime) {
 		if (isThereReminder) {
-			
+
 			Logic.addTask(Integer.parseInt(command.getParameters()
 					.getPriority()), startTime.getTime(), command
 					.getParameters().getEndTime().getTime(), isThereReminder,
@@ -247,20 +274,18 @@ public class Controller {
 	private void execute_modify(Command command, boolean isThereReminder,
 			Calendar startTime) {
 		try {
-			Logic.updateTask(command.getParameters()
-					.getTaskId(), command.getParameters()
-					.getPriority(), startTime, command
-					.getParameters().getEndTime(), isThereReminder,
-					command.getParameters().getDescription(), command
-							.getParameters().getLocation(), command
-							.getParameters().getRemindTime().getTime());
+			Logic.updateTask(command.getParameters().getTaskId(), command
+					.getParameters().getPriority(), startTime, command
+					.getParameters().getEndTime(), isThereReminder, command
+					.getParameters().getDescription(), command.getParameters()
+					.getLocation(), command.getParameters().getRemindTime()
+					.getTime());
 		} catch (Exception e) {
-			Logic.updateTask(command.getParameters()
-					.getTaskId(), command.getParameters()
-					.getPriority(), startTime, command
-					.getParameters().getEndTime(), isThereReminder,
-					command.getParameters().getDescription(), command
-							.getParameters().getLocation(), null);
+			Logic.updateTask(command.getParameters().getTaskId(), command
+					.getParameters().getPriority(), startTime, command
+					.getParameters().getEndTime(), isThereReminder, command
+					.getParameters().getDescription(), command.getParameters()
+					.getLocation(), null);
 		}
 	}
 

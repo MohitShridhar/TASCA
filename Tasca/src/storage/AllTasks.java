@@ -15,17 +15,42 @@ public class AllTasks {
 	private Task currentTask;
 	private LinkedList<Reminder> allReminders;
 	private Reminder currentReminder;
+	private LinkedList<FloatingTask> allFloatingTasks;
 
 	public AllTasks() {
 		allTasks = new LinkedList<Task>();
 		allReminders = new LinkedList<Reminder>();
+		allFloatingTasks = new LinkedList<FloatingTask>();
 		return;
 	}
 
 	public void loadData() throws FileNotFoundException {
-		FileInputStream fStream = new FileInputStream("system_saved_tasks.txt");
+		loadTasks();
+		loadFloatingTasks();
+		return;
+	}
+
+	private void loadFloatingTasks() throws FileNotFoundException {
+		FileInputStream fStream = new FileInputStream(
+				"system_saved_floatingTasks.txt");
 		Scanner fileScanner = new Scanner(fStream);
 
+		while (fileScanner.hasNext()) {
+			int taskID = fileScanner.nextInt();
+			int priority = fileScanner.nextInt();
+
+			allFloatingTasks.add(new FloatingTask(taskID, priority, fileScanner
+					.nextBoolean(),
+					eliminateFrontSpace(fileScanner.nextLine()), fileScanner
+							.nextLine()));
+		}
+		fileScanner.close();
+
+	}
+
+	private void loadTasks() throws FileNotFoundException {
+		FileInputStream fStream = new FileInputStream("system_saved_tasks.txt");
+		Scanner fileScanner = new Scanner(fStream);
 
 		while (fileScanner.hasNext()) {
 			int taskID = fileScanner.nextInt();
@@ -47,9 +72,9 @@ public class AllTasks {
 							.nextLine()), fileScanner.nextLine()));
 			if (allTasks.getLast().getIsThereReminder() == true) {
 				Calendar reminderTime = Calendar.getInstance();
-				reminderTime.set(fileScanner.nextInt(),
+				reminderTime.set(fileScanner.nextInt(), fileScanner.nextInt(),
 						fileScanner.nextInt(), fileScanner.nextInt(),
-						fileScanner.nextInt(), fileScanner.nextInt());
+						fileScanner.nextInt());
 
 				allReminders
 						.add(new Reminder(reminderTime, allTasks.getLast()));
@@ -58,10 +83,46 @@ public class AllTasks {
 		}
 		fileScanner.close();
 		this.sortReminders();
-		return;
 	}
 
 	public void saveData() throws FileNotFoundException {
+		saveTasks();
+		saveFloatingTasks();
+		return;
+	}
+
+	private void saveFloatingTasks() {
+		int counter = this.getTaskSize();
+		int lastTaskID = this.getTaskSize() + this.getFloatingTaskSize();
+		int index= 0;
+		FileOutputStream out;
+		PrintStream prt;
+
+		try {
+			out = new FileOutputStream("system_saved_floatingTasks.txt");
+			prt = new PrintStream(out);
+
+			while (counter < lastTaskID) {
+				prt.printf("%d %d %b %s", counter, allFloatingTasks
+						.get(index).getPriority(),
+						allFloatingTasks.get(index).getIsTaskDone(),
+
+						allFloatingTasks.get(index).getTaskTitle());
+				prt.println();
+				prt.printf("%s", allFloatingTasks.get(index).getLocation());
+				prt.println();
+
+				counter = counter + 1;
+				index = index + 1;
+			}
+			prt.close();
+		} catch (Exception e) {
+			System.out.println("Write error");
+		}
+
+	}
+
+	private void saveTasks() {
 		int counter = 0;
 		FileOutputStream out;
 		PrintStream prt;
@@ -169,7 +230,11 @@ public class AllTasks {
 	}
 
 	public int getSize() {
-		return allTasks.size();
+		return allTasks.size()+ allFloatingTasks.size();
+	}
+	
+	public int getTaskSize() {
+		return allTasks.size() ;
 	}
 
 	public int getReminderSize() {
@@ -183,6 +248,7 @@ public class AllTasks {
 	public void deleteTask(int index) {
 		allTasks.remove(index);
 		updateTaskID(index);
+		this.updateFloatingTaskID();
 		return;
 	}
 
@@ -208,6 +274,7 @@ public class AllTasks {
 	public void addTask(int index, Task task) {
 		allTasks.add(index, task);
 		updateTaskID(index);
+		this.updateFloatingTaskID();
 		return;
 	}
 
@@ -306,68 +373,46 @@ public class AllTasks {
 		}
 
 	}
-
-	private boolean setCurrentReminder() {
-		int counter = 0;
-		boolean check = true;
+	
+	public void clearAllMissedReminders () {
+		int counter = 0,index = -1;
 
 		setCurrentTime();
-		while (counter < allReminders.size() && check) {
-			if (currentTime.get(Calendar.YEAR) == allReminders.get(counter)
-					.getReminderTime().get(Calendar.YEAR)) {
-				check = false;
-				counter = counter - 1;
+		while (counter < allReminders.size()){
+			if (currentTime.getTime().after(allReminders.get(counter).getReminderTime().getTime())){
+				index = counter;
 			}
 			counter = counter + 1;
 		}
+		counter = 0;
+		
 
-		check = true;
-		while (isValidTaskId(counter) && check) {
-			if (currentTime.get(Calendar.MONTH) == allReminders.get(counter)
-					.getReminderTime().get(Calendar.MONTH)) {
-				check = false;
-				counter = counter - 1;
+		while (counter <= index && allReminders.size() != 0 ){
+			currentReminder = allReminders.get(0);
+			currentReminder.getTask().setIsThereReminder(false);
+			allReminders.remove(0);
+			counter = counter + 1;
+		}
+		return;
+	}
+
+	private boolean setCurrentReminder() {
+		int counter = 0, index= -1;
+
+		setCurrentTime();
+		while (counter < allReminders.size()){
+			if (currentTime.getTime().after(allReminders.get(counter).getReminderTime().getTime())){
+				index = counter;
 			}
 			counter = counter + 1;
 		}
-
-		check = true;
-		while (isValidTaskId(counter) && check) {
-			if (currentTime.get(Calendar.DAY_OF_MONTH) == allReminders
-					.get(counter).getReminderTime().get(Calendar.DAY_OF_MONTH)) {
-				check = false;
-				counter = counter - 1;
-			}
-			counter = counter + 1;
-		}
-
-		check = true;
-		while (isValidTaskId(counter) && check) {
-			if (currentTime.get(Calendar.HOUR_OF_DAY) == allReminders
-					.get(counter).getReminderTime().get(Calendar.HOUR_OF_DAY)) {
-				check = false;
-				counter = counter - 1;
-			}
-			counter = counter + 1;
-		}
-
-		check = true;
-		while (isValidTaskId(counter) && check) {
-			if (currentTime.get(Calendar.MINUTE) == allReminders.get(counter)
-					.getReminderTime().get(Calendar.MINUTE)) {
-				check = false;
-				counter = counter - 1;
-			}
-			counter = counter + 1;
-		}
-
-		if (counter >= allTasks.size()) {
+		if (index == -1) {
 			currentReminder = null;
 			return false;
 		} else {
-			currentReminder = allReminders.get(counter);
+			currentReminder = allReminders.get(index);
 			currentReminder.getTask().setIsThereReminder(false);
-			allReminders.remove(counter);
+			allReminders.remove(index);
 			return true;
 		}
 	}
@@ -387,6 +432,36 @@ public class AllTasks {
 		} else {
 			return null;
 		}
+	}
+
+	public int getFloatingTaskSize() {
+		return allFloatingTasks.size();
+	}
+
+	public void addFloatingTask(FloatingTask node) {
+		allFloatingTasks.add(node);
+		updateFloatingTaskID();
+		return;
+	}
+
+	private void updateFloatingTaskID() {
+		int count = 0;
+		int timedTasksSize = this.getTaskSize();
+		int floatingTaskSize = this.getFloatingTaskSize();
+		while (count < floatingTaskSize) {
+			allFloatingTasks.get(count).setTaskID(timedTasksSize + count);
+			count = count + 1;
+		}
+		return;
+	}
+	
+	public FloatingTask getFloatingTask (int index) {
+		return allFloatingTasks.get(index - this.getTaskSize());
+	}
+	
+	public void deleteFloatingTask (int index) {
+		allFloatingTasks.remove(index - this.getTaskSize());
+		return;
 	}
 
 }
