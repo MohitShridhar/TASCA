@@ -130,6 +130,7 @@ class HighlightDocumentFilter extends DocumentFilter {
 	commandColors.put(CommandType.REDO, Color.PINK);
 	commandColors.put(CommandType.EXPORT, Color.yellow.brighter());
 	commandColors.put(CommandType.IMPORT, Color.getHSBColor(0.5f, 0.85f, 0.94f));
+	commandColors.put(CommandType.INVALID, Color.white);
 	
 	
 	// Parameter Color Coding:
@@ -153,6 +154,7 @@ class HighlightDocumentFilter extends DocumentFilter {
         this.feedbackBackground = feedbackBackground;
         this.feedbackText = feedbackText;
         
+        
         initColorMap();
         
         StyledDocument doc = textPane.getStyledDocument();
@@ -161,8 +163,8 @@ class HighlightDocumentFilter extends DocumentFilter {
         StyleConstants.setItalic((MutableAttributeSet) duplicateParameter, true);
         
         normalSetting = new SimpleAttributeSet();
-        StyleConstants.setForeground((MutableAttributeSet) normalSetting, Color.WHITE);
         StyleConstants.setBold((MutableAttributeSet) normalSetting, false);
+        StyleConstants.setForeground((MutableAttributeSet) normalSetting, Color.WHITE);
         
         parameterSetting = new SimpleAttributeSet();
         StyleConstants.setBold((MutableAttributeSet) parameterSetting, false);
@@ -190,19 +192,23 @@ class HighlightDocumentFilter extends DocumentFilter {
 	 // TODO: intial spaces are considered when remove format 
 	// TODO: Add duplicate parameters highlighting
 	
-        String commandMatch = interpreter.getFirstWord(fb.getDocument().getText(0, fb.getDocument().getLength()));
         super.replace(fb, offset, length, text, attrs);
-        addCommandColors(fb, offset, commandMatch); 
+	
+        String allText = fb.getDocument().getText(0, fb.getDocument().getLength()).toLowerCase();
+	String commandMatch = interpreter.getFirstWord(allText).toLowerCase();
+
+        //addCommandColors(fb, offset, commandMatch); 
+        addCommColors(commandMatch, allText, interpreter);
         
-        String parameterMatches[] =  fb.getDocument().getText(0, fb.getDocument().getLength()).split("-");
+        String parameterMatches[] =  allText.split("-");
         
         for (int i=1; i<parameterMatches.length; i++) {
-            String paraMatch = parameterMatches[i];//interpreter.getFirstWord(parameterMatches[i]).trim();
+            String paraMatch = parameterMatches[i].toLowerCase();//interpreter.getFirstWord(parameterMatches[i]).trim();
            // addParameterColors(fb, offset, parameterMatches, i, paraMatch);
             
             // TODO: speed up/background threading
             
-            addParaColors(paraMatch, fb.getDocument().getText(0, fb.getDocument().getLength()), interpreter);
+            addParaColors(paraMatch, allText, interpreter);
                           
         }
         
@@ -286,6 +292,24 @@ class HighlightDocumentFilter extends DocumentFilter {
 
 		
     }
+    
+    private void addCommColors (String commMatch, String allInput, Interpreter interpreter) {
+	int startIndex = allInput.indexOf(commMatch);
+	CommandType commandType = interpreter.interpretCommand(commMatch);
+	
+	if (commandType == CommandType.INVALID) {
+	    StyleConstants.setForeground((MutableAttributeSet) commandSetting, commandColors.get(commandType));
+	    textPane.getStyledDocument().setCharacterAttributes(startIndex, startIndex + commMatch.length(), normalSetting, true);
+	}
+	
+	else if (hasNextSpace(commMatch, allInput)) {
+	    
+	    StyleConstants.setForeground((MutableAttributeSet) commandSetting, commandColors.get(commandType));
+	    textPane.getStyledDocument().setCharacterAttributes(startIndex, startIndex + commMatch.length(), commandSetting, true);
+	    textPane.getStyledDocument().setCharacterAttributes(startIndex + commMatch.length() + 1, startIndex + commMatch.length() + 1, normalSetting, true);
+	}
+	
+    }
 
 //    public void addParameterColors(FilterBypass fb, int offset,
 //	    String[] parameterMatches, int i, String paraMatch)
@@ -343,38 +367,40 @@ class HighlightDocumentFilter extends DocumentFilter {
 	return length + num - 1;
     }
 
-    public void addCommandColors(FilterBypass fb, int offset, String commandMatch)
-	    throws BadLocationException {
-	int startIndex = offset - commandMatch.length();
-        
-        //System.out.print("Start index: " + startIndex);
-        if (startIndex >= 0) {
-            
-            String last = fb.getDocument().getText(startIndex, commandMatch.length()).trim();
-            
-//            if (startIndex < commandMatch.length()) {
-//            	String firstWord = interpreter.getFirstWord(fb.getDocument().getText(0, fb.getDocument().getLength()));
+//Superseeded:
+    
+//    public void addCommandColors(FilterBypass fb, int offset, String commandMatch)
+//	    throws BadLocationException {
+//	int startIndex = offset - commandMatch.length();
+//        
+//        //System.out.print("Start index: " + startIndex);
+//        if (startIndex >= 0) {
+//            
+//            String last = fb.getDocument().getText(startIndex, commandMatch.length()).trim();
+//            
+////            if (startIndex < commandMatch.length()) {
+////            	String firstWord = interpreter.getFirstWord(fb.getDocument().getText(0, fb.getDocument().getLength()));
+////            }
+//            
+//            // last.equalsIgnoreCase(match)
+//            //System.out.println("Intepreter: " + interpreter.interpretCommand(last));
+//            String lastChar = fb.getDocument().getText(fb.getDocument().getLength()-1, 1);
+//            
+//            if (interpreter.interpretCommand(last) != CommandType.INVALID && startIndex <  commandMatch.length() + leadingSpacesCount(fb.getDocument().getText(0, fb.getDocument().getLength()-1)) && lastChar.equals(" ")) {
+//                //textPane.getHighlighter().addHighlight(startIndex, startIndex + match.length(), highlightPainter);
+//        	StyleConstants.setForeground((MutableAttributeSet) commandSetting, commandColors.get(interpreter.interpretCommand(last)));
+//                textPane.getStyledDocument().setCharacterAttributes(startIndex, startIndex + commandMatch.length(), commandSetting, true);
+//                hasColor = true;
+//            } else {
+//        	hasColor = false;
 //            }
-            
-            // last.equalsIgnoreCase(match)
-            //System.out.println("Intepreter: " + interpreter.interpretCommand(last));
-            String lastChar = fb.getDocument().getText(fb.getDocument().getLength()-1, 1);
-            
-            if (interpreter.interpretCommand(last) != CommandType.INVALID && startIndex <  commandMatch.length() + leadingSpacesCount(fb.getDocument().getText(0, fb.getDocument().getLength()-1)) && lastChar.equals(" ")) {
-                //textPane.getHighlighter().addHighlight(startIndex, startIndex + match.length(), highlightPainter);
-        	StyleConstants.setForeground((MutableAttributeSet) commandSetting, commandColors.get(interpreter.interpretCommand(last)));
-                textPane.getStyledDocument().setCharacterAttributes(startIndex, startIndex + commandMatch.length(), commandSetting, true);
-                hasColor = true;
-            } else {
-        	hasColor = false;
-            }
-            
-
-        } else if (startIndex < 0 ) {
-            textPane.getStyledDocument().setCharacterAttributes(0, commandMatch.length()+1, normalSetting, true);
-            hasColor = false;
-        }
-    }
+//            
+//
+//        } else if (startIndex < 0 ) {
+//            textPane.getStyledDocument().setCharacterAttributes(0, commandMatch.length()+1, normalSetting, true);
+//            hasColor = false;
+//        }
+//    }
     
     
     private int leadingSpacesCount(String string) {
@@ -400,7 +426,8 @@ public class MainInterface {
   // TODO: Fix minimize flickering
   // TODO: not imp: fix dual screen drag
   // TODO: Add more help error messages. And integrate ID & Folder validity checkers
-  // TODO: Fix captial color coding  
+  // TODO: Fix captial color coding
+  // TODO: Brute-force command coloring
     
   private static int posX=0,posY=0;
   private static JButton btnFolder2 = new JButton("");
@@ -446,14 +473,6 @@ public class MainInterface {
       menloReg16 = new Font("Menlo", Font.PLAIN, 16);
       latoReg15 = new Font("Lato", Font.PLAIN, 15);
       
-      
-//      InputStream is = MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Menlo.ttf");
-//      try {
-//	  menloReg = Font.createFont(Font.TRUETYPE_FONT, is);
-//      } catch (FontFormatException | IOException e) {
-//	  // TODO Auto-generated catch block
-//	  e.printStackTrace();
-//      }
       
   }
 
