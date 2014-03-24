@@ -1,9 +1,11 @@
 package storage;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.io.RandomAccessFile;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -94,26 +96,30 @@ public class AllTasks {
 	private void saveFloatingTasks() {
 		int counter = this.getTaskSize();
 		int lastTaskID = this.getTaskSize() + this.getFloatingTaskSize();
-		int index= 0;
+		int index = 0;
 		FileOutputStream out;
 		PrintStream prt;
 
 		try {
 			out = new FileOutputStream("system_saved_floatingTasks.txt");
 			prt = new PrintStream(out);
+			if (lastTaskID == 0) {
+				prt.printf(" ");
+			} else {
 
-			while (counter < lastTaskID) {
-				prt.printf("%d %d %b %s", counter, allFloatingTasks
-						.get(index).getPriority(),
-						allFloatingTasks.get(index).getIsTaskDone(),
+				while (counter < lastTaskID) {
+					prt.printf("%d %d %b %s", counter,
+							allFloatingTasks.get(index).getPriority(),
+							allFloatingTasks.get(index).getIsTaskDone(),
 
-						allFloatingTasks.get(index).getTaskTitle());
-				prt.println();
-				prt.printf("%s", allFloatingTasks.get(index).getLocation());
-				prt.println();
+							allFloatingTasks.get(index).getTaskTitle());
+					prt.println();
+					prt.printf("%s", allFloatingTasks.get(index).getLocation());
+					prt.println();
 
-				counter = counter + 1;
-				index = index + 1;
+					counter = counter + 1;
+					index = index + 1;
+				}
 			}
 			prt.close();
 		} catch (Exception e) {
@@ -128,72 +134,81 @@ public class AllTasks {
 		PrintStream prt;
 
 		try {
+
 			out = new FileOutputStream("system_saved_tasks.txt");
 			prt = new PrintStream(out);
+			if (allTasks.size() == 0) {
+				prt.printf(" ");
+			} else {
 
-			while (isValidTaskId(counter)) {
-				prt.printf(
-						"%d %d %d %d %d %d %d %d %d %d %d %d %b %b %b %s",
-						counter,
-						allTasks.get(counter).getPriority(),
-						allTasks.get(counter).getStartTime().get(Calendar.YEAR),
-						allTasks.get(counter).getStartTime()
-								.get(Calendar.MONTH),
-						allTasks.get(counter).getStartTime()
-								.get(Calendar.DAY_OF_MONTH),
-						allTasks.get(counter).getStartTime()
-								.get(Calendar.HOUR_OF_DAY),
-						allTasks.get(counter).getStartTime()
-								.get(Calendar.MINUTE),
-						allTasks.get(counter).getEndTime().get(Calendar.YEAR),
-						allTasks.get(counter).getEndTime().get(Calendar.MONTH),
-						allTasks.get(counter).getEndTime()
-								.get(Calendar.DAY_OF_MONTH),
-						allTasks.get(counter).getEndTime()
-								.get(Calendar.HOUR_OF_DAY),
-						allTasks.get(counter).getEndTime().get(Calendar.MINUTE),
-						allTasks.get(counter).getIsThereReminder(), allTasks
-								.get(counter).getIsTaskDone(),
-						allTasks.get(counter).getIsAllDayEvent(),
-						allTasks.get(counter).getTaskTitle());
-				prt.println();
-				prt.printf("%s", allTasks.get(counter).getLocation());
-				prt.println();
-
-				if (allTasks.get(counter).getIsThereReminder()) {
+				while (isValidTaskId(counter)) {
 					prt.printf(
-							"%d %d %d %d %d",
-							allReminders
-									.get(this
-											.searchForCorrespondingReminder(allTasks
-													.get(counter)))
-									.getReminderTime().get(Calendar.YEAR),
-							allReminders
-									.get(this
-											.searchForCorrespondingReminder(allTasks
-													.get(counter)))
-									.getReminderTime().get(Calendar.MONTH),
-							allReminders
-									.get(this
-											.searchForCorrespondingReminder(allTasks
-													.get(counter)))
-									.getReminderTime()
+							"%d %d %d %d %d %d %d %d %d %d %d %d %b %b %b %s",
+							counter,
+							allTasks.get(counter).getPriority(),
+							allTasks.get(counter).getStartTime()
+									.get(Calendar.YEAR),
+							allTasks.get(counter).getStartTime()
+									.get(Calendar.MONTH),
+							allTasks.get(counter).getStartTime()
 									.get(Calendar.DAY_OF_MONTH),
-							allReminders
-									.get(this
-											.searchForCorrespondingReminder(allTasks
-													.get(counter)))
-									.getReminderTime()
+							allTasks.get(counter).getStartTime()
 									.get(Calendar.HOUR_OF_DAY),
-							allReminders
-									.get(this
-											.searchForCorrespondingReminder(allTasks
-													.get(counter)))
-									.getReminderTime().get(Calendar.MINUTE));
+							allTasks.get(counter).getStartTime()
+									.get(Calendar.MINUTE),
+							allTasks.get(counter).getEndTime()
+									.get(Calendar.YEAR),
+							allTasks.get(counter).getEndTime()
+									.get(Calendar.MONTH),
+							allTasks.get(counter).getEndTime()
+									.get(Calendar.DAY_OF_MONTH),
+							allTasks.get(counter).getEndTime()
+									.get(Calendar.HOUR_OF_DAY),
+							allTasks.get(counter).getEndTime()
+									.get(Calendar.MINUTE), allTasks
+									.get(counter).getIsThereReminder(),
+							allTasks.get(counter).getIsTaskDone(), allTasks
+									.get(counter).getIsAllDayEvent(), allTasks
+									.get(counter).getTaskTitle());
+					prt.println();
+					prt.printf("%s", allTasks.get(counter).getLocation());
 					prt.println();
 
+					if (allTasks.get(counter).getIsThereReminder()) {
+						prt.printf(
+								"%d %d %d %d %d",
+								allReminders
+										.get(this
+												.searchForCorrespondingReminder(allTasks
+														.get(counter)))
+										.getReminderTime().get(Calendar.YEAR),
+								allReminders
+										.get(this
+												.searchForCorrespondingReminder(allTasks
+														.get(counter)))
+										.getReminderTime().get(Calendar.MONTH),
+								allReminders
+										.get(this
+												.searchForCorrespondingReminder(allTasks
+														.get(counter)))
+										.getReminderTime()
+										.get(Calendar.DAY_OF_MONTH),
+								allReminders
+										.get(this
+												.searchForCorrespondingReminder(allTasks
+														.get(counter)))
+										.getReminderTime()
+										.get(Calendar.HOUR_OF_DAY),
+								allReminders
+										.get(this
+												.searchForCorrespondingReminder(allTasks
+														.get(counter)))
+										.getReminderTime().get(Calendar.MINUTE));
+						prt.println();
+
+					}
+					counter = counter + 1;
 				}
-				counter = counter + 1;
 			}
 			prt.close();
 		} catch (Exception e) {
@@ -230,11 +245,11 @@ public class AllTasks {
 	}
 
 	public int getSize() {
-		return allTasks.size()+ allFloatingTasks.size();
+		return allTasks.size() + allFloatingTasks.size();
 	}
-	
+
 	public int getTaskSize() {
-		return allTasks.size() ;
+		return allTasks.size();
 	}
 
 	public int getReminderSize() {
@@ -373,21 +388,21 @@ public class AllTasks {
 		}
 
 	}
-	
-	public void clearAllMissedReminders () {
-		int counter = 0,index = -1;
+
+	public void clearAllMissedReminders() {
+		int counter = 0, index = -1;
 
 		setCurrentTime();
-		while (counter < allReminders.size()){
-			if (currentTime.getTime().after(allReminders.get(counter).getReminderTime().getTime())){
+		while (counter < allReminders.size()) {
+			if (currentTime.getTime().after(
+					allReminders.get(counter).getReminderTime().getTime())) {
 				index = counter;
 			}
 			counter = counter + 1;
 		}
 		counter = 0;
-		
 
-		while (counter <= index && allReminders.size() != 0 ){
+		while (counter <= index && allReminders.size() != 0) {
 			currentReminder = allReminders.get(0);
 			currentReminder.getTask().setIsThereReminder(false);
 			allReminders.remove(0);
@@ -397,11 +412,12 @@ public class AllTasks {
 	}
 
 	private boolean setCurrentReminder() {
-		int counter = 0, index= -1;
+		int counter = 0, index = -1;
 
 		setCurrentTime();
-		while (counter < allReminders.size()){
-			if (currentTime.getTime().after(allReminders.get(counter).getReminderTime().getTime())){
+		while (counter < allReminders.size()) {
+			if (currentTime.getTime().after(
+					allReminders.get(counter).getReminderTime().getTime())) {
 				index = counter;
 			}
 			counter = counter + 1;
@@ -454,13 +470,14 @@ public class AllTasks {
 		}
 		return;
 	}
-	
-	public FloatingTask getFloatingTask (int index) {
+
+	public FloatingTask getFloatingTask(int index) {
 		return allFloatingTasks.get(index - this.getTaskSize());
 	}
-	
-	public void deleteFloatingTask (int index) {
+
+	public void deleteFloatingTask(int index) {
 		allFloatingTasks.remove(index - this.getTaskSize());
+		this.updateFloatingTaskID();
 		return;
 	}
 

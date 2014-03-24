@@ -22,6 +22,7 @@ public class Controller {
 
 	private String MESSAGE_FILE_NOT_FOUND = "The system files could not be loaded.";
 	private String MESSAGE_INVALID_COMMAND = "The command given was invalid.";
+	private String MESSAGE_PROVIDE_END_TIME = "Please provide end time for time bounded tasks.";
 
 	private AllTasks allTasks;
 	private UndoRedo undoRedo = UndoRedo.getInstance();
@@ -29,7 +30,7 @@ public class Controller {
 
 	private Handler handler;
 	private Logger logger = Logger.getLogger("Controller");
-	
+
 	private Timer systemTimer;
 	private ReminderTimerTask reminderTimerTask;
 
@@ -57,7 +58,8 @@ public class Controller {
 		}
 		allTasks.clearAllMissedReminders();
 		reminderTimerTask = new ReminderTimerTask(allTasks);
-		systemTimer.scheduleAtFixedRate(reminderTimerTask, SYSTEM_TIMER_TASK_PERIOD, SYSTEM_TIMER_TASK_PERIOD);
+		systemTimer.scheduleAtFixedRate(reminderTimerTask,
+				SYSTEM_TIMER_TASK_PERIOD, SYSTEM_TIMER_TASK_PERIOD);
 		return;
 	}
 
@@ -120,7 +122,12 @@ public class Controller {
 						false, command.getParameters().getDescription(),
 						command.getParameters().getLocation());
 			} else {
-				execute_add(command, isThereReminder, startTime);
+				if (command.getParameters().getStartTime() != null
+						&& command.getParameters().getEndTime() == null) {
+					System.out.printf("%s\n", MESSAGE_PROVIDE_END_TIME);
+				} else {
+					execute_add(command, isThereReminder, startTime);
+				}
 			}
 			break;
 
@@ -131,13 +138,12 @@ public class Controller {
 
 		case "MODIFY":
 			undoRedo.addUndo(allTasks);
-			if (command.getParameters().getStartTime() == null
-					&& command.getParameters().getEndTime() == null) {
+			try {
 				Logic.updateFloatingTask(command.getParameters().getTaskId(),
 						command.getParameters().getPriority(), command
 								.getParameters().getDescription(), command
 								.getParameters().getLocation());
-			} else {
+			} catch (Exception e) {
 				execute_modify(command, isThereReminder, startTime);
 			}
 			break;
@@ -218,6 +224,7 @@ public class Controller {
 
 		case "CLEAR":
 			undoRedo.addUndo(allTasks);
+			allTasks = new AllTasks();
 			Logic.clearAll();
 			break;
 
