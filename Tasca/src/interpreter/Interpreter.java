@@ -37,6 +37,7 @@ public class Interpreter {
     
     private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
     private static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
+    private static Config cfg = new Config();
     
     private ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>(); // For duplicates
     private Command command = new Command();
@@ -104,7 +105,7 @@ public class Interpreter {
     
     private static void readCommandDatabase() throws IllegalArgumentException {
         
-        Config cfg = new Config();
+        
         
         String[] headerKeySet = (String[])( commandHeaders.keySet().toArray( new String[commandHeaders.size()] ) );
         
@@ -124,7 +125,7 @@ public class Interpreter {
         String[] keys = cfg.getSynonyms(type);
         
         for (int i=0; i<keys.length; i++) {
-            String key = keys[i];
+            String key = keys[i].trim();
             
             if (!commandKeywords.containsKey(key)) {
                 commandKeywords.put(key, commandType);
@@ -139,7 +140,6 @@ public class Interpreter {
     
     
     private static void readParameterDatabase() throws IllegalArgumentException {
-        Config cfg = new Config();
         
         String[] headerKeySet = (String[])( parameterHeaders.keySet().toArray( new String[parameterHeaders.size()] ) );
         
@@ -160,7 +160,7 @@ public class Interpreter {
         String[] keys = cfg.getSynonyms(type);
         
         for (int i=0; i<keys.length; i++) {
-            String key = keys[i];
+            String key = keys[i].trim();
             
             if (!parameterKeywords.containsKey(key)) {
                 parameterKeywords.put(key, parameterType);

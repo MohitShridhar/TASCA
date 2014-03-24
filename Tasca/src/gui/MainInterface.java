@@ -2,6 +2,8 @@ package gui;
 
 import interpreter.Command;
 import interpreter.CommandType;
+import interpreter.Config;
+import interpreter.FolderName;
 import interpreter.Interpreter;
 import interpreter.ParameterType;
 import io.Exporter;
@@ -100,20 +102,6 @@ class MyTextPane extends JTextPane {
 	    getInputAttributes().removeAttribute(StyleConstants.Bold);
 	    super.replaceSelection(content);
     }
-    
-    // Not working on windows:
-//    @Override
-//    public void paint (Graphics g){
-//	
-//	Graphics2D g2 = (Graphics2D) g;
-//	
-//	g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-//	g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-//	g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-//	
-//	super.paint(g2);
-//    }
-    
 }
 
 
@@ -492,6 +480,7 @@ public class MainInterface {
   // TODO: Fix minimize flickering
   // TODO: not imp: fix dual screen drag
   // TODO: Add more help error messages. And integrate ID & Folder & time validity checkers. Implement all user exceptions
+  // TODO: Save before OS Quit 
     
   private static int posX=0,posY=0;
   private static JButton btnFolder2 = new JButton("");
@@ -499,25 +488,37 @@ public class MainInterface {
   private static JButton btnFolder3 = new JButton("");
   private static JButton btnFolder4 = new JButton("");
   private static JButton btnFolder5 = new JButton("");
+  
+  private static JLabel folder1Label = null;
+  private static JLabel folder2Label = null;
+  private static JLabel folder3Label = null;
+  private static JLabel folder4Label = null;
+  private static JLabel folder5Label = null;
+  
   private static String userInput = null;
   private static HighlightDocumentFilter filter = null;
   
   private static JFrame frame = null;
+  private static JFrame frame_1;
   
   public static Font menloReg16 = null;
   public static Font latoReg15 = null;
+  public static Font latoBold13 = null;
   
   public static Font menloReg = null;
   public static Font latoReg = null;
   
+  private static String folder1Name, folder2Name, folder3Name, folder4Name, folder5Name;
+  
   public static boolean activeFeedbackEnabled = true;
   
-  private static Folder currFolder, prevFolder;
+  private static FolderName currFolder, prevFolder;
   
-  public static enum Folder {
-      folder1, folder2, folder3, folder4, folder5
-  }
-  
+//  public static enum FolderName {
+//      folder1, folder2, folder3, folder4, folder5
+//      
+//  }
+//  
   public MainInterface() {
       
 //      try {
@@ -543,6 +544,7 @@ public class MainInterface {
       
       menloReg16 = new Font("Menlo", Font.PLAIN, 16);
       latoReg15 = new Font("Lato", Font.PLAIN, 15);
+      latoBold13 = new Font("Lato", Font.BOLD, 13);
       
       
   }
@@ -552,23 +554,26 @@ public class MainInterface {
       return filter.getUserInput();
   }
   
-  private static void clearPreviousTab (Folder prevFolder) {
+  private static void clearPreviousTab (FolderName prevFolder) {
       switch (prevFolder) {
-      case folder1:
+      case FOLDER1:
 	  btnFolder1.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
 	  break;
-      case folder2:
+      case FOLDER2:
 	  btnFolder2.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
 	  break;
-      case folder3:
+      case FOLDER3:
 	  btnFolder3.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
 	  break;
-      case folder4:
+      case FOLDER4:
 	  btnFolder4.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
 	  break;
-      case folder5:
+      case FOLDER5:
 	  btnFolder5.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
 	  break;
+      case DEFAULT:
+	  //TODO: Need to manage default case
+	  break;      
       default:
 	  break;
       }
@@ -628,19 +633,19 @@ public class MainInterface {
       SwingUtilities.invokeLater(new Runnable() {
           public void run() {
 
-	      frame = new JFrame("TitleLessJFrame");
+	      frame_1 = new JFrame("TitleLessJFrame");
 	      
-	      frame.setBackground(UIManager.getColor("Label.disabledShadow"));
-	      frame.getContentPane().setLayout(null);
-	      frame.setUndecorated(true); 
-	      frame.setSize(888, 500);
-	      frame.setResizable(false); 
-	      frame.setLocationRelativeTo(null); 
-	      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	      initGui(frame);
+	      frame_1.setBackground(UIManager.getColor("Label.disabledShadow"));
+	      frame_1.getContentPane().setLayout(null);
+	      frame_1.setUndecorated(true); 
+	      frame_1.setSize(888, 500);
+	      frame_1.setResizable(false); 
+	      frame_1.setLocationRelativeTo(null); 
+	      frame_1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	      initGui(frame_1);
 	      
 	      
-	      frame.setVisible(true);
+	      frame_1.setVisible(true);
           }
           
       });
@@ -663,14 +668,28 @@ public class MainInterface {
 //     
 
   }
-
+  
+  
+ private static void loadFolderNames(){
+     Config cfg = new Config ();
+     
+     folder1Name = cfg.getFolderName(FolderName.FOLDER1);
+     folder2Name = cfg.getFolderName(FolderName.FOLDER2);
+     folder3Name = cfg.getFolderName(FolderName.FOLDER3);
+     folder4Name = cfg.getFolderName(FolderName.FOLDER4);
+     folder5Name = cfg.getFolderName(FolderName.FOLDER5);
+ }
+  
 public static void initGui(final JFrame frame) {
     
     new MainInterface();
     
-    currFolder = Folder.folder1;
-     prevFolder = Folder.folder1;
-     
+    currFolder = FolderName.FOLDER1;
+    prevFolder = FolderName.FOLDER1;
+    
+    // Load folder names:
+    loadFolderNames();
+       
          
     Container mainContainer = frame.getContentPane();     
     
@@ -769,24 +788,31 @@ public static void initGui(final JFrame frame) {
     btnMinimize.setBounds(836, 7, 18, 18);
     frame.getContentPane().add(btnMinimize);
     
+    folder1Label = new JLabel(folder1Name);
+    folder1Label.setHorizontalAlignment(SwingConstants.CENTER);
     
     btnFolder1.addActionListener(new ActionListener() {
     	public void actionPerformed(ActionEvent e) {
     	    prevFolder = currFolder;
-    	    currFolder = Folder.folder1;
+    	    currFolder = FolderName.FOLDER1;
     	    
-		if (prevFolder != currFolder) {
-		    // Clear previous:
-		    clearPreviousTab(prevFolder);
+    	    // Clear previous:
+    	    clearPreviousTab(prevFolder);
 
-		    // Update:
-		    btnFolder1.setIcon(new ImageIcon(MainInterface.class
-			    .getResource("/GUI Graphics/Tab Clicked.gif")));
-		    frame.setComponentZOrder(btnFolder1, 0);
+    	    // Update:
+    	    btnFolder1.setIcon(new ImageIcon(MainInterface.class
+    		    .getResource("/GUI Graphics/Tab Clicked.gif")));
+    	    frame.setComponentZOrder(btnFolder1, 0);
+    	    frame.setComponentZOrder(folder1Label, 0);
 
-		}
     	}
     });
+    
+    
+    folder1Label.setFont(latoBold13);
+    folder1Label.setForeground(Color.WHITE);
+    folder1Label.setBounds(56, 10, 61, 16);
+    frame_1.getContentPane().add(folder1Label);
     btnFolder1.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
     btnFolder1.setBounds(0, 4, 177, 28);
     btnFolder1.setOpaque(false);
@@ -801,7 +827,7 @@ public static void initGui(final JFrame frame) {
     	@Override
     	public void mouseClicked(MouseEvent e) {
     	    prevFolder = currFolder;
-    	    currFolder = Folder.folder2;
+    	    currFolder = FolderName.FOLDER2;
     	    
     	    // Clear previous:
     	    clearPreviousTab(prevFolder);
@@ -809,8 +835,16 @@ public static void initGui(final JFrame frame) {
     	    // Update:
     	    btnFolder2.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab Clicked.gif")));	    
     	    frame.setComponentZOrder(btnFolder2, 0);
+    	    frame.setComponentZOrder(folder2Label, 0);
     	}
     });
+    
+    folder2Label = new JLabel(folder2Name);
+    folder2Label.setHorizontalAlignment(SwingConstants.CENTER);
+    folder2Label.setForeground(Color.WHITE);
+    folder2Label.setFont(new Font("Lato", Font.BOLD, 13));
+    folder2Label.setBounds(215, 10, 61, 16);
+    frame_1.getContentPane().add(folder2Label);
     btnFolder2.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
     btnFolder2.setOpaque(false);
     btnFolder2.setFocusPainted(false);
@@ -823,18 +857,24 @@ public static void initGui(final JFrame frame) {
     	@Override
     	public void mouseClicked(MouseEvent e) {
     	    prevFolder = currFolder;
-	    currFolder = Folder.folder3;
+	    currFolder = FolderName.FOLDER3;
 	    
 	    // Clear previous:
 	    clearPreviousTab(prevFolder);
 
 	    btnFolder3.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab Clicked.gif")));	    
 	    frame.setComponentZOrder(btnFolder3, 0);
-	    
-	    
+	    frame.setComponentZOrder(folder3Label, 0);    
 
     	}
     });
+    
+    folder3Label = new JLabel(folder3Name);
+    folder3Label.setHorizontalAlignment(SwingConstants.CENTER);
+    folder3Label.setForeground(Color.WHITE);
+    folder3Label.setFont(new Font("Lato", Font.BOLD, 13));
+    folder3Label.setBounds(374, 10, 61, 16);
+    frame_1.getContentPane().add(folder3Label);
     
    
     btnFolder3.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
@@ -843,7 +883,7 @@ public static void initGui(final JFrame frame) {
     btnFolder3.setContentAreaFilled(false);
     btnFolder3.setBorderPainted(false);
     btnFolder3.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-    btnFolder3.setBounds(320, 4, 177, 28);
+    btnFolder3.setBounds(319, 4, 177, 28);
     frame.getContentPane().add(btnFolder3);
     
     
@@ -852,16 +892,31 @@ public static void initGui(final JFrame frame) {
     	@Override
     	public void mouseClicked(MouseEvent e) {
     	    prevFolder = currFolder;
-	    currFolder = Folder.folder4;
+	    currFolder = FolderName.FOLDER4;
 	    
 	    // Clear previous:
 	    clearPreviousTab(prevFolder);
 
 	    btnFolder4.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab Clicked.gif")));	    
 	    frame.setComponentZOrder(btnFolder4, 0);
+	    frame.setComponentZOrder(folder4Label,0);
 
     	}
     });
+    
+    folder4Label = new JLabel(folder4Name);
+    folder4Label.setHorizontalAlignment(SwingConstants.CENTER);
+    folder4Label.setForeground(Color.WHITE);
+    folder4Label.setFont(new Font("Lato", Font.BOLD, 13));
+    folder4Label.setBounds(533, 10, 61, 16);
+    frame_1.getContentPane().add(folder4Label);
+    
+    folder5Label = new JLabel(folder5Name);
+    folder5Label.setHorizontalAlignment(SwingConstants.CENTER);
+    folder5Label.setForeground(Color.WHITE);
+    folder5Label.setFont(new Font("Lato", Font.BOLD, 13));
+    folder5Label.setBounds(692, 10, 61, 16);
+    frame_1.getContentPane().add(folder5Label);
     
     
     btnFolder4.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
@@ -876,13 +931,14 @@ public static void initGui(final JFrame frame) {
     	@Override
     	public void mouseClicked(MouseEvent e) {
     	    prevFolder = currFolder;
-	    currFolder = Folder.folder5;
+	    currFolder = FolderName.FOLDER5;
 	    
 	    // Clear previous:
 	    clearPreviousTab(prevFolder);
 
 	    btnFolder5.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab Clicked.gif")));	    
 	    frame.setComponentZOrder(btnFolder5, 0);
+	    frame.setComponentZOrder(folder5Label, 0);
     	}
     });
     
@@ -893,7 +949,7 @@ public static void initGui(final JFrame frame) {
     btnFolder5.setContentAreaFilled(false);
     btnFolder5.setBorderPainted(false);
     btnFolder5.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-    btnFolder5.setBounds(640, 4, 177, 28);
+    btnFolder5.setBounds(639, 4, 177, 28);
     
     frame.getContentPane().add(btnFolder5);
     
