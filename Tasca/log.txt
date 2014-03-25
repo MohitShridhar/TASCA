@@ -1,0 +1,4 @@
+Mar 25, 2014 2:20:02 PM controller.Controller executeCommands
+SEVERE: Entering executeLogic
+Mar 25, 2014 2:20:04 PM controller.Controller executeCommands
+SEVERE: Entering executeLogic
