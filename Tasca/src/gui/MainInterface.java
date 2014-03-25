@@ -113,6 +113,7 @@ class HighlightDocumentFilter extends DocumentFilter {
     private AttributeSet duplicateParameter, normalSetting, parameterSetting, commandSetting;
     private Interpreter interpreter;
     private JLabel background, feedbackBackground, feedbackText;
+    
     private Map<CommandType, Color> commandColors = new HashMap<CommandType, Color>();
     private Map<ParameterType, Color> parameterColors = new HashMap<ParameterType, Color>();
     private boolean hasColor = false;
@@ -501,6 +502,9 @@ public class MainInterface {
   private static JFrame frame = null;
   private static JFrame frame_1;
   
+  private static ImageIcon tabNotClicked;
+  private static ImageIcon tabClicked;
+  
   public static Font menloReg16 = null;
   public static Font latoReg15 = null;
   public static Font latoBold13 = null;
@@ -512,7 +516,7 @@ public class MainInterface {
   
   public static boolean activeFeedbackEnabled = true;
   
-  private static FolderName currFolder, prevFolder;
+  private static FolderName currFolder, prevFolder, defaultFolder;
   
 //  public static enum FolderName {
 //      folder1, folder2, folder3, folder4, folder5
@@ -678,14 +682,15 @@ public class MainInterface {
      folder3Name = cfg.getFolderName(FolderName.FOLDER3);
      folder4Name = cfg.getFolderName(FolderName.FOLDER4);
      folder5Name = cfg.getFolderName(FolderName.FOLDER5);
+     
+     defaultFolder = cfg.getDefaultFolder();
+     currFolder = defaultFolder;
+     prevFolder = currFolder;
  }
   
 public static void initGui(final JFrame frame) {
     
     new MainInterface();
-    
-    currFolder = FolderName.FOLDER1;
-    prevFolder = FolderName.FOLDER1;
     
     // Load folder names:
     loadFolderNames();
@@ -788,6 +793,15 @@ public static void initGui(final JFrame frame) {
     btnMinimize.setBounds(836, 7, 18, 18);
     frame.getContentPane().add(btnMinimize);
     
+    try {
+	tabNotClicked = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif"))));
+	tabClicked = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Tab Clicked.gif"))));
+    } catch (IOException e1) {
+	// TODO Auto-generated catch block
+	e1.printStackTrace();
+    }
+    
+    
     folder1Label = new JLabel(folder1Name);
     folder1Label.setHorizontalAlignment(SwingConstants.CENTER);
     
@@ -800,10 +814,9 @@ public static void initGui(final JFrame frame) {
     	    clearPreviousTab(prevFolder);
 
     	    // Update:
-    	    btnFolder1.setIcon(new ImageIcon(MainInterface.class
-    		    .getResource("/GUI Graphics/Tab Clicked.gif")));
-    	    frame.setComponentZOrder(btnFolder1, 0);
-    	    frame.setComponentZOrder(folder1Label, 0);
+    	    btnFolder1.setIcon(tabClicked);
+    	    //frame.setComponentZOrder(btnFolder1, 0);
+    	    //frame.setComponentZOrder(folder1Label, 0);
 
     	}
     });
@@ -813,7 +826,14 @@ public static void initGui(final JFrame frame) {
     folder1Label.setForeground(Color.WHITE);
     folder1Label.setBounds(56, 10, 61, 16);
     frame_1.getContentPane().add(folder1Label);
-    btnFolder1.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
+    
+    
+    if (defaultFolder == FolderName.FOLDER1) {
+    	btnFolder1.setIcon(tabClicked);
+    } else {
+	btnFolder1.setIcon(tabNotClicked);
+    }
+    
     btnFolder1.setBounds(0, 4, 177, 28);
     btnFolder1.setOpaque(false);
     btnFolder1.setFocusPainted(false);
@@ -833,9 +853,9 @@ public static void initGui(final JFrame frame) {
     	    clearPreviousTab(prevFolder);
     	    
     	    // Update:
-    	    btnFolder2.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab Clicked.gif")));	    
-    	    frame.setComponentZOrder(btnFolder2, 0);
-    	    frame.setComponentZOrder(folder2Label, 0);
+    	    btnFolder2.setIcon(tabClicked);	    
+    	    //frame.setComponentZOrder(btnFolder2, 0);
+//    	    frame.setComponentZOrder(folder2Label, 0);
     	}
     });
     
@@ -845,7 +865,13 @@ public static void initGui(final JFrame frame) {
     folder2Label.setFont(new Font("Lato", Font.BOLD, 13));
     folder2Label.setBounds(215, 10, 61, 16);
     frame_1.getContentPane().add(folder2Label);
-    btnFolder2.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
+    
+    if (defaultFolder == FolderName.FOLDER2) {
+    	btnFolder2.setIcon(tabClicked);
+    } else {
+	btnFolder2.setIcon(tabNotClicked);
+    }
+    
     btnFolder2.setOpaque(false);
     btnFolder2.setFocusPainted(false);
     btnFolder2.setContentAreaFilled(false);
@@ -862,9 +888,9 @@ public static void initGui(final JFrame frame) {
 	    // Clear previous:
 	    clearPreviousTab(prevFolder);
 
-	    btnFolder3.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab Clicked.gif")));	    
-	    frame.setComponentZOrder(btnFolder3, 0);
-	    frame.setComponentZOrder(folder3Label, 0);    
+	    btnFolder3.setIcon(tabClicked);	    
+	    //frame.setComponentZOrder(btnFolder3, 0);
+//	    frame.setComponentZOrder(folder3Label, 0);    
 
     	}
     });
@@ -877,13 +903,18 @@ public static void initGui(final JFrame frame) {
     frame_1.getContentPane().add(folder3Label);
     
    
-    btnFolder3.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
+    if (defaultFolder == FolderName.FOLDER3) {
+    	btnFolder3.setIcon(tabClicked);
+    } else {
+	btnFolder3.setIcon(tabNotClicked);
+    }
+    
     btnFolder3.setOpaque(false);
     btnFolder3.setFocusPainted(false);
     btnFolder3.setContentAreaFilled(false);
     btnFolder3.setBorderPainted(false);
     btnFolder3.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-    btnFolder3.setBounds(319, 4, 177, 28);
+    btnFolder3.setBounds(318, 4, 177, 28);
     frame.getContentPane().add(btnFolder3);
     
     
@@ -897,9 +928,9 @@ public static void initGui(final JFrame frame) {
 	    // Clear previous:
 	    clearPreviousTab(prevFolder);
 
-	    btnFolder4.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab Clicked.gif")));	    
-	    frame.setComponentZOrder(btnFolder4, 0);
-	    frame.setComponentZOrder(folder4Label,0);
+	    btnFolder4.setIcon(tabClicked);	    
+	    //frame.setComponentZOrder(btnFolder4, 0);
+//	    frame.setComponentZOrder(folder4Label,0);
 
     	}
     });
@@ -915,17 +946,22 @@ public static void initGui(final JFrame frame) {
     folder5Label.setHorizontalAlignment(SwingConstants.CENTER);
     folder5Label.setForeground(Color.WHITE);
     folder5Label.setFont(new Font("Lato", Font.BOLD, 13));
-    folder5Label.setBounds(692, 10, 61, 16);
+    folder5Label.setBounds(694, 10, 61, 16);
     frame_1.getContentPane().add(folder5Label);
     
     
-    btnFolder4.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
+    if (defaultFolder == FolderName.FOLDER4) {
+    	btnFolder4.setIcon(tabClicked);
+    } else {
+	btnFolder4.setIcon(tabNotClicked);
+    }
+    
     btnFolder4.setOpaque(false);
     btnFolder4.setFocusPainted(false);
     btnFolder4.setContentAreaFilled(false);
     btnFolder4.setBorderPainted(false);
     btnFolder4.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-    btnFolder4.setBounds(479, 4, 177, 28);
+    btnFolder4.setBounds(477, 4, 177, 28);
     frame.getContentPane().add(btnFolder4);
     btnFolder5.addMouseListener(new MouseAdapter() {
     	@Override
@@ -936,20 +972,25 @@ public static void initGui(final JFrame frame) {
 	    // Clear previous:
 	    clearPreviousTab(prevFolder);
 
-	    btnFolder5.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab Clicked.gif")));	    
-	    frame.setComponentZOrder(btnFolder5, 0);
-	    frame.setComponentZOrder(folder5Label, 0);
+	    btnFolder5.setIcon(tabClicked);	    ;
+	    //frame.setComponentZOrder(btnFolder5, 0);
+//	    frame.setComponentZOrder(folder5Label, 0);
     	}
     });
     
     
-    btnFolder5.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
+    if (defaultFolder == FolderName.FOLDER5) {
+    	btnFolder5.setIcon(tabClicked);
+    } else {
+	btnFolder5.setIcon(tabNotClicked);
+    }
+    
     btnFolder5.setOpaque(false);
     btnFolder5.setFocusPainted(false);
     btnFolder5.setContentAreaFilled(false);
     btnFolder5.setBorderPainted(false);
     btnFolder5.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-    btnFolder5.setBounds(639, 4, 177, 28);
+    btnFolder5.setBounds(636, 4, 177, 28);
     
     frame.getContentPane().add(btnFolder5);
     
@@ -972,7 +1013,7 @@ public static void initGui(final JFrame frame) {
     frame.getContentPane().add(lblNewLabel);
     
     
-    JLabel label = new JLabel(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/UI Background with Tabs.png")));
+    JLabel label = new JLabel(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/UI Background.png")));
     label.setBackground(Color.BLACK);
     label.setBounds(0, 0, 888, 500);
     mainContainer.add(label);

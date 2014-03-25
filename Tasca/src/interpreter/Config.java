@@ -8,6 +8,8 @@ public class Config
    Properties configFile;
    private static Map<String, FolderName> folderNameRef = new HashMap<String, FolderName>();
    private static Map<FolderName, String> folderIdRef = new HashMap<FolderName, String>();
+   private static Map<String, FolderName> folderIdHeader = new HashMap<String, FolderName>();
+   private static FolderName defaultFolder =  FolderName.FOLDER1;   
    
    public Config()
    {
@@ -27,12 +29,21 @@ public class Config
        folderNameRef.put(getProperty("folder5").trim(), FolderName.FOLDER5);
        folderNameRef.put(getProperty("default").trim(), FolderName.DEFAULT);
        
+       folderIdHeader.put("folder1", FolderName.FOLDER1);
+       folderIdHeader.put("folder2", FolderName.FOLDER2);
+       folderIdHeader.put("folder3", FolderName.FOLDER3);
+       folderIdHeader.put("folder4", FolderName.FOLDER4);
+       folderIdHeader.put("folder5", FolderName.FOLDER5);
+       folderIdHeader.put("default", FolderName.DEFAULT);
+       
        folderIdRef.put(FolderName.FOLDER1, getProperty("folder1").trim());
        folderIdRef.put(FolderName.FOLDER2, getProperty("folder2").trim());
        folderIdRef.put(FolderName.FOLDER3, getProperty("folder3").trim());
        folderIdRef.put(FolderName.FOLDER4, getProperty("folder4").trim());
        folderIdRef.put(FolderName.FOLDER5, getProperty("folder5").trim());
        folderIdRef.put(FolderName.DEFAULT, getProperty("default").trim());
+       
+       defaultFolder = folderIdHeader.get(folderIdRef.get(FolderName.DEFAULT));
        
    }
 
@@ -51,5 +62,9 @@ public class Config
    
    public String getFolderName(FolderName folderId) {
        return folderIdRef.get(folderId);
+   }
+   
+   public FolderName getDefaultFolder() {
+       return defaultFolder;
    }
 }
