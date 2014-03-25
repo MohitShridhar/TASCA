@@ -15,6 +15,7 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -27,6 +28,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
 import java.awt.FontFormatException;
 import java.awt.Graphics;
@@ -34,6 +36,8 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 
@@ -478,12 +482,15 @@ class HighlightDocumentFilter extends DocumentFilter {
 
 public class MainInterface {
 
-  // TODO: Fix minimize flickering
-  // TODO: not imp: fix dual screen drag
   // TODO: Add more help error messages. And integrate ID & Folder & time validity checkers. Implement all user exceptions
   // TODO: Save before OS Quit 
     
+  private static final int NUM_FOLDERS = 5;  
+    
   private static int posX=0,posY=0;
+  
+  private static MyTextPane textPane = null;
+  
   private static JButton btnFolder2 = new JButton("");
   private static JButton btnFolder1 = new JButton("");
   private static JButton btnFolder3 = new JButton("");
@@ -517,6 +524,9 @@ public class MainInterface {
   public static boolean activeFeedbackEnabled = true;
   
   private static FolderName currFolder, prevFolder, defaultFolder;
+  
+  private static FolderName folderCycle[] = {FolderName.FOLDER1, FolderName.FOLDER2, FolderName.FOLDER3, FolderName.FOLDER4, FolderName.FOLDER5};
+  private static int cycleRef = 1;
   
 //  public static enum FolderName {
 //      folder1, folder2, folder3, folder4, folder5
@@ -686,8 +696,74 @@ public class MainInterface {
      defaultFolder = cfg.getDefaultFolder();
      currFolder = defaultFolder;
      prevFolder = currFolder;
+     
+     cycleRef = Integer.parseInt( defaultFolder.toString().charAt(6) + "" ) - 1;
+ }
+ 
+ // TODO: Replace folder buttons with Common inheritance class
+ public static void folder1Activate() {
+     prevFolder = currFolder;
+     currFolder = FolderName.FOLDER1;
+
+     // Clear previous:
+     clearPreviousTab(prevFolder);
+
+     // Update:
+     btnFolder1.setIcon(tabClicked);
+     //frame.setComponentZOrder(btnFolder1, 0);
+     //frame.setComponentZOrder(folder1Label, 0);
+ }
+ 
+ public static void folder2Activate() {
+     prevFolder = currFolder;
+     currFolder = FolderName.FOLDER2;
+
+     // Clear previous:
+     clearPreviousTab(prevFolder);
+
+     // Update:
+     btnFolder2.setIcon(tabClicked);	    
+     //frame.setComponentZOrder(btnFolder2, 0);
+     //    	    frame.setComponentZOrder(folder2Label, 0);
+ }
+ 
+ public static void folder3Activate() {
+     prevFolder = currFolder;
+     currFolder = FolderName.FOLDER3;
+
+     // Clear previous:
+     clearPreviousTab(prevFolder);
+
+     btnFolder3.setIcon(tabClicked);	    
+     //frame.setComponentZOrder(btnFolder3, 0);
+     //	    frame.setComponentZOrder(folder3Label, 0);    
  }
   
+
+ public static void folder4Activate() {
+     prevFolder = currFolder;
+     currFolder = FolderName.FOLDER4;
+
+     // Clear previous:
+     clearPreviousTab(prevFolder);
+
+     btnFolder4.setIcon(tabClicked);	    
+     //frame.setComponentZOrder(btnFolder4, 0);
+     //	    frame.setComponentZOrder(folder4Label,0);
+ }
+ 
+ public static void folder5Activate() {
+     prevFolder = currFolder;
+     currFolder = FolderName.FOLDER5;
+
+     // Clear previous:
+     clearPreviousTab(prevFolder);
+
+     btnFolder5.setIcon(tabClicked);	    
+     //frame.setComponentZOrder(btnFolder5, 0);
+     //	    frame.setComponentZOrder(folder5Label, 0);
+ }
+
 public static void initGui(final JFrame frame) {
     
     new MainInterface();
@@ -745,11 +821,12 @@ public static void initGui(final JFrame frame) {
 //    frame.getContentPane().add(scrollPane);
    
     
-    MyTextPane textPane = new MyTextPane(new DefaultStyledDocument());
+    textPane = new MyTextPane(new DefaultStyledDocument());
     textPane.setOpaque(false);
     textPane.setText("memora vivere");
     textPane.setFont(menloReg16);
     textPane.setForeground(Color.WHITE);
+    textPane.setFocusTraversalKeysEnabled(false);
     
     // COLOR CODING--------------------------------------------------------
     Interpreter interpreter = new Interpreter();
@@ -807,16 +884,7 @@ public static void initGui(final JFrame frame) {
     
     btnFolder1.addActionListener(new ActionListener() {
     	public void actionPerformed(ActionEvent e) {
-    	    prevFolder = currFolder;
-    	    currFolder = FolderName.FOLDER1;
-    	    
-    	    // Clear previous:
-    	    clearPreviousTab(prevFolder);
-
-    	    // Update:
-    	    btnFolder1.setIcon(tabClicked);
-    	    //frame.setComponentZOrder(btnFolder1, 0);
-    	    //frame.setComponentZOrder(folder1Label, 0);
+    	    folder1Activate();
 
     	}
     });
@@ -846,18 +914,10 @@ public static void initGui(final JFrame frame) {
     btnFolder2.addMouseListener(new MouseAdapter() {
     	@Override
     	public void mouseClicked(MouseEvent e) {
-    	    prevFolder = currFolder;
-    	    currFolder = FolderName.FOLDER2;
-    	    
-    	    // Clear previous:
-    	    clearPreviousTab(prevFolder);
-    	    
-    	    // Update:
-    	    btnFolder2.setIcon(tabClicked);	    
-    	    //frame.setComponentZOrder(btnFolder2, 0);
-//    	    frame.setComponentZOrder(folder2Label, 0);
+    	    folder2Activate();
     	}
     });
+    
     
     folder2Label = new JLabel(folder2Name);
     folder2Label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -882,17 +942,10 @@ public static void initGui(final JFrame frame) {
     btnFolder3.addMouseListener(new MouseAdapter() {
     	@Override
     	public void mouseClicked(MouseEvent e) {
-    	    prevFolder = currFolder;
-	    currFolder = FolderName.FOLDER3;
-	    
-	    // Clear previous:
-	    clearPreviousTab(prevFolder);
-
-	    btnFolder3.setIcon(tabClicked);	    
-	    //frame.setComponentZOrder(btnFolder3, 0);
-//	    frame.setComponentZOrder(folder3Label, 0);    
+    	    folder3Activate();
 
     	}
+
     });
     
     folder3Label = new JLabel(folder3Name);
@@ -922,17 +975,11 @@ public static void initGui(final JFrame frame) {
     btnFolder4.addMouseListener(new MouseAdapter() {
     	@Override
     	public void mouseClicked(MouseEvent e) {
-    	    prevFolder = currFolder;
-	    currFolder = FolderName.FOLDER4;
-	    
-	    // Clear previous:
-	    clearPreviousTab(prevFolder);
-
-	    btnFolder4.setIcon(tabClicked);	    
-	    //frame.setComponentZOrder(btnFolder4, 0);
-//	    frame.setComponentZOrder(folder4Label,0);
+    	    folder4Activate();
 
     	}
+
+
     });
     
     folder4Label = new JLabel(folder4Name);
@@ -966,15 +1013,7 @@ public static void initGui(final JFrame frame) {
     btnFolder5.addMouseListener(new MouseAdapter() {
     	@Override
     	public void mouseClicked(MouseEvent e) {
-    	    prevFolder = currFolder;
-	    currFolder = FolderName.FOLDER5;
-	    
-	    // Clear previous:
-	    clearPreviousTab(prevFolder);
-
-	    btnFolder5.setIcon(tabClicked);	    ;
-	    //frame.setComponentZOrder(btnFolder5, 0);
-//	    frame.setComponentZOrder(folder5Label, 0);
+    	    folder5Activate();
     	}
     });
     
@@ -1039,6 +1078,98 @@ public static void initGui(final JFrame frame) {
          }
     });
     
+    KeyboardFocusManager.getCurrentKeyboardFocusManager()
+    .addKeyEventDispatcher(new KeyEventDispatcher() {
+	private long lastPressProcessed = 0;
+	
+        @Override
+        public boolean dispatchKeyEvent(KeyEvent e) {
+            if(System.currentTimeMillis() - lastPressProcessed > 170) {
+        	if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_TAB && !e.isShiftDown()) {
+        	    cycleRef = (cycleRef + NUM_FOLDERS + 1) % NUM_FOLDERS;
+
+        	    FolderName nextFolder = folderCycle[cycleRef];
+
+        	    cycleTabsSwitchCase(nextFolder);
+
+        	} else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_TAB && e.isShiftDown()) {
+        	    cycleRef = (cycleRef + NUM_FOLDERS - 1) % NUM_FOLDERS;
+        	    FolderName nextFolder = folderCycle[cycleRef];
+
+        	    cycleTabsSwitchCase(nextFolder);
+        	}
+        	
+        	lastPressProcessed = System.currentTimeMillis();
+            }
+	    
+	    return false;
+        }
+        
+	public void cycleTabsSwitchCase(FolderName nextFolder) {
+	    switch (nextFolder) {
+	    case FOLDER1:
+	        folder1Activate();
+	        break;
+	    case FOLDER2:
+	        folder2Activate();
+	        break;
+	    case FOLDER3:
+	        folder3Activate();
+	        break;
+	    case FOLDER4:
+	        folder4Activate();
+	        break;
+	    case FOLDER5:
+	        folder5Activate();
+	        break;
+	        
+	    default:
+	        break;
+	    }
+	}
+  });
+    
+//    textPane.addKeyListener(new java.awt.event.KeyAdapter() {
+//	
+//	public void keyPressed(java.awt.event.KeyEvent evt) {
+//	    if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_TAB && !evt.isShiftDown()) {
+//		cycleRef = (cycleRef + NUM_FOLDERS + 1) % NUM_FOLDERS;
+//		
+//		FolderName nextFolder = folderCycle[cycleRef];
+//		
+//		cycleTabsSwitchCase(nextFolder);
+//		
+//	    } else if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_TAB && evt.isShiftDown()) {
+//		cycleRef = (cycleRef + NUM_FOLDERS - 1) % NUM_FOLDERS;
+//		FolderName nextFolder = folderCycle[cycleRef];
+//		
+//		cycleTabsSwitchCase(nextFolder);
+//	    }
+//	}
+//
+//	public void cycleTabsSwitchCase(FolderName nextFolder) {
+//	    switch (nextFolder) {
+//	    case FOLDER1:
+//	        folder1Activate();
+//	        break;
+//	    case FOLDER2:
+//	        folder2Activate();
+//	        break;
+//	    case FOLDER3:
+//	        folder3Activate();
+//	        break;
+//	    case FOLDER4:
+//	        folder4Activate();
+//	        break;
+//	    case FOLDER5:
+//	        folder5Activate();
+//	        break;
+//	        
+//	    default:
+//	        break;
+//	    }
+//	}
+//    });
 }	
 }
 
