@@ -260,11 +260,18 @@ public class AllTasks {
 		return allTasks.get(index);
 	}
 
-	public void deleteTask(int index) {
+	public boolean addTask(int index, Task task) {
+		allTasks.add(index, task);
+		updateTaskID(index);
+		this.updateFloatingTaskID();
+		return true;
+	}
+	
+	public boolean deleteTask(int index) {
 		allTasks.remove(index);
 		updateTaskID(index);
 		this.updateFloatingTaskID();
-		return;
+		return true;
 	}
 
 	public int searchForCorrespondingReminder(Task task) {
@@ -283,13 +290,6 @@ public class AllTasks {
 
 	public void deleteReminder(Task task) {
 		allReminders.remove(searchForCorrespondingReminder(task));
-		return;
-	}
-
-	public void addTask(int index, Task task) {
-		allTasks.add(index, task);
-		updateTaskID(index);
-		this.updateFloatingTaskID();
 		return;
 	}
 

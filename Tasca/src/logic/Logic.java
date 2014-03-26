@@ -35,10 +35,12 @@ public class Logic {
 
 	}
 
-	public static void addTask(int priority, Date start, Date end,
+	public static boolean addTask(int priority, Date start, Date end,
 			boolean isThereReminder, boolean isTaskDone, boolean isAllDayEvent,
 			String title, String location, Date reminder) {
 
+		boolean isTaskAdded = false;
+		
 		Calendar taskStart = Calendar.getInstance();
 		taskStart.setTime(start);
 
@@ -54,26 +56,28 @@ public class Logic {
 			int TaskId = 0;
 			int totalNumOfTasks = _storage.getTaskSize();
 			int count = 0;
-			// taskStart will have a larger time then the i task, incremental i
-			// task till taskStart smaller.
+			// taskStart may have a larger time then the i task,
+			// thus, increment the i task till taskStart smaller.
 			boolean IsTaskNotInCorrectPosition = true;
 			while ((count < totalNumOfTasks) && (IsTaskNotInCorrectPosition)) {
-
+				//comparison of start time for current task with start time for i task
 				IsTaskNotInCorrectPosition = taskStart.compareTo(_storage
-						.getTask(count).getStartTime()) > 0;
+						.getTask(count).getStartTime()) > 0; 
 				count++;
 			}
+			/*
 			if (count != 0) { // correct position
 				count--;
 			}
 			if (count == totalNumOfTasks - 1) {
 				count++;
 			}
+			*/
 
 			Task task = new Task(TaskId, priority, taskStart, taskEnd,
 					isThereReminder, isTaskDone, isAllDayEvent, title, location);
 
-			_storage.addTask(count, task);
+			isTaskAdded = _storage.addTask(count, task);
 
 			Reminder taskReminder = null;
 
@@ -105,18 +109,20 @@ public class Logic {
 			System.out.printf("Task Added\n");
 
 		}
+		return isTaskAdded;
 		
 	}
 
-	public static void deleteTask(int index) {
+	public static boolean deleteTask(int index) {
+		boolean isTaskDeleted = false;
 		int totalNumOfTasks = _storage.getSize();
-		if (index < totalNumOfTasks) {
+		if (index < totalNumOfTasks && index >= 0) {
 			if (index < _storage.getTaskSize()) {
 
 				if (_storage.getTask(index).getIsThereReminder()) {
 					_storage.deleteReminder(_storage.getTask(index));
 				}
-				_storage.deleteTask(index);
+				isTaskDeleted = _storage.deleteTask(index);
 			} else {
 				_storage.deleteFloatingTask(index);
 			}
@@ -125,11 +131,12 @@ public class Logic {
 		} else {
 			System.out.printf("%s\n", MESSAGE_TASK_NOT_DELETED);
 		}
+		return isTaskDeleted;
 	}
 
 	public static void taskIsDone(int index) {
 		int totalNumOfTasks = _storage.getSize();
-		if (index < totalNumOfTasks) {
+		if (index < totalNumOfTasks && index >= 0) {
 			if (index < _storage.getTaskSize()) {
 				_storage.getTask(index).setIsTaskDone(true);
 				System.out.printf("Task Number %d %s\n", index,
@@ -289,10 +296,6 @@ public class Logic {
 		}
 	}
 
-	private static boolean isInString(String mainString, String subString) {
-		return (mainString.toLowerCase().contains(subString.toLowerCase()));
-	}
-
 	public static void deleteAlldone() {
 		int totalNumOfTasks = _storage.getSize();
 		int index = 0;
@@ -427,5 +430,9 @@ public class Logic {
 		_storage = new AllTasks();
 		return;
 
+	}
+	
+	private static boolean isInString(String mainString, String subString) {
+		return (mainString.toLowerCase().contains(subString.toLowerCase()));
 	}
 }
