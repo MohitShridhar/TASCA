@@ -11,22 +11,23 @@ import java.util.Date;
 
 import org.junit.Test;
 
-public class AllTasksTest2 {
+public class AllTasksTest3 {
 	private AllTasks test;
 
 	@Test
 	public void test() {
 		test = new AllTasks();
-		Calendar taskDate = setCalFromMilli(1397696400000L);
-		Task task = new Task(0,1,taskDate, taskDate, false ,false, false,"Last day of School", "National University of Singapore");
+		Calendar startDate = setCalFromMilli(1396400400000L);
+		Calendar endDate = setCalFromMilli(1397696400000L);
+		Task task = new Task(0,1, startDate, endDate, false ,false, false,"Revise Schoolwork", "Home");
 		test.addTask(0, task);
 		save();
 		
 		String result = getStringFromLnNum(1);
-		assertEquals(result,"0 1 2014 3 17 9 0 2014 3 17 9 0 false false false Last day of School");
+		assertEquals(result,"0 1 2014 3 2 9 0 2014 3 17 9 0 false false false Revise Schoolwork");
 		
 		String result2 = getStringFromLnNum(2);
-		assertEquals(result2,"National University of Singapore");
+		assertEquals(result2,"Home");
 	}
 
 	// methods to help on testing

@@ -11,22 +11,34 @@ import java.util.Date;
 
 import org.junit.Test;
 
-public class AllTasksTest2 {
+public class AllTasksTest4 {
 	private AllTasks test;
 
 	@Test
 	public void test() {
 		test = new AllTasks();
 		Calendar taskDate = setCalFromMilli(1397696400000L);
-		Task task = new Task(0,1,taskDate, taskDate, false ,false, false,"Last day of School", "National University of Singapore");
-		test.addTask(0, task);
+		Task task1 = new Task(0,1,taskDate, taskDate, false ,false, false,"Last day of School", "National University of Singapore");
+		Task task2 = new Task(0,1,taskDate, taskDate, false ,false, false,"Sleeping", "Home");
+		Task task3 = new Task(0,1,taskDate, taskDate, false ,false, false,"Running", "Park");
+		Task task4 = new Task(0,1,taskDate, taskDate, false ,false, false,"Fly to Japan", "Airport");
+		test.addTask(0, task1);
+		test.addTask(1, task2);
+		test.addTask(0, task3);
+		test.addTask(2, task4);
 		save();
 		
-		String result = getStringFromLnNum(1);
-		assertEquals(result,"0 1 2014 3 17 9 0 2014 3 17 9 0 false false false Last day of School");
+		int totalLines = getNumOfLinesFromFile();
+		assertTrue(totalLines == 8);
 		
-		String result2 = getStringFromLnNum(2);
-		assertEquals(result2,"National University of Singapore");
+		test.deleteTask(2);
+		
+		totalLines = getNumOfLinesFromFile();
+		assertTrue(totalLines == 6);
+		
+		String result = getStringFromLnNum(2);
+		assertFalse(result.equals("2 1 2014 3 17 9 0 2014 3 17 9 0 false false false Fly to Japan"));
+		assertTrue(result.equals("3 1 2014 3 17 9 0 2014 3 17 9 0 false false false Sleeping"));
 	}
 
 	// methods to help on testing
