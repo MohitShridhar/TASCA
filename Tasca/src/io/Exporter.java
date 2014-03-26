@@ -146,7 +146,7 @@ public class Exporter {
 
     public static int calToEvent(net.fortuna.ical4j.model.Calendar exportCal,
 	    AllTasks allTasks, int timedTaskCounter) {
-	for (int i=0; i<allTasks.getSize(); i++) {
+	for (int i=0; i<allTasks.getTaskSize(); i++) {
 	    Task newTask = allTasks.getTask(i);
 	    VEvent newEvent;
 	    

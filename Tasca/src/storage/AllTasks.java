@@ -260,13 +260,6 @@ public class AllTasks {
 		return allTasks.get(index);
 	}
 
-	public boolean addTask(int index, Task task) {
-		allTasks.add(index, task);
-		updateTaskID(index);
-		this.updateFloatingTaskID();
-		return true;
-	}
-	
 	public boolean deleteTask(int index) {
 		allTasks.remove(index);
 		updateTaskID(index);
@@ -288,24 +281,31 @@ public class AllTasks {
 
 	}
 
-	public void deleteReminder(Task task) {
+	public boolean deleteReminder(Task task) {
 		allReminders.remove(searchForCorrespondingReminder(task));
-		return;
+		return true;
+	}
+
+	public boolean addTask(int index, Task task) {
+		allTasks.add(index, task);
+		updateTaskID(index);
+		this.updateFloatingTaskID();
+		return true;
 	}
 
 	public Reminder getReminder(int index) {
 		return allReminders.get(index);
 	}
 
-	public void addReminder(int index, Reminder reminder) {
+	public boolean addReminder(int index, Reminder reminder) {
 		allReminders.add(index, reminder);
 		sortReminders();
-		return;
+		return true;
 	}
 
-	public void deleteReminder(int index) {
+	public boolean deleteReminder(int index) {
 		allReminders.remove(index);
-		return;
+		return true;
 	}
 
 	private void updateTaskID(int index) {
@@ -317,7 +317,7 @@ public class AllTasks {
 	}
 
 	public boolean isValidTaskId(int index) {
-		return index < allTasks.size();
+		return index < allTasks.size() && index>=0;
 	}
 
 	private void setCurrentTime() {
@@ -389,7 +389,7 @@ public class AllTasks {
 
 	}
 
-	public void clearAllMissedReminders() {
+	public boolean clearAllMissedReminders() {
 		int counter = 0, index = -1;
 
 		setCurrentTime();
@@ -408,7 +408,7 @@ public class AllTasks {
 			allReminders.remove(0);
 			counter = counter + 1;
 		}
-		return;
+		return true;
 	}
 
 	private boolean setCurrentReminder() {
@@ -454,10 +454,10 @@ public class AllTasks {
 		return allFloatingTasks.size();
 	}
 
-	public void addFloatingTask(FloatingTask node) {
+	public boolean addFloatingTask(FloatingTask node) {
 		allFloatingTasks.add(node);
 		updateFloatingTaskID();
-		return;
+		return true;
 	}
 
 	private void updateFloatingTaskID() {
@@ -475,10 +475,10 @@ public class AllTasks {
 		return allFloatingTasks.get(index - this.getTaskSize());
 	}
 
-	public void deleteFloatingTask(int index) {
+	public boolean deleteFloatingTask(int index) {
 		allFloatingTasks.remove(index - this.getTaskSize());
 		this.updateFloatingTaskID();
-		return;
+		return true;
 	}
 
 }

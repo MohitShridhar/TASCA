@@ -1,6 +1,5 @@
 package controller;
 
-import gui.MainInterface;
 import interpreter.*;
 
 import java.util.logging.FileHandler;
@@ -63,30 +62,24 @@ public class Controller {
 		return;
 	}
 
-	public boolean executeCommands(String input) {
+	public boolean executeCommands() {
 		Interpreter newInt = new Interpreter();
-		
-//		String input;
-//
-//		input = myScanner.nextLine();
-		
-		
-		if (input != null) {
+		String input;
 
-		    try {
+		input = myScanner.nextLine();
+
+		try {
 			newInt.processUserInput(input);
 			Command command = newInt.getCommandAndPara();
 			assert (command.getCommandType() != null);
-			logger.log(Level.SEVERE, "Entering executeLogic",
-				command.getCommandType());
+			//logger.log(Level.SEVERE, "Entering executeLogic",
+				//	command.getCommandType());
 			return executeLogic(command);
-		    } catch (IllegalArgumentException eI) {
+		} catch (IllegalArgumentException eI) {
 			System.out.println("Exception - " + eI + "\n");
 			return false;
-		    }
-		} 
-		
-		return false;
+		}
+
 	}
 
 	private void executeQuit() {
@@ -139,12 +132,16 @@ public class Controller {
 		case "MODIFY":
 			undoRedo.addUndo(allTasks);
 			try {
+				if (command.getParameters().getEndTime() != null) {
+					throw new IllegalArgumentException();
+				}else{
 				Logic.updateFloatingTask(command.getParameters().getTaskId(),
 						command.getParameters().getPriority(), command
 								.getParameters().getDescription(), command
 								.getParameters().getLocation());
+				}
 			} catch (Exception e) {
-				execute_modify(command, isThereReminder, startTime);
+				execute_modify(command, isThereReminder, command.getParameters().getStartTime());
 			}
 			break;
 
@@ -167,8 +164,7 @@ public class Controller {
 			break;
 
 		case "DISPLAY_WEEK":
-			Logic.displayTasksAtPeriod(command.getParameters().getStartTime()
-					.getTime(), command.getParameters().getEndTime().getTime());
+			Logic.displayWeek();
 			break;
 
 		case "DISPLAY_ALL":
@@ -225,7 +221,7 @@ public class Controller {
 		case "CLEAR":
 			undoRedo.addUndo(allTasks);
 			allTasks = new AllTasks();
-			Logic.clearAll();
+			Logic.initStorage(allTasks);
 			break;
 
 		default:
@@ -258,7 +254,6 @@ public class Controller {
 			if (command.getParameters().getStartTime() != null
 					&& command.getParameters().getEndTime() != null) {
 
-				startTime = Calendar.getInstance();
 				startTime.setTime(command.getParameters().getStartTime()
 						.getTime());
 			}

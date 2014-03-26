@@ -8,8 +8,6 @@ import java.util.*;
 
 import storage.*;
 
-import org.ocpsoft.prettytime.PrettyTime;
-
 public class Logic {
 
 	private static String MESSAGE_TASK_NOT_DELETED = "The task indicated cannot be deleted as it does not exist.";
@@ -27,22 +25,20 @@ public class Logic {
 		return;
 	}
 
-	public static void addFloatingTask(int priority, boolean isTaskDone,
+	public static boolean addFloatingTask(int priority, boolean isTaskDone,
 			String title, String location) {
 		int dummyID = 0;
 		FloatingTask temp = new FloatingTask(dummyID, priority, isTaskDone,
 				title, location);
 		_storage.addFloatingTask(temp);
-		return;
+		return true;
 
 	}
 
 	public static boolean addTask(int priority, Date start, Date end,
 			boolean isThereReminder, boolean isTaskDone, boolean isAllDayEvent,
-			String title, String location, Date reminder) {
+			String title, String remarks, Date reminder) {
 
-		boolean isTaskAdded = false;
-		
 		Calendar taskStart = Calendar.getInstance();
 		taskStart.setTime(start);
 
@@ -58,28 +54,26 @@ public class Logic {
 			int TaskId = 0;
 			int totalNumOfTasks = _storage.getTaskSize();
 			int count = 0;
-			// taskStart may have a larger time then the i task,
-			// thus, increment the i task till taskStart smaller.
+			// taskStart will have a larger time then the i task, incremental i
+			// task till taskStart smaller.
 			boolean IsTaskNotInCorrectPosition = true;
 			while ((count < totalNumOfTasks) && (IsTaskNotInCorrectPosition)) {
-				//comparison of start time for current task with start time for i task
+
 				IsTaskNotInCorrectPosition = taskStart.compareTo(_storage
-						.getTask(count).getStartTime()) > 0; 
+						.getTask(count).getStartTime()) > 0;
 				count++;
 			}
-			/*
 			if (count != 0) { // correct position
 				count--;
 			}
 			if (count == totalNumOfTasks - 1) {
 				count++;
 			}
-			*/
 
 			Task task = new Task(TaskId, priority, taskStart, taskEnd,
-					isThereReminder, isTaskDone, isAllDayEvent, title, location);
+					isThereReminder, isTaskDone, isAllDayEvent, title, remarks);
 
-			isTaskAdded = _storage.addTask(count, task);
+			_storage.addTask(count, task);
 
 			Reminder taskReminder = null;
 
@@ -109,37 +103,37 @@ public class Logic {
 				_storage.addReminder(count, taskReminder);
 			}
 			System.out.printf("Task Added\n");
+			return true;
 
 		}
-		return isTaskAdded;
-		
+		return false;
 	}
 
 	public static boolean deleteTask(int index) {
-		boolean isTaskDeleted = false;
 		int totalNumOfTasks = _storage.getSize();
 		if (index < totalNumOfTasks && index >= 0) {
-			if (index < _storage.getTaskSize()) {
+			if (index < _storage.getTaskSize() ) {
 
 				if (_storage.getTask(index).getIsThereReminder()) {
 					_storage.deleteReminder(_storage.getTask(index));
 				}
-				isTaskDeleted = _storage.deleteTask(index);
+				_storage.deleteTask(index);
 			} else {
 				_storage.deleteFloatingTask(index);
 			}
 			System.out.printf("%s\n", MESSAGE_TASK_DELETED);
+			return true;
 
 		} else {
 			System.out.printf("%s\n", MESSAGE_TASK_NOT_DELETED);
+			return false;
 		}
-		return isTaskDeleted;
 	}
 
-	public static void taskIsDone(int index) {
+	public static boolean taskIsDone(int index) {
 		int totalNumOfTasks = _storage.getSize();
 		if (index < totalNumOfTasks && index >= 0) {
-			if (index < _storage.getTaskSize()) {
+			if (index < _storage.getTaskSize() && index >= 0) {
 				_storage.getTask(index).setIsTaskDone(true);
 				System.out.printf("Task Number %d %s\n", index,
 						MESSAGE_TASK_IS_DONE);
@@ -148,10 +142,12 @@ public class Logic {
 				System.out.printf("Task Number %d %s\n", index,
 						MESSAGE_TASK_IS_DONE);
 			}
+			return true;
 		} else {
 			System.out.printf("%s/n", MESSAGE_TASK_INDEX_INVALID);
+			return false;
 		}
-		return;
+
 	}
 
 	public static void displayTask(int index) {
@@ -171,7 +167,7 @@ public class Logic {
 				System.out.println("start: "
 						+ display.format(task.getStartTime().getTime()));
 				System.out.println("end: "
-						+ display.format(task.getEndTime().getTime()));				
+						+ display.format(task.getEndTime().getTime()));
 				System.out.println("title: " + task.getTaskTitle());
 				try {
 					System.out.println("location: " + task.getLocation());
@@ -298,6 +294,10 @@ public class Logic {
 		}
 	}
 
+	private static boolean isInString(String mainString, String subString) {
+		return (mainString.toLowerCase().contains(subString.toLowerCase()));
+	}
+
 	public static void deleteAlldone() {
 		int totalNumOfTasks = _storage.getSize();
 		int index = 0;
@@ -405,7 +405,29 @@ public class Logic {
 		addTask(priorityInt, start.getTime(), end.getTime(), isThereReminder,
 				isTaskDone, isAllDayEvent, title, location, reminder);
 		} else {
+			if (index < _storage.getSize()){
+				boolean isTaskDone = false;
+				boolean isAllDayEvent = false ;
+				if (priority == "null") {
+					priorityInt = _storage.getFloatingTask(index).getPriority();
+				} else {
+					priorityInt = Integer.parseInt(priority);
+				}
+				if (title == null) {
+					title = _storage.getFloatingTask(index).getTaskTitle();
+				}
+				if (location == null) {
+					location = _storage.getFloatingTask(index).getLocation();
+				}
+				if (start == null) {
+					start = Calendar.getInstance();
+				}
+				deleteTask(index);
+				addTask(priorityInt, start.getTime(), end.getTime(), isThereReminder,
+						isTaskDone, isAllDayEvent, title, location, reminder);
+			}else{
 			System.out.printf("The given ID is not valid \n");
+			}
 		}
 		return;
 
@@ -434,7 +456,14 @@ public class Logic {
 
 	}
 	
-	private static boolean isInString(String mainString, String subString) {
-		return (mainString.toLowerCase().contains(subString.toLowerCase()));
+	public static void displayWeek () {
+		Calendar monday = Calendar.getInstance();
+		monday.add(Calendar.DAY_OF_WEEK, monday.getFirstDayOfWeek() - monday.get(Calendar.DAY_OF_WEEK));
+		
+		Calendar sunday = (Calendar) monday.clone();
+		sunday.add(Calendar.DAY_OF_WEEK, 6);
+		
+		displayTasksAtPeriod(monday.getTime(), sunday.getTime());
+		return;
 	}
 }

@@ -1,19 +1,16 @@
 import controller.Controller;
 
 
-import java.util.Scanner;
 public class Simulator {
 	public static void main (String[] args) {
-		boolean quit = false;
+		boolean quit = false ;
 		Controller controller = new Controller();
-		Scanner myScan = new Scanner(System.in);
 		
-		String MESSAGE_WELCOME_V0_1 =  "Welcome to Tasca V0.1!\n";
+		String MESSAGE_WELCOME_V0_1 =  "Welcome to Tasca V0.2!\n";
 		
 		System.out.printf("%s", MESSAGE_WELCOME_V0_1);
 		while (!quit) {
-			String input = myScan.nextLine();
-			quit = controller.executeCommands(input);
+			quit = controller.executeCommands();
 		}
 		
 		return;
