@@ -8,6 +8,8 @@ import java.util.*;
 
 import storage.*;
 
+import org.ocpsoft.prettytime.PrettyTime;
+
 public class Logic {
 
 	private static String MESSAGE_TASK_NOT_DELETED = "The task indicated cannot be deleted as it does not exist.";
@@ -161,7 +163,7 @@ public class Logic {
 				System.out.println("start: "
 						+ display.format(task.getStartTime().getTime()));
 				System.out.println("end: "
-						+ display.format(task.getEndTime().getTime()));
+						+ display.format(task.getEndTime().getTime()));				
 				System.out.println("title: " + task.getTaskTitle());
 				try {
 					System.out.println("location: " + task.getLocation());
