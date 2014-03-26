@@ -20,13 +20,9 @@ public class AllTasksTest2 {
 		Calendar taskDate = setCalFromMilli(1397696400000L);
 		Task task = new Task(0,1,taskDate, taskDate, false ,false, false,"Last day of School", "National University of Singapore");
 		test.addTask(0, task);
-		save();
-		
-		String result = getStringFromLnNum(1);
-		assertEquals(result,"0 1 2014 3 17 9 0 2014 3 17 9 0 false false false Last day of School");
-		
-		String result2 = getStringFromLnNum(2);
-		assertEquals(result2,"National University of Singapore");
+
+		assertTrue(test.getTask(0) == task);
+
 	}
 
 	// methods to help on testing

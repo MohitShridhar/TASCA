@@ -37,7 +37,7 @@ public class Logic {
 
 	public static void addTask(int priority, Date start, Date end,
 			boolean isThereReminder, boolean isTaskDone, boolean isAllDayEvent,
-			String title, String remarks, Date reminder) {
+			String title, String location, Date reminder) {
 
 		Calendar taskStart = Calendar.getInstance();
 		taskStart.setTime(start);
@@ -71,7 +71,7 @@ public class Logic {
 			}
 
 			Task task = new Task(TaskId, priority, taskStart, taskEnd,
-					isThereReminder, isTaskDone, isAllDayEvent, title, remarks);
+					isThereReminder, isTaskDone, isAllDayEvent, title, location);
 
 			_storage.addTask(count, task);
 
@@ -105,6 +105,7 @@ public class Logic {
 			System.out.printf("Task Added\n");
 
 		}
+		
 	}
 
 	public static void deleteTask(int index) {

@@ -17,6 +17,21 @@ public class AllTasksTest3 {
 	@Test
 	public void test() {
 		test = new AllTasks();
+		Calendar taskDate = setCalFromMilli(1397696400000L);
+		Task task = new Task(0,1,taskDate, taskDate, false ,false, false,"Last day of School", "National University of Singapore");
+		test.addTask(0, task);
+		save();
+		
+		String result = getStringFromLnNum(1);
+		assertEquals(result,"0 1 2014 3 17 9 0 2014 3 17 9 0 false false false Last day of School");
+		
+		String result2 = getStringFromLnNum(2);
+		assertEquals(result2,"National University of Singapore");
+	}
+
+	@Test
+	public void test2() {
+		test = new AllTasks();
 		Calendar startDate = setCalFromMilli(1396400400000L);
 		Calendar endDate = setCalFromMilli(1397696400000L);
 		Task task = new Task(0,1, startDate, endDate, false ,false, false,"Revise Schoolwork", "Home");
@@ -29,7 +44,7 @@ public class AllTasksTest3 {
 		String result2 = getStringFromLnNum(2);
 		assertEquals(result2,"Home");
 	}
-
+	
 	// methods to help on testing
 
 	public void save() {
