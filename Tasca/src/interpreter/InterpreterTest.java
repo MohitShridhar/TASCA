@@ -119,10 +119,10 @@ public class InterpreterTest {
 	assertEquals("Folder: ", "home", commandAndPara.getParameters().getFolder());
 	
 	System.out.println("Priority: " + commandAndPara.getParameters().getPriority());
-	assertEquals("Priority: ","3", commandAndPara.getParameters().getPriority());
+	assertEquals("Priority: ","3", commandAndPara.getParameters().getPriority()); // This is a boundary case. Priority numbers (1: high, 2: med, 3: low, 0: undefined)
 	
 	System.out.println("Task ID: " + commandAndPara.getParameters().getTaskId());
-	assertEquals("Task ID: ", "12", commandAndPara.getParameters().getTaskId());
+	assertEquals("Task ID: ", "12", commandAndPara.getParameters().getTaskId()); // All tasks are whole numbers.
 	
 	System.out.println("Start Time: " + commandAndPara.getParameters().getStartTime().getTime());
 	

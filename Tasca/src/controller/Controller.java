@@ -62,11 +62,8 @@ public class Controller {
 		return;
 	}
 
-	public boolean executeCommands() {
+	public boolean executeCommands(String input) {
 		Interpreter newInt = new Interpreter();
-		String input;
-
-		input = myScanner.nextLine();
 
 		try {
 			newInt.processUserInput(input);
