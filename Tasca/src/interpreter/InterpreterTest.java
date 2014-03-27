@@ -1,4 +1,6 @@
 package interpreter;
+import static org.junit.Assert.*;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Scanner;
@@ -22,11 +24,11 @@ public class InterpreterTest {
 	
 	String input = "add FIRST ever task -on next tuesday -remind 12 may 2014 8:30pm -loc LT6 -pri low -id 12 -end sunday 13:12 -folder home";
 	
-	System.out.println("Simulate user command: ");
-	Scanner s = new Scanner(System.in);
-	input = s.nextLine();
-	
-	System.out.println();
+//	System.out.println("Simulate user command: ");
+//	Scanner s = new Scanner(System.in);
+//	input = s.nextLine();
+//	
+//	System.out.println();
 	
 	
 	/* New time nlp test  */
@@ -89,26 +91,52 @@ public class InterpreterTest {
 	}
 	
 	
+	assertEquals("add interpretation", CommandType.ADD, secondInt.interpretCommand("add")); 
+	assertEquals("delete interpretation", CommandType.DELETE, secondInt.interpretCommand("d"));
+	assertEquals("modify interpretation", CommandType.INVALID, secondInt.interpretCommand("moDify")); // Must be lower case before interpretation
+	
+	assertEquals("start time interpretation", ParameterType.START_TIME, secondInt.interpretParameter("on"));
+
+	
+
 	// USAGE --- OUTPUT
 	Command commandAndPara = secondInt.getCommandAndPara();
 	
 	System.out.println("Command Type: " + commandAndPara.getCommandType());
+	assertEquals("Command Type: ", CommandType.ADD,commandAndPara.getCommandType());
+	
 	System.out.println();
 	
 	System.out.println("Parameters: ---------");
+		
 	System.out.println("Description: " + commandAndPara.getParameters().getDescription());
+	assertEquals("Description: ", "FIRST ever task" ,commandAndPara.getParameters().getDescription());
+	
 	System.out.println("Location: " + commandAndPara.getParameters().getLocation());
+	assertEquals("Location: ", "LT6", commandAndPara.getParameters().getLocation());
+	
 	System.out.println("Folder: " + commandAndPara.getParameters().getFolder());
+	assertEquals("Folder: ", "home", commandAndPara.getParameters().getFolder());
+	
 	System.out.println("Priority: " + commandAndPara.getParameters().getPriority());
+	assertEquals("Priority: ","3", commandAndPara.getParameters().getPriority());
+	
 	System.out.println("Task ID: " + commandAndPara.getParameters().getTaskId());
+	assertEquals("Task ID: ", "12", commandAndPara.getParameters().getTaskId());
+	
 	System.out.println("Start Time: " + commandAndPara.getParameters().getStartTime().getTime());
+	
 	System.out.println("End Time: " + commandAndPara.getParameters().getEndTime().getTime());
+	
 	System.out.println("Reminder Time: " + commandAndPara.getParameters().getRemindTime().getTime());
 	
 	
 	// New function:
-	System.out.println("Recurring End Time:" + commandAndPara.getParameters().getRecurEndTime().getTime());
-	
+	try {
+		System.out.println("Recurring End Time:" + commandAndPara.getParameters().getRecurEndTime().getTime());
+	}catch (NullPointerException eD) {
+	    System.out.println("Some parameters are empty");
+	}
 	
 	// USAGE --- DATE & TIME
 	System.out.println();	
@@ -126,7 +154,11 @@ public class InterpreterTest {
 	} catch (NullPointerException eD) {
 	    System.out.println("Some parameters are empty");
 	}
-    }
+//    }
+    
+
+    
+    
     
 //    private String description, location, folder;
 //    private Integer priority, taskId;
@@ -160,5 +192,5 @@ public class InterpreterTest {
 //	Interpreter interpreter = new Interpreter();
 //	
 //    	//assertEquals("Random tests", "add", interpreter.parseInput("add   '  adwd' on 'awdawd' at 'ad'"));
-//    }
+    }
 }

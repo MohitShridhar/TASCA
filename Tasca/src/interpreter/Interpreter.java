@@ -202,7 +202,7 @@ public class Interpreter {
 	String commandArgument = null;
 	
 	try {
-		commandArgument = (input.replaceFirst(getFirstWord(input), "").trim()).split("-")[0];
+		commandArgument = (input.replaceFirst(getFirstWord(input), "").trim()).split("-")[0].trim();
 	} catch (ArrayIndexOutOfBoundsException aE) {
 	    return;
 	}

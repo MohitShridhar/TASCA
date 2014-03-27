@@ -90,6 +90,8 @@ import javax.swing.SwingConstants;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+import logic.Logic;
+
 
 class MyTextPane extends JTextPane {
     public MyTextPane() {
@@ -820,6 +822,19 @@ public static void initGui(final JFrame frame) {
 //    
 //    frame.getContentPane().add(scrollPane);
    
+    /* Task Image Buffer */
+    	
+    
+    /* Task Image Buffer */
+    
+    /* Task test */
+        
+    TaskItem taskBar = new TaskItem(null);//Logic.displayLL().get(0));
+    taskBar.setLocation(82, 81);
+    frame.getContentPane().add(taskBar); 
+    
+    /* Task test */
+    
     
     textPane = new MyTextPane(new DefaultStyledDocument());
     textPane.setOpaque(false);
@@ -884,6 +899,7 @@ public static void initGui(final JFrame frame) {
     
     btnFolder1.addActionListener(new ActionListener() {
     	public void actionPerformed(ActionEvent e) {
+    	    cycleRef = 0;
     	    folder1Activate();
 
     	}
@@ -914,6 +930,7 @@ public static void initGui(final JFrame frame) {
     btnFolder2.addMouseListener(new MouseAdapter() {
     	@Override
     	public void mouseClicked(MouseEvent e) {
+    	    cycleRef = 1;
     	    folder2Activate();
     	}
     });
@@ -942,6 +959,7 @@ public static void initGui(final JFrame frame) {
     btnFolder3.addMouseListener(new MouseAdapter() {
     	@Override
     	public void mouseClicked(MouseEvent e) {
+    	    cycleRef = 2;
     	    folder3Activate();
 
     	}
@@ -975,6 +993,7 @@ public static void initGui(final JFrame frame) {
     btnFolder4.addMouseListener(new MouseAdapter() {
     	@Override
     	public void mouseClicked(MouseEvent e) {
+    	    cycleRef = 3;
     	    folder4Activate();
 
     	}
@@ -1013,6 +1032,7 @@ public static void initGui(final JFrame frame) {
     btnFolder5.addMouseListener(new MouseAdapter() {
     	@Override
     	public void mouseClicked(MouseEvent e) {
+    	    cycleRef = 4;
     	    folder5Activate();
     	}
     });
@@ -1128,6 +1148,8 @@ public static void initGui(final JFrame frame) {
 	    }
 	}
   });
+    
+   
     
 //    textPane.addKeyListener(new java.awt.event.KeyAdapter() {
 //	
