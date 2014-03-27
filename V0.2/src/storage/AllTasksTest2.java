@@ -13,7 +13,7 @@ import org.junit.Test;
 
 public class AllTasksTest2 {
 	private AllTasks test;
-
+//testing and checking if stored in linklist
 	@Test
 	public void test() {
 		test = new AllTasks();

@@ -13,7 +13,7 @@ import org.junit.Test;
 
 public class AllTasksTest4 {
 	private AllTasks test;
-
+//checking for delete function is working
 	@Test
 	public void test() {
 		test = new AllTasks();
@@ -64,7 +64,6 @@ public class AllTasksTest4 {
 		try {
 			FileReader fileReader = new FileReader("system_saved_tasks.txt");
 			BufferedReader bufferReader = new BufferedReader(fileReader);
-			
 
 			String lineText = bufferReader.readLine();
 

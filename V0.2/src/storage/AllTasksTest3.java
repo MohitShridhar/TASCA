@@ -13,7 +13,7 @@ import org.junit.Test;
 
 public class AllTasksTest3 {
 	private AllTasks test;
-
+//testing if added tasks are stored in file
 	@Test
 	public void test() {
 		test = new AllTasks();
