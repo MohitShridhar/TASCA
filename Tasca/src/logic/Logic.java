@@ -3,6 +3,7 @@ package logic;
 import io.Exporter;
 import io.Importer;
 
+import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -148,6 +149,25 @@ public class Logic {
 			return false;
 		}
 
+	}
+	
+	public static LinkedList<Task> displayLL() {
+	    LinkedList<Task> list = new LinkedList<Task>();
+	    
+	    try {
+		int totalNumOfTasks = _storage.getSize();
+		
+		for (int i=0; i<totalNumOfTasks; i++){
+		    if (i < _storage.getTaskSize() && i < totalNumOfTasks) {
+		    	list.add(_storage.getTask(i));
+		    }
+		}
+		
+	    } catch (NullPointerException eN) {
+		System.out.println("Empty storage");
+	    }
+	    
+	    return list;
 	}
 
 	public static void displayTask(int index) {

@@ -13,13 +13,19 @@ import javax.swing.JPanel;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import storage.Task;
+
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Color;
 
+import logic.Logic;
+
 
 public class TaskItem extends JLayeredPane {
     
+    private static final int HTML_CODE_LENGTH = 20;
+    private static final int MAX_DISPLAY_TEXT_LENGTH = 90;
     public static PrettyTime p = new PrettyTime();
     public static BufferedGraphics graphics = new BufferedGraphics();
     private JLabel background;
@@ -27,8 +33,11 @@ public class TaskItem extends JLayeredPane {
     private JLabel reminder;
     private JLabel priority;
     private JLabel text;
+    private JLabel unchecked;
+    private Task taskProp;
+    private JLabel ellipsis;
     
-    public TaskItem(Task item) {
+    public TaskItem() {
 	
 	super();
 	
@@ -43,8 +52,15 @@ public class TaskItem extends JLayeredPane {
 	checkMark.setLocation(10, 14);
 	checkMark.setSize(19, 13);
 	checkMark.setIcon(graphics.checkMark);
-	checkMark.setVisible(true);
+	checkMark.setVisible(false);
 	this.add(checkMark);
+	
+	unchecked = new JLabel();
+	unchecked.setLocation(12, 13);
+	unchecked.setSize(15, 15);
+	unchecked.setIcon(graphics.unchecked);
+	unchecked.setVisible(true);
+	this.add(unchecked);
 	
 	reminder = new JLabel();
 	reminder.setLocation(689, 7);
@@ -58,6 +74,13 @@ public class TaskItem extends JLayeredPane {
 	// Must icon, icon size, and location during use
 	priority.setVisible(false);
 	this.add(priority);
+	
+	ellipsis = new JLabel(" ...");
+	ellipsis.setForeground(Color.WHITE);
+	ellipsis.setFont(new Font("Menlo", Font.PLAIN, 14));
+	ellipsis.setBounds(612, 9, 40, 24);
+	ellipsis.setVisible(false);
+	add(ellipsis);
 	
 	text = new JLabel("New Task");
 	text.setForeground(Color.WHITE);
@@ -77,33 +100,104 @@ public class TaskItem extends JLayeredPane {
 
     public void loadDetails(Task item) {
 	
-	if (item != null) {
+	taskProp = item;
+	
+	if (taskProp != null) {
 	    
-	    String description = item.getTaskTitle();
-	    String location = item.getLocation();
+	    
+	    String description = taskProp.getTaskTitle();
+	    String location = taskProp.getLocation();
 	    String displayTime = null;
-	    Boolean isComplete = item.getIsTaskDone();
-	    Boolean isThereReminder = item.getIsThereReminder();
+	    
+	    int taskId = taskProp.getTaskID();
 
 	    /** NEED TO REPLACE ACCORDING TO NARIN's DISPLAY METHOD FOR FLOATING TASKS **/
-	    if (item.getStartTime() != null ) {
-		displayTime = p.format(item.getStartTime());
-	    } else if (item.getEndTime() != null) {
-		displayTime = p.format(item.getEndTime());
+	    if (taskProp.getStartTime() != null ) {
+		displayTime = p.format(taskProp.getStartTime());
+	    } else if (taskProp.getEndTime() != null) {
+		displayTime = p.format(taskProp.getEndTime());
 	    } else {
 		displayTime = ""; // No time is displayed
 	    }
 	    
-	    text.setText("<html> " + description + " – <font color='9a9695'>" + displayTime + " @ " + location + "</font></html>");
+	    setTimedDisplayText(description, location, displayTime);
+	    setCheckMark(taskProp.getIsTaskDone());
+	    setReminderIcon(taskProp.getIsThereReminder());
+	    setPriorityIcon(taskProp.getPriority(), taskProp.getIsThereReminder());
 	}
     }
+    
+    public void setPriorityIcon(int priorityRef, boolean isThereReminder) {
+	
+	int withoutReminderOffset = 35;
+	
+	if (isThereReminder) {
+	    withoutReminderOffset = 0;
+	}
+	
+	if (priorityRef == 1) {
+	    priority.setIcon(graphics.highPri);
+	    priority.setSize(23, 20);
+	    priority.setLocation(655 + withoutReminderOffset, 10);
+	    priority.setVisible(true);
+	} else if (priorityRef == 2) {
+	    priority.setIcon(graphics.medPri);
+	    priority.setSize(15, 20);
+	    priority.setLocation(663 + withoutReminderOffset,  10);
+	    priority.setVisible(true);
+
+	} else if (priorityRef == 3) {
+	    priority.setIcon(graphics.lowPri);
+	    priority.setSize(6, 20);
+	    priority.setLocation(672 + withoutReminderOffset,  10);
+	    priority.setVisible(true);
+
+	} else {
+	    priority.setVisible(false);
+	}
+
+
+    }
+    
+    public void setReminderIcon (boolean show) {
+	if (show) {
+	    reminder.setVisible(true);
+	} else {
+	    reminder.setVisible(false);
+	}
+    }
+
+    public void setTimedDisplayText(String description, String location, String displayTime) {
+	
+	// TODO: Check for NIL standards with Narin and add SWITCH CASE
+	String displayText = "<html><nobr> " + description + " – <font color='9a9695'>" + displayTime + " @ " + location + "</font></nobr></html>";
+	
+	text.setText(displayText);
+
+	
+	Dimension dimensions = text.getPreferredSize();
+	if (dimensions.getWidth() > 600) {
+	    text.setSize(575, 24);
+	    ellipsis.setVisible(true);
+	} else {
+	    ellipsis.setVisible(false);
+	}
+    }
+    
     
     public void setCheckMark(boolean check) {
 	
 	if (check) {
+	    unchecked.setVisible(false);
+	    checkMark.setVisible(true);
 	    
+	    // TODO: Update that task in Storage:
+	} else {
+	    unchecked.setVisible(true);
+	    checkMark.setVisible(false);
+	    
+	    // TODO: Update that task in Storage:
 	}
 	
     }
-
 }

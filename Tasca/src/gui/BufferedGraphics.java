@@ -16,9 +16,9 @@ public class BufferedGraphics {
 	    checkMark = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item Check Mark.gif"))));
 	    unchecked = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Unchecked Icon.png"))));
 	    reminderIcon = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item Reminder Icon.png"))));
-	    highPri = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item High Pri.gif"))));
-	    medPri = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item Med Pri.gif"))));
-	    lowPri = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item Low Pri.gif"))));
+	    highPri = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item High Pri.png"))));
+	    medPri = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item Med Pri.png"))));
+	    lowPri = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item Low Pri.png"))));
 	    background = new ImageIcon(ImageIO.read(MainInterface.class.getResource("/GUI Graphics/Task Item Background.gif")));
 	} catch (IOException e) {
 	    // TODO Auto-generated catch block

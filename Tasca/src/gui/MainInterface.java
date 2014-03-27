@@ -55,6 +55,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 import javax.swing.JTabbedPane;
@@ -83,6 +84,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import controller.Controller;
+
 
 import storage.AllTasks;
 import storage.Task;
@@ -214,9 +216,15 @@ class HighlightDocumentFilter extends DocumentFilter {
         		boolean quit = false;
         		
         		quit = controller.executeCommands(userInput);
-        		textPane.setText("");
         		
-        		if (quit) {
+        		if (!quit) {
+        		    LinkedList<Task> tasks = Logic.displayLL();
+        		    TaskItem task = (TaskItem) MainInterface.getComponentByName("taskBar");
+        		    task.loadDetails(tasks.get(0));
+        		    task.setVisible(true);
+        		    
+        		    textPane.setText("");
+        		} else {
         		    mainFrame.dispose();
         		    System.exit(0);        			
         		}
@@ -509,7 +517,7 @@ public class MainInterface {
   private static HighlightDocumentFilter filter = null;
   
   private static JFrame frame = null;
-  private static JFrame frame_1;
+  private static JFrame mainFrame;
   
   private static ImageIcon tabNotClicked;
   private static ImageIcon tabClicked;
@@ -529,6 +537,10 @@ public class MainInterface {
   
   private static FolderName folderCycle[] = {FolderName.FOLDER1, FolderName.FOLDER2, FolderName.FOLDER3, FolderName.FOLDER4, FolderName.FOLDER5};
   private static int cycleRef = 1;
+  
+  private static HashMap componentMap;
+
+private static TaskItem taskBar;
   
 //  public static enum FolderName {
 //      folder1, folder2, folder3, folder4, folder5
@@ -565,6 +577,21 @@ public class MainInterface {
       
   }
 
+  private static void createComponentMap(JFrame mainFrame) {
+      componentMap = new HashMap<String,Component>();
+      Component[] components = mainFrame.getContentPane().getComponents();
+      for (int i=0; i < components.length; i++) {
+	  componentMap.put(components[i].getName(), components[i]);
+	  System.out.println(components[i].getName());
+      }
+  }
+
+  public static Component getComponentByName(String name) {
+      if (componentMap.containsKey(name)) {
+	  return (Component) componentMap.get(name);
+      }
+      else return null;
+  }
   
   public static String getUserInput() {
       return filter.getUserInput();
@@ -649,19 +676,19 @@ public class MainInterface {
       SwingUtilities.invokeLater(new Runnable() {
           public void run() {
 
-	      frame_1 = new JFrame("TitleLessJFrame");
+	      mainFrame = new JFrame("TitleLessJFrame");
 	      
-	      frame_1.setBackground(UIManager.getColor("Label.disabledShadow"));
-	      frame_1.getContentPane().setLayout(null);
-	      frame_1.setUndecorated(true); 
-	      frame_1.setSize(888, 500);
-	      frame_1.setResizable(false); 
-	      frame_1.setLocationRelativeTo(null); 
-	      frame_1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	      initGui(frame_1);
+	      mainFrame.setBackground(UIManager.getColor("Label.disabledShadow"));
+	      mainFrame.getContentPane().setLayout(null);
+	      mainFrame.setUndecorated(true); 
+	      mainFrame.setSize(888, 500);
+	      mainFrame.setResizable(false); 
+	      mainFrame.setLocationRelativeTo(null); 
+	      mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	      initGui(mainFrame);
 	      
 	      
-	      frame_1.setVisible(true);
+	      mainFrame.setVisible(true);
           }
           
       });
@@ -828,12 +855,20 @@ public static void initGui(final JFrame frame) {
     /* Task Image Buffer */
     
     /* Task test */
-        
-    TaskItem taskBar = new TaskItem(null);//Logic.displayLL().get(0));
+    
+    
+
+//	TaskItem taskBar = new TaskItem(tasks.get(0));
+    
+    taskBar = new TaskItem();
     taskBar.setLocation(82, 81);
+    taskBar.setVisible(false);
+    taskBar.setName("taskBar");
     frame.getContentPane().add(taskBar); 
+
     
     /* Task test */
+    
     
     
     textPane = new MyTextPane(new DefaultStyledDocument());
@@ -909,7 +944,7 @@ public static void initGui(final JFrame frame) {
     folder1Label.setFont(latoBold13);
     folder1Label.setForeground(Color.WHITE);
     folder1Label.setBounds(56, 10, 61, 16);
-    frame_1.getContentPane().add(folder1Label);
+    mainFrame.getContentPane().add(folder1Label);
     
     
     if (defaultFolder == FolderName.FOLDER1) {
@@ -941,7 +976,7 @@ public static void initGui(final JFrame frame) {
     folder2Label.setForeground(Color.WHITE);
     folder2Label.setFont(new Font("Lato", Font.BOLD, 13));
     folder2Label.setBounds(215, 10, 61, 16);
-    frame_1.getContentPane().add(folder2Label);
+    mainFrame.getContentPane().add(folder2Label);
     
     if (defaultFolder == FolderName.FOLDER2) {
     	btnFolder2.setIcon(tabClicked);
@@ -971,7 +1006,7 @@ public static void initGui(final JFrame frame) {
     folder3Label.setForeground(Color.WHITE);
     folder3Label.setFont(new Font("Lato", Font.BOLD, 13));
     folder3Label.setBounds(374, 10, 61, 16);
-    frame_1.getContentPane().add(folder3Label);
+    mainFrame.getContentPane().add(folder3Label);
     
    
     if (defaultFolder == FolderName.FOLDER3) {
@@ -1006,14 +1041,14 @@ public static void initGui(final JFrame frame) {
     folder4Label.setForeground(Color.WHITE);
     folder4Label.setFont(new Font("Lato", Font.BOLD, 13));
     folder4Label.setBounds(533, 10, 61, 16);
-    frame_1.getContentPane().add(folder4Label);
+    mainFrame.getContentPane().add(folder4Label);
     
     folder5Label = new JLabel(folder5Name);
     folder5Label.setHorizontalAlignment(SwingConstants.CENTER);
     folder5Label.setForeground(Color.WHITE);
     folder5Label.setFont(new Font("Lato", Font.BOLD, 13));
     folder5Label.setBounds(694, 10, 61, 16);
-    frame_1.getContentPane().add(folder5Label);
+    mainFrame.getContentPane().add(folder5Label);
     
     
     if (defaultFolder == FolderName.FOLDER4) {
@@ -1076,6 +1111,8 @@ public static void initGui(final JFrame frame) {
     label.setBackground(Color.BLACK);
     label.setBounds(0, 0, 888, 500);
     mainContainer.add(label);
+    
+    createComponentMap(frame);
     
     frame.getContentPane().setBackground(Color.WHITE);
     
@@ -1148,6 +1185,8 @@ public static void initGui(final JFrame frame) {
 	    }
 	}
   });
+    
+    
     
    
     

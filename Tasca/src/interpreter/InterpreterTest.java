@@ -90,7 +90,7 @@ public class InterpreterTest {
 	    System.out.println("Exception - " + eIa);
 	}
 	
-	
+	// Move out
 	assertEquals("add interpretation", CommandType.ADD, secondInt.interpretCommand("add")); 
 	assertEquals("delete interpretation", CommandType.DELETE, secondInt.interpretCommand("d"));
 	assertEquals("modify interpretation", CommandType.INVALID, secondInt.interpretCommand("moDify")); // Must be lower case before interpretation
