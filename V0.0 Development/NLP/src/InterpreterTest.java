@@ -38,7 +38,7 @@ public class InterpreterTest {
 	
 	Interpreter newInt = new Interpreter();
 	Interpreter anotherInt = new Interpreter();
-	// USAGE ––– INPUT
+	// USAGE INPUT
 	try {
 	    anotherInt.processUserInput(input);
 	} catch (IllegalArgumentException eI) { // Check for exceptions
@@ -87,21 +87,23 @@ public class InterpreterTest {
 //    private StringToTime startTime, endTime, remindTime;
     
     
-//    @Test
-//    public void testKeywordsHash() {
-//	
-//	System.out.println(Interpreter.readCommandDatabase().toString());
-//	System.out.println(Interpreter.readParameterDatabase().toString());
-//	
-//	assertEquals("add test", CommandType.ADD, Interpreter.commandKeywords.get("create"));
-//	assertEquals("delete test", CommandType.DELETE, Interpreter.commandKeywords.get("delete"));
-//	
-//	assertEquals("on test", ParameterType.START_TIME, Interpreter.parameterKeywords.get("on"));
-//	assertEquals("location test", ParameterType.LOCATION, Interpreter.parameterKeywords.get("loc"));
-//	assertEquals("reminder test", ParameterType.REMINDER_TIME, Interpreter.parameterKeywords.get("alert"));
-//	
-//	
-//    }
+    @Test
+    public void testKeywordsHash() {
+	
+	System.out.println(Interpreter.readCommandDatabase().toString());
+	System.out.println(Interpreter.readParameterDatabase().toString());
+	
+	assertEquals("add test", CommandType.ADD, Interpreter.commandKeywords.get("create"));
+	assertEquals("delete test", CommandType.DELETE, Interpreter.commandKeywords.get("delete"));
+	assertEquals("clear test", CommandType.CLEAR, Interpreter.commandKeywords.gtet("deleteall"));
+
+    
+	assertEquals("on test", ParameterType.START_TIME, Interpreter.parameterKeywords.get("on"));
+	assertEquals("location test", ParameterType.LOCATION, Interpreter.parameterKeywords.get("loc"));
+	assertEquals("reminder test", ParameterType.REMINDER_TIME, Interpreter.parameterKeywords.get("alert"));
+	
+	
+    }
     
 //    @Test
 //    public void testReadKeywords() {
