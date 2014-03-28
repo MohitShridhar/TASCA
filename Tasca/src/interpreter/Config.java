@@ -23,12 +23,12 @@ public class Config
 	   System.out.println("Reading config file failed");
        }
            
-       folderNameRef.put(getProperty("folder1").trim(), FolderName.FOLDER1);
-       folderNameRef.put(getProperty("folder2").trim(), FolderName.FOLDER2);
-       folderNameRef.put(getProperty("folder3").trim(), FolderName.FOLDER3);
-       folderNameRef.put(getProperty("folder4").trim(), FolderName.FOLDER4);
-       folderNameRef.put(getProperty("folder5").trim(), FolderName.FOLDER5);
-       folderNameRef.put(getProperty("default").trim(), FolderName.DEFAULT);
+       folderNameRef.put(getProperty("folder1").trim().toLowerCase(), FolderName.FOLDER1);
+       folderNameRef.put(getProperty("folder2").trim().toLowerCase(), FolderName.FOLDER2);
+       folderNameRef.put(getProperty("folder3").trim().toLowerCase(), FolderName.FOLDER3);
+       folderNameRef.put(getProperty("folder4").trim().toLowerCase(), FolderName.FOLDER4);
+       folderNameRef.put(getProperty("folder5").trim().toLowerCase(), FolderName.FOLDER5);
+       folderNameRef.put(getProperty("default").trim().toLowerCase(), FolderName.DEFAULT);
        
        folderIdHeader.put("folder1", FolderName.FOLDER1);
        folderIdHeader.put("folder2", FolderName.FOLDER2);

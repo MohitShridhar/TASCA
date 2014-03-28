@@ -26,6 +26,8 @@ public class Parameters {
     private static final int PRIORITY_LOW = 3;
     private static final int PRIORITY_INVALID_REF = -1;
     
+    private static Config cfg = new Config(); 
+    
     private String description, location, folder;
     private Integer priority, taskId;
     private Calendar startTime, endTime, remindTime, recurEndTime;
@@ -124,7 +126,7 @@ public class Parameters {
             return CommandFeedback.INVALID_FOLDER_REF;
         }
         
-        this.folder = folder;
+        this.folder = folder.toLowerCase();
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
@@ -185,8 +187,13 @@ public class Parameters {
     
     
     private boolean isValidFolder(String folderName) {
-        //MUST INTEGRATE LATER!!!
-        return true;
+	if (folderName.toLowerCase().equalsIgnoreCase("default")) {
+	    return true;
+	} else if (cfg.getFolderId(folderName.toLowerCase()) != null) {
+	    return true;
+	}
+	
+        return false;
     }
     
     private int stringToIntPriority(String priorityString) {

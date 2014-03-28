@@ -750,6 +750,7 @@ private static JScrollPane twin;
      taskPane.setVisible(true);
           
  }
+ 
   
  private static void loadFolderNames(){
      Config cfg = new Config ();
