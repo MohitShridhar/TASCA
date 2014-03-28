@@ -43,6 +43,7 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 
@@ -151,6 +152,7 @@ class HighlightDocumentFilter extends DocumentFilter {
 	commandColors.put(CommandType.DELETE_ALL_COMPLETED, Color.getHSBColor(0.97f, 0.66f, 0.94f));
 	commandColors.put(CommandType.SEARCH, Color.getHSBColor(0.52f, 0.9f, 0.92f));
 	commandColors.put(CommandType.MARK, Color.YELLOW.brighter());
+	commandColors.put(CommandType.UNMARK, Color.getHSBColor(0.97f, 0.66f, 0.94f));
 	commandColors.put(CommandType.QUIT, Color.getHSBColor(0.97f, 0.66f, 0.94f));
 	commandColors.put(CommandType.CLEAR, Color.getHSBColor(0.97f, 0.66f, 0.94f));
 	commandColors.put(CommandType.UNDO, Color.orange);
@@ -583,14 +585,6 @@ private static JScrollPane twin;
       
   }
 
-  private static void createComponentMap(JFrame mainFrame) {
-      componentMap = new HashMap<String,Component>();
-      Component[] components = mainFrame.getContentPane().getComponents();
-      for (int i=0; i < components.length; i++) {
-	  componentMap.put(components[i].getName(), components[i]);
-	  System.out.println(components[i].getName());
-      }
-  }
 
   public static Component getComponentByName(String name) {
       if (componentMap.containsKey(name)) {
@@ -730,7 +724,7 @@ private static JScrollPane twin;
      
      for (int i=0; i< currentTimedTasks.size(); i++) {
 	 TaskItem taskBar = new TaskItem();
-	 taskBar.loadDetails(currentTimedTasks.get(i));
+	 taskBar.loadDetails(currentTimedTasks.get(i), i+1);
 	 taskBar.setPreferredSize(new Dimension(888, 40));
 	 taskBar.setVisible(true);
 	 tempPanel.add(taskBar);
@@ -744,15 +738,17 @@ private static JScrollPane twin;
      
      if (preferredHeight < 262) {
      	taskPane.setSize(tempPanel.getPreferredSize());
+
      } else {
 	taskPane.setBounds(0, 80, 888, 262);
+	
      }
+     
      
      taskPane.setViewportView(tempPanel);
      
      taskPane.setVisible(true);
-
-     
+          
  }
   
  private static void loadFolderNames(){
@@ -924,6 +920,9 @@ public static void initGui(final JFrame frame) {
     
     taskPane.getVerticalScrollBar().setUnitIncrement(1);
     
+    
+   
+    
 //    twin = new JScrollPane();
 //    twin.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 //    twin.setBounds(0, 80, 21, 262);
@@ -931,6 +930,11 @@ public static void initGui(final JFrame frame) {
 //    twin.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 //    twin.getViewport().setOpaque(false);
 //    twin.setVisible(true);
+//    JScrollBar twinScrollBar = twin.getVerticalScrollBar();
+//    twinScrollBar.setPreferredSize(new Dimension(21, Integer.MAX_VALUE));
+//    twinScrollBar.setUI(new MyScrollbarUI()); 
+//    layeredPane.add(twin);
+    
 //    twin.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 ////    twin.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 //    JScrollBar twinScrollBar = twin.getVerticalScrollBar();
@@ -940,9 +944,9 @@ public static void initGui(final JFrame frame) {
 //    
 //    layeredPane.add(twin);
     
+    
     layeredPane.add(taskPane);
     
-  
     frame.getContentPane().add(layeredPane);
 
     
@@ -1188,8 +1192,6 @@ public static void initGui(final JFrame frame) {
     label.setBackground(Color.BLACK);
     label.setBounds(0, 0, 888, 500);
     mainContainer.add(label);
-    
-    createComponentMap(frame);
     
     frame.getContentPane().setBackground(Color.WHITE);
     

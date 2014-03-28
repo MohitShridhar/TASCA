@@ -20,6 +20,7 @@ import java.awt.Font;
 import java.awt.Color;
 
 import logic.Logic;
+import javax.swing.SwingConstants;
 
 
 public class TaskItem extends JLayeredPane {
@@ -27,6 +28,7 @@ public class TaskItem extends JLayeredPane {
     private static final int HTML_CODE_LENGTH = 20;
     private static final int MAX_DISPLAY_TEXT_LENGTH = 90;
     private static final int INITIAL_SPACE_OFFSET = 82;
+    private static final int FINAL_SPACE_OFFSET = 31;
     public static PrettyTime p = new PrettyTime();
     public static BufferedGraphics graphics = new BufferedGraphics();
     private JLabel background;
@@ -37,6 +39,7 @@ public class TaskItem extends JLayeredPane {
     private JLabel unchecked;
     private Task taskProp;
     private JLabel ellipsis;
+    private JLabel apparentId;
     
     
     public TaskItem() {
@@ -65,14 +68,14 @@ public class TaskItem extends JLayeredPane {
 	this.add(unchecked);
 	
 	reminder = new JLabel();
-	reminder.setLocation(689 + INITIAL_SPACE_OFFSET, 7);
+	reminder.setLocation(689 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET, 7);
 	reminder.setSize(25, 26);
 	reminder.setIcon(graphics.reminderIcon);
 	reminder.setVisible(false);
 	this.add(reminder);
 	
 	priority = new JLabel();
-	priority.setLocation(666 + INITIAL_SPACE_OFFSET, 7);
+	priority.setLocation(666 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET, 7);
 	// Must icon, icon size, and location during use
 	priority.setVisible(false);
 	this.add(priority);
@@ -92,6 +95,13 @@ public class TaskItem extends JLayeredPane {
 	text.setText("<html> Description – <font color='9a9695'>Time @ Location</font></html>");
 	this.add(text);
 	
+	apparentId = new JLabel("1");
+	apparentId.setHorizontalAlignment(SwingConstants.CENTER);
+	apparentId.setFont(new Font("Lato", Font.PLAIN, 12));
+	apparentId.setForeground(Color.WHITE);
+	apparentId.setBounds(39, 11, 25, 16);
+	this.add(apparentId);
+	
 	background = new JLabel();
 	background.setSize(888, 40);
 	background.setIcon(graphics.background);
@@ -100,7 +110,7 @@ public class TaskItem extends JLayeredPane {
 	//this.setVisible(true);	
     }
 
-    public void loadDetails(Task item) {
+    public void loadDetails(Task item, int guiId) {
 	
 	taskProp = item;
 	
@@ -126,6 +136,7 @@ public class TaskItem extends JLayeredPane {
 	    setCheckMark(taskProp.getIsTaskDone());
 	    setReminderIcon(taskProp.getIsThereReminder());
 	    setPriorityIcon(taskProp.getPriority(), taskProp.getIsThereReminder());
+	    apparentId.setText(guiId + "");
 	}
     }
     
@@ -140,18 +151,18 @@ public class TaskItem extends JLayeredPane {
 	if (priorityRef == 1) {
 	    priority.setIcon(graphics.highPri);
 	    priority.setSize(23, 20);
-	    priority.setLocation(655 + INITIAL_SPACE_OFFSET + withoutReminderOffset, 10);
+	    priority.setLocation(655 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset, 10);
 	    priority.setVisible(true);
 	} else if (priorityRef == 2) {
 	    priority.setIcon(graphics.medPri);
 	    priority.setSize(15, 20);
-	    priority.setLocation(663 + INITIAL_SPACE_OFFSET + withoutReminderOffset,  10);
+	    priority.setLocation(663 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset,  10);
 	    priority.setVisible(true);
 
 	} else if (priorityRef == 3) {
 	    priority.setIcon(graphics.lowPri);
 	    priority.setSize(6, 20);
-	    priority.setLocation(672 + INITIAL_SPACE_OFFSET + withoutReminderOffset,  10);
+	    priority.setLocation(672 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset,  10);
 	    priority.setVisible(true);
 
 	} else {

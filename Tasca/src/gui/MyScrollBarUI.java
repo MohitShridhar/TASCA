@@ -22,7 +22,7 @@ class MyScrollbarUI extends MetalScrollBarUI {
 	imageThumb = graphics.thumb;
 	imageTrack = graphics.track;
     }
-
+    
     @Override
     protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
 	
@@ -31,7 +31,7 @@ class MyScrollbarUI extends MetalScrollBarUI {
         g.drawRect(0, 0, thumbBounds.width - 2, thumbBounds.height - 1);
         AffineTransform transform = AffineTransform.getScaleInstance((double)thumbBounds.width/imageThumb.getWidth(null),(double)thumbBounds.height/imageThumb.getHeight(null));
         ((Graphics2D)g).drawImage(imageThumb, transform, null);
-        g.translate( -thumbBounds.x, -thumbBounds.y );
+        g.translate( -thumbBounds.x, -thumbBounds.y ); 
         
     }
 
