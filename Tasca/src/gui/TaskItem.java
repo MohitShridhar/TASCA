@@ -26,6 +26,7 @@ public class TaskItem extends JLayeredPane {
     
     private static final int HTML_CODE_LENGTH = 20;
     private static final int MAX_DISPLAY_TEXT_LENGTH = 90;
+    private static final int INITIAL_SPACE_OFFSET = 82;
     public static PrettyTime p = new PrettyTime();
     public static BufferedGraphics graphics = new BufferedGraphics();
     private JLabel background;
@@ -37,6 +38,7 @@ public class TaskItem extends JLayeredPane {
     private Task taskProp;
     private JLabel ellipsis;
     
+    
     public TaskItem() {
 	
 	super();
@@ -44,33 +46,33 @@ public class TaskItem extends JLayeredPane {
 	//loadDetails(item);
 	
 	
-	this.setSize(724, 40);
+	this.setSize(888, 40);
 //	this.setLocation(82, 81);
 	this.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 	
 	checkMark = new JLabel();
-	checkMark.setLocation(10, 14);
+	checkMark.setLocation(10 + INITIAL_SPACE_OFFSET, 14);
 	checkMark.setSize(19, 13);
 	checkMark.setIcon(graphics.checkMark);
 	checkMark.setVisible(false);
 	this.add(checkMark);
 	
 	unchecked = new JLabel();
-	unchecked.setLocation(12, 13);
+	unchecked.setLocation(12 + INITIAL_SPACE_OFFSET, 13);
 	unchecked.setSize(15, 15);
 	unchecked.setIcon(graphics.unchecked);
 	unchecked.setVisible(true);
 	this.add(unchecked);
 	
 	reminder = new JLabel();
-	reminder.setLocation(689, 7);
+	reminder.setLocation(689 + INITIAL_SPACE_OFFSET, 7);
 	reminder.setSize(25, 26);
 	reminder.setIcon(graphics.reminderIcon);
 	reminder.setVisible(false);
 	this.add(reminder);
 	
 	priority = new JLabel();
-	priority.setLocation(666, 7);
+	priority.setLocation(666 + INITIAL_SPACE_OFFSET, 7);
 	// Must icon, icon size, and location during use
 	priority.setVisible(false);
 	this.add(priority);
@@ -78,20 +80,20 @@ public class TaskItem extends JLayeredPane {
 	ellipsis = new JLabel(" ...");
 	ellipsis.setForeground(Color.WHITE);
 	ellipsis.setFont(new Font("Menlo", Font.PLAIN, 14));
-	ellipsis.setBounds(612, 9, 40, 24);
+	ellipsis.setBounds(612 + INITIAL_SPACE_OFFSET, 9, 40, 24);
 	ellipsis.setVisible(false);
 	add(ellipsis);
 	
 	text = new JLabel("New Task");
 	text.setForeground(Color.WHITE);
 	text.setFont(new Font("Lato", Font.PLAIN, 14));
-	text.setLocation(44, 7);
+	text.setLocation(44 + INITIAL_SPACE_OFFSET, 7);
 	text.setSize(600, 24);
 	text.setText("<html> Description – <font color='9a9695'>Time @ Location</font></html>");
 	this.add(text);
 	
 	background = new JLabel();
-	background.setSize(724, 40);
+	background.setSize(888, 40);
 	background.setIcon(graphics.background);
 	this.add(background);
 	
@@ -138,18 +140,18 @@ public class TaskItem extends JLayeredPane {
 	if (priorityRef == 1) {
 	    priority.setIcon(graphics.highPri);
 	    priority.setSize(23, 20);
-	    priority.setLocation(655 + withoutReminderOffset, 10);
+	    priority.setLocation(655 + INITIAL_SPACE_OFFSET + withoutReminderOffset, 10);
 	    priority.setVisible(true);
 	} else if (priorityRef == 2) {
 	    priority.setIcon(graphics.medPri);
 	    priority.setSize(15, 20);
-	    priority.setLocation(663 + withoutReminderOffset,  10);
+	    priority.setLocation(663 + INITIAL_SPACE_OFFSET + withoutReminderOffset,  10);
 	    priority.setVisible(true);
 
 	} else if (priorityRef == 3) {
 	    priority.setIcon(graphics.lowPri);
 	    priority.setSize(6, 20);
-	    priority.setLocation(672 + withoutReminderOffset,  10);
+	    priority.setLocation(672 + INITIAL_SPACE_OFFSET + withoutReminderOffset,  10);
 	    priority.setVisible(true);
 
 	} else {

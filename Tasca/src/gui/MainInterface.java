@@ -15,10 +15,13 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JViewport;
 import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -27,6 +30,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
@@ -34,6 +38,7 @@ import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.KeyEventDispatcher;
@@ -127,8 +132,6 @@ class HighlightDocumentFilter extends DocumentFilter {
     private boolean hasColor = false;
     private String userInput = null;
     
-    private Controller controller = new Controller();
-    
     private StyledDocument doc;
     
     private void initColorMap() {
@@ -172,7 +175,7 @@ class HighlightDocumentFilter extends DocumentFilter {
     }
     
     public Controller getController() {
-	return controller;
+	return MainInterface.controller;
     }
     
     public HighlightDocumentFilter(JFrame frame, final JTextPane textPane, Interpreter interpreter, JLabel background, JLabel feedbackText, JLabel feedbackBackground) {
@@ -215,13 +218,10 @@ class HighlightDocumentFilter extends DocumentFilter {
         	    if (userInput != null) {
         		boolean quit = false;
         		
-        		quit = controller.executeCommands(userInput);
+        		quit = MainInterface.controller.executeCommands(userInput);
         		
         		if (!quit) {
-        		    LinkedList<Task> tasks = Logic.displayLL();
-        		    TaskItem task = (TaskItem) MainInterface.getComponentByName("taskBar");
-        		    task.loadDetails(tasks.get(0));
-        		    task.setVisible(true);
+        		    MainInterface.updateTaskDisplay();
         		    
         		    textPane.setText("");
         		} else {
@@ -494,7 +494,8 @@ public class MainInterface {
 
   // TODO: Add more help error messages. And integrate ID & Folder & time validity checkers. Implement all user exceptions
   // TODO: Save before OS Quit 
-    
+  public static Controller controller = new Controller();
+   
   private static final int NUM_FOLDERS = 5;  
     
   private static int posX=0,posY=0;
@@ -540,7 +541,12 @@ public class MainInterface {
   
   private static HashMap componentMap;
 
-private static TaskItem taskBar;
+
+private static LinkedList<Task> currentTimedTasks;
+
+private static JScrollPane taskPane;
+
+private static JScrollPane twin;
   
 //  public static enum FolderName {
 //      folder1, folder2, folder3, folder4, folder5
@@ -712,6 +718,42 @@ private static TaskItem taskBar;
 
   }
   
+
+  
+ public static void updateTaskDisplay() {
+     currentTimedTasks = Logic.displayLL(); // TODO: Replace with NARIN's display feature
+     					    // TODO: Add floating task support
+     JPanel tempPanel = new JPanel(new GridLayout(currentTimedTasks.size(), 0, 0, 13));
+     
+     tempPanel.setBackground(Color.decode("#272822"));
+     
+     
+     for (int i=0; i< currentTimedTasks.size(); i++) {
+	 TaskItem taskBar = new TaskItem();
+	 taskBar.loadDetails(currentTimedTasks.get(i));
+	 taskBar.setPreferredSize(new Dimension(888, 40));
+	 taskBar.setVisible(true);
+	 tempPanel.add(taskBar);
+	 	 
+     }
+     
+     
+     double preferredHeight = tempPanel.getPreferredSize().getHeight(); 
+     
+     
+     
+     if (preferredHeight < 262) {
+     	taskPane.setSize(tempPanel.getPreferredSize());
+     } else {
+	taskPane.setBounds(0, 80, 888, 262);
+     }
+     
+     taskPane.setViewportView(tempPanel);
+     
+     taskPane.setVisible(true);
+
+     
+ }
   
  private static void loadFolderNames(){
      Config cfg = new Config ();
@@ -860,16 +902,51 @@ public static void initGui(final JFrame frame) {
 
 //	TaskItem taskBar = new TaskItem(tasks.get(0));
     
-    taskBar = new TaskItem();
-    taskBar.setLocation(82, 81);
-    taskBar.setVisible(false);
-    taskBar.setName("taskBar");
-    frame.getContentPane().add(taskBar); 
+    JLayeredPane layeredPane = new JLayeredPane();
+    layeredPane.setBounds(0, 0, 888, 262 + 80);
+    layeredPane.setOpaque(false);
+    layeredPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+    
+    taskPane = new JScrollPane();
+    taskPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    taskPane.setBounds(0, 80, 888, 262);
+    taskPane.setOpaque(false);
+    taskPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+    taskPane.getViewport().setOpaque(false);
+    taskPane.setOpaque(false);
+    taskPane.setVisible(true);
+    taskPane.setDoubleBuffered(true);
+    //taskPane.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+    
+    JScrollBar mainScrollBar = taskPane.getVerticalScrollBar();
+    mainScrollBar.setPreferredSize(new Dimension(21, Integer.MAX_VALUE));
+    mainScrollBar.setUI(new MyScrollbarUI());
+    
+    taskPane.getVerticalScrollBar().setUnitIncrement(1);
+    
+//    twin = new JScrollPane();
+//    twin.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+//    twin.setBounds(0, 80, 21, 262);
+//    twin.setOpaque(false);
+//    twin.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+//    twin.getViewport().setOpaque(false);
+//    twin.setVisible(true);
+//    twin.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+////    twin.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+//    JScrollBar twinScrollBar = twin.getVerticalScrollBar();
+//    twinScrollBar.setPreferredSize(new Dimension(21, Integer.MAX_VALUE));
+//    twinScrollBar.setModel(mainScrollBar.getModel());    
+//    
+//    
+//    layeredPane.add(twin);
+    
+    layeredPane.add(taskPane);
+    
+  
+    frame.getContentPane().add(layeredPane);
 
     
     /* Task test */
-    
-    
     
     textPane = new MyTextPane(new DefaultStyledDocument());
     textPane.setOpaque(false);
@@ -1116,6 +1193,7 @@ public static void initGui(final JFrame frame) {
     
     frame.getContentPane().setBackground(Color.WHITE);
     
+    
     frame.addMouseListener(new MouseAdapter()
     {
        public void mousePressed(MouseEvent e)
@@ -1185,8 +1263,8 @@ public static void initGui(final JFrame frame) {
 	    }
 	}
   });
-    
-    
+  
+    //updateTaskDisplay();
     
    
     
