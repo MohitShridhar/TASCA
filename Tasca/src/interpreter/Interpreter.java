@@ -28,6 +28,7 @@ public class Interpreter {
     private static final String INVALID_REMINDER_TIME = "Invalid remind time";
     private static final String INVALID_PRIORITY_REF = "Invalid priority reference";
     private static final String INVALID_FOLDER_REF = "Invalid folder reference";
+    private static final String INVALID_TASK_ID = "Invalid task id reference";
     private static final String INVALID_PARAMETER_TYPE = "Invalid parameter type";
     private static final String INVALID_COMMAND_ARGUMENT = "The description for this command cannot be empty";
     private static final String ERROR_DATABASE_DUPLICATE_PARA = "Duplicate keywords were found in the 'parameter' database";
@@ -37,11 +38,14 @@ public class Interpreter {
     
     private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
     private static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
+    
+    private static Map<Integer, Integer> guiIdRef = new HashMap<Integer, Integer>();
     private static Config cfg = new Config();
     
     private ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>(); // For duplicates
     private Command command = new Command();
     
+    private static boolean isGuiIdEnabled = false;
     
     /* Keyword Headers: Mapping Config file elements to Command & Parameter types */
     private static final Map<String, CommandType> commandHeaders;
@@ -285,6 +289,8 @@ public class Interpreter {
             throw new InvalidParameterException(INVALID_PRIORITY_REF);
         case INVALID_FOLDER_REF:
             throw new InvalidParameterException(INVALID_FOLDER_REF);
+        case INVALID_TASK_ID:
+            throw new InvalidParameterException(INVALID_TASK_ID);           
         default:
             return; // Do nothing           
         }
@@ -331,9 +337,41 @@ public class Interpreter {
         
     }
     
+    // GUI id to Logic id interfacing:
     
+    public static void setIsGuiIdEnabled(boolean isGuiIdEnabled) {
+	Interpreter.isGuiIdEnabled = isGuiIdEnabled;
+    }
     
-    // Can be used for Validating keywords (for color coding):
+    public static boolean checkIsGuiIdEnabled() {
+	return isGuiIdEnabled;
+    }
+    
+    public static void addGuiId(int guiId, int realTaskId){
+	if (isGuiIdEnabled) {
+		guiIdRef.put(guiId, realTaskId);
+	}
+	
+	return;
+    }
+    
+    public static int getRealId(int guiId) {
+	if (isGuiIdEnabled) {
+
+	    if (guiIdRef.get(guiId) == null) {
+		return -1; // -1 is used to indicate invalid/non-existent id reference
+	    }
+
+	    return guiIdRef.get(guiId);
+	}
+	
+	return -1;
+    }
+    
+    public static void clearGuiIdMap() {
+	guiIdRef.clear();
+    }
+    
     
     public ParameterType interpretParameter(String parameterString) {
         if (!parameterKeywords.containsKey(parameterString)) {

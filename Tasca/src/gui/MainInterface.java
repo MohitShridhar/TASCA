@@ -549,6 +549,8 @@ private static LinkedList<Task> currentTimedTasks;
 private static JScrollPane taskPane;
 
 private static JScrollPane twin;
+
+private static Interpreter interpreter;
   
 //  public static enum FolderName {
 //      folder1, folder2, folder3, folder4, folder5
@@ -721,10 +723,15 @@ private static JScrollPane twin;
      
      tempPanel.setBackground(Color.decode("#272822"));
      
+     Interpreter.clearGuiIdMap(); 
      
      for (int i=0; i< currentTimedTasks.size(); i++) {
 	 TaskItem taskBar = new TaskItem();
+	 
 	 taskBar.loadDetails(currentTimedTasks.get(i), i+1);
+	 Interpreter.addGuiId(i+1, currentTimedTasks.get(i).getTaskID());
+	 
+	 
 	 taskBar.setPreferredSize(new Dimension(888, 40));
 	 taskBar.setVisible(true);
 	 tempPanel.add(taskBar);
@@ -960,8 +967,9 @@ public static void initGui(final JFrame frame) {
     textPane.setForeground(Color.WHITE);
     textPane.setFocusTraversalKeysEnabled(false);
     
-    // COLOR CODING--------------------------------------------------------
-    Interpreter interpreter = new Interpreter();
+    interpreter = new Interpreter();
+    Interpreter.setIsGuiIdEnabled(true); 
+    
     JLabel lblNewLabel = new JLabel("New label");
     JLabel feedbackText = new JLabel("Feed");
     JLabel feedbackBackground = new JLabel("");

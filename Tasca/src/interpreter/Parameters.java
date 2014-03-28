@@ -131,12 +131,15 @@ public class Parameters {
     }
     
     public CommandFeedback setTaskId(int id) {
-        
-        this.taskId = id;
-        
+	
+        if (!isValidId(id)) {
+            return CommandFeedback.INVALID_TASK_ID;
+        }
+	
+        this.taskId = Interpreter.getRealId(id);
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
-
+    
     
     // Accessors:
     
@@ -194,6 +197,16 @@ public class Parameters {
 	}
 	
         return false;
+    }
+    
+    private boolean isValidId(int id) {
+	if (Interpreter.checkIsGuiIdEnabled() && Interpreter.getRealId(id) != -1) {
+	    return true;
+	} else if (!Interpreter.checkIsGuiIdEnabled() && id >= 0) {
+	    return true;
+	}
+	
+	return false;
     }
     
     private int stringToIntPriority(String priorityString) {
