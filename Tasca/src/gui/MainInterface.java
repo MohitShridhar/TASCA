@@ -122,7 +122,7 @@ class MyTextPane extends JTextPane {
 class HighlightDocumentFilter extends DocumentFilter {
 
     private DefaultHighlightPainter highlightPainter = new DefaultHighlightPainter(Color.YELLOW);
-    private JTextPane textPane;
+    private static JTextPane textPane;
     private JFrame mainFrame;
     private AttributeSet duplicateParameter, normalSetting, parameterSetting, commandSetting;
     private Interpreter interpreter;
@@ -225,7 +225,7 @@ class HighlightDocumentFilter extends DocumentFilter {
         		if (!quit) {
         		    MainInterface.updateTaskDisplay();
         		    
-        		    textPane.setText("");
+        		    clearTextPane();
         		} else {
         		    mainFrame.dispose();
         		    System.exit(0);        			
@@ -487,6 +487,10 @@ class HighlightDocumentFilter extends DocumentFilter {
 	
 	return count;
     }
+
+    public static void clearTextPane() {
+	textPane.setText("");
+    }
     
 
 }
@@ -551,6 +555,10 @@ private static JScrollPane taskPane;
 private static JScrollPane twin;
 
 private static Interpreter interpreter;
+
+private static Config cfg;
+
+private static JLabel emptyTaskListMsg;
   
 //  public static enum FolderName {
 //      folder1, folder2, folder3, folder4, folder5
@@ -715,10 +723,34 @@ private static Interpreter interpreter;
   }
   
 
+  private static LinkedList<Task> folderSortTimedTasks(LinkedList<Task> original) {
+      LinkedList<Task> sortedList = new LinkedList<Task>();
+      
+      for (int i=0; i<original.size(); i++) {
+//	  if (cfg.getFolderId(original.get(i).get)) {
+//	      
+//	  }
+      }
+      
+      return sortedList;
+  }
+  
   
  public static void updateTaskDisplay() {
      currentTimedTasks = Logic.displayLL(); // TODO: Replace with NARIN's display feature
      					    // TODO: Add floating task support
+     
+     if (currentTimedTasks.size() == 0) {
+	 taskPane.setVisible(false);
+	 emptyTaskListMsg.setVisible(true);
+	 
+	 return;
+     } else {
+	 emptyTaskListMsg.setVisible(false);
+     }
+     
+     LinkedList<Task> folderSortedTimedTasks = folderSortTimedTasks(currentTimedTasks);     
+     
      JPanel tempPanel = new JPanel(new GridLayout(currentTimedTasks.size(), 0, 0, 13));
      
      tempPanel.setBackground(Color.decode("#272822"));
@@ -726,11 +758,10 @@ private static Interpreter interpreter;
      Interpreter.clearGuiIdMap(); 
      
      for (int i=0; i< currentTimedTasks.size(); i++) {
-	 TaskItem taskBar = new TaskItem();
+	 TaskItem taskBar = new TaskItem(textPane, controller, i+1);
 	 
-	 taskBar.loadDetails(currentTimedTasks.get(i), i+1);
+	 taskBar.loadTimedTaskDetails(currentTimedTasks.get(i), i+1);
 	 Interpreter.addGuiId(i+1, currentTimedTasks.get(i).getTaskID());
-	 
 	 
 	 taskBar.setPreferredSize(new Dimension(888, 40));
 	 taskBar.setVisible(true);
@@ -760,7 +791,7 @@ private static Interpreter interpreter;
  
   
  private static void loadFolderNames(){
-     Config cfg = new Config ();
+     cfg = new Config ();
      
      folder1Name = cfg.getFolderName(FolderName.FOLDER1);
      folder2Name = cfg.getFolderName(FolderName.FOLDER2);
@@ -923,7 +954,7 @@ public static void initGui(final JFrame frame) {
     //taskPane.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
     
     JScrollBar mainScrollBar = taskPane.getVerticalScrollBar();
-    mainScrollBar.setPreferredSize(new Dimension(21, Integer.MAX_VALUE));
+    mainScrollBar.setPreferredSize(new Dimension(16, Integer.MAX_VALUE));
     mainScrollBar.setUI(new MyScrollbarUI());
     
     taskPane.getVerticalScrollBar().setUnitIncrement(1);
@@ -994,6 +1025,14 @@ public static void initGui(final JFrame frame) {
     scrollPane.setViewportView(textPane);
     frame.getContentPane().add(scrollPane);   
     
+    emptyTaskListMsg = new JLabel("Just do it. Later.");
+    emptyTaskListMsg.setForeground(Color.WHITE);
+    emptyTaskListMsg.setHorizontalAlignment(SwingConstants.CENTER);
+    emptyTaskListMsg.setFont(new Font("Lucida Grande", Font.PLAIN, 22));
+    emptyTaskListMsg.setBounds(214, 200, 460, 28);
+    emptyTaskListMsg.setVisible(false);
+    mainFrame.getContentPane().add(emptyTaskListMsg);
+    
     
     btnClose.setBounds(862, 7, 17, 17);
     frame.getContentPane().add(btnClose);
@@ -1031,7 +1070,7 @@ public static void initGui(final JFrame frame) {
     });
     
     
-    folder1Label.setFont(latoBold13);
+    folder1Label.setFont(new Font("Lato", Font.BOLD, 13));
     folder1Label.setForeground(Color.WHITE);
     folder1Label.setBounds(56, 10, 61, 16);
     mainFrame.getContentPane().add(folder1Label);
@@ -1043,7 +1082,7 @@ public static void initGui(final JFrame frame) {
 	btnFolder1.setIcon(tabNotClicked);
     }
     
-    btnFolder1.setBounds(0, 4, 177, 28);
+    btnFolder1.setBounds(-2, 4, 177, 28);
     btnFolder1.setOpaque(false);
     btnFolder1.setFocusPainted(false);
     btnFolder1.setBorderPainted(false);
