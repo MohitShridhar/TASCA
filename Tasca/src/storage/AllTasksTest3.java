@@ -18,7 +18,7 @@ public class AllTasksTest3 {
 	public void test() {
 		test = new AllTasks();
 		Calendar taskDate = setCalFromMilli(1397696400000L);
-		Task task = new Task(0,1,taskDate, taskDate, false ,false, false,"Last day of School", "National University of Singapore");
+		Task task = new Task(0,0,1,taskDate, taskDate, false ,false, false,"Last day of School", "National University of Singapore");
 		test.addTask(0, task);
 		save();
 		
@@ -34,7 +34,7 @@ public class AllTasksTest3 {
 		test = new AllTasks();
 		Calendar startDate = setCalFromMilli(1396400400000L);
 		Calendar endDate = setCalFromMilli(1397696400000L);
-		Task task = new Task(0,1, startDate, endDate, false ,false, false,"Revise Schoolwork", "Home");
+		Task task = new Task(0,0,1, startDate, endDate, false ,false, false,"Revise Schoolwork", "Home");
 		test.addTask(0, task);
 		save();
 		

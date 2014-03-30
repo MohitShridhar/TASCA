@@ -18,10 +18,10 @@ public class AllTasksTest4 {
 	public void test() {
 		test = new AllTasks();
 		Calendar taskDate = setCalFromMilli(1397696400000L);
-		Task task1 = new Task(0,1,taskDate, taskDate, false ,false, false,"Last day of School", "National University of Singapore");
-		Task task2 = new Task(0,1,taskDate, taskDate, false ,false, false,"Sleeping", "Home");
-		Task task3 = new Task(0,1,taskDate, taskDate, false ,false, false,"Running", "Park");
-		Task task4 = new Task(0,1,taskDate, taskDate, false ,false, false,"Fly to Japan", "Airport");
+		Task task1 = new Task(0,0,1,taskDate, taskDate, false ,false, false,"Last day of School", "National University of Singapore");
+		Task task2 = new Task(0,0,1,taskDate, taskDate, false ,false, false,"Sleeping", "Home");
+		Task task3 = new Task(0,0,1,taskDate, taskDate, false ,false, false,"Running", "Park");
+		Task task4 = new Task(0,0,1,taskDate, taskDate, false ,false, false,"Fly to Japan", "Airport");
 		test.addTask(0, task1);
 		test.addTask(1, task2);
 		test.addTask(0, task3);

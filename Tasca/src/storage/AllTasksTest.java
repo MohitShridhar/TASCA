@@ -7,7 +7,10 @@ import java.util.Calendar;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
-
+/**
+ * @author Narinderpal Singh Dhillon
+ * @Matric A0097416X
+ */
 public class AllTasksTest {
 
 	@Test
@@ -17,9 +20,9 @@ public class AllTasksTest {
 		// What is x?
 		int x=0;
 		
-		Task task1 = new Task(0,1,Calendar.getInstance(), Calendar.getInstance(), false ,false, false,"go home", "buy eggs");
-		Task task2 = new Task(0,1,Calendar.getInstance(), Calendar.getInstance(), false ,false, false,"bye yb", "nothing");
-		Task task3 = new Task(0,1,Calendar.getInstance(), Calendar.getInstance(), true ,false, false,"valentines", "buy flowers");
+		Task task1 = new Task(0,0,1,Calendar.getInstance(), Calendar.getInstance(), false ,false, false,"go home", "buy eggs");
+		Task task2 = new Task(0,0,1,Calendar.getInstance(), Calendar.getInstance(), false ,false, false,"bye yb", "nothing");
+		Task task3 = new Task(0,0,1,Calendar.getInstance(), Calendar.getInstance(), true ,false, false,"valentines", "buy flowers");
 		Reminder reminder = new Reminder(Calendar.getInstance(), task3);
 		
 		allTasks.addTask(0, task1);

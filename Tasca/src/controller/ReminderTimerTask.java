@@ -7,6 +7,10 @@ import storage.AllTasks;
 import storage.Reminder;
 import storage.Task;
 
+/**
+ * @author Narinderpal Singh Dhillon
+ * @Matric A0097416X
+ */
 public class ReminderTimerTask extends TimerTask{
 	private AllTasks allTasks;
 	

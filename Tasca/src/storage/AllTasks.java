@@ -11,6 +11,10 @@ import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.Date;
 
+/**
+ * @author Narinderpal Singh Dhillon
+ * @Matric A0097416X
+ */
 public class AllTasks {
 	private LinkedList<Task> allTasks;
 	private Calendar currentTime;
@@ -38,13 +42,13 @@ public class AllTasks {
 		Scanner fileScanner = new Scanner(fStream);
 
 		while (fileScanner.hasNext()) {
+			int folder = fileScanner.nextInt();
 			int taskID = fileScanner.nextInt();
 			int priority = fileScanner.nextInt();
 
-			allFloatingTasks.add(new FloatingTask(taskID, priority, fileScanner
-					.nextBoolean(),
-					eliminateFrontSpace(fileScanner.nextLine()), fileScanner
-							.nextLine()));
+			allFloatingTasks.add(new FloatingTask(folder, taskID, priority,
+					fileScanner.nextBoolean(), eliminateFrontSpace(fileScanner
+							.nextLine()), fileScanner.nextLine()));
 		}
 		fileScanner.close();
 
@@ -55,6 +59,7 @@ public class AllTasks {
 		Scanner fileScanner = new Scanner(fStream);
 
 		while (fileScanner.hasNext()) {
+			int folder = fileScanner.nextInt();
 			int taskID = fileScanner.nextInt();
 			int priority = fileScanner.nextInt();
 
@@ -68,7 +73,7 @@ public class AllTasks {
 					fileScanner.nextInt(), fileScanner.nextInt(),
 					fileScanner.nextInt());
 
-			allTasks.add(new Task(taskID, priority, startTime, endTime,
+			allTasks.add(new Task(folder, taskID, priority, startTime, endTime,
 					fileScanner.nextBoolean(), fileScanner.nextBoolean(),
 					fileScanner.nextBoolean(), eliminateFrontSpace(fileScanner
 							.nextLine()), fileScanner.nextLine()));
@@ -108,11 +113,12 @@ public class AllTasks {
 			} else {
 
 				while (counter < lastTaskID) {
-					prt.printf("%d %d %b %s", counter,
-							allFloatingTasks.get(index).getPriority(),
-							allFloatingTasks.get(index).getIsTaskDone(),
+					prt.printf("%d %d %d %b %s", allFloatingTasks.get(index)
+							.getFolder(), counter, allFloatingTasks.get(index)
+							.getPriority(), allFloatingTasks.get(index)
+							.getIsTaskDone(),
 
-							allFloatingTasks.get(index).getTaskTitle());
+					allFloatingTasks.get(index).getTaskTitle());
 					prt.println();
 					prt.printf("%s", allFloatingTasks.get(index).getLocation());
 					prt.println();
@@ -143,7 +149,8 @@ public class AllTasks {
 
 				while (isValidTaskId(counter)) {
 					prt.printf(
-							"%d %d %d %d %d %d %d %d %d %d %d %d %b %b %b %s",
+							"%d %d %d %d %d %d %d %d %d %d %d %d %d %b %b %b %s",
+							allTasks.get(counter).getFolder(),
 							counter,
 							allTasks.get(counter).getPriority(),
 							allTasks.get(counter).getStartTime()
@@ -317,7 +324,7 @@ public class AllTasks {
 	}
 
 	public boolean isValidTaskId(int index) {
-		return index < allTasks.size() && index>=0;
+		return index < allTasks.size() && index >= 0;
 	}
 
 	private void setCurrentTime() {
@@ -479,6 +486,14 @@ public class AllTasks {
 		allFloatingTasks.remove(index - this.getTaskSize());
 		this.updateFloatingTaskID();
 		return true;
+	}
+	
+	public LinkedList<Task> getTimedList () {
+		return allTasks;
+	}
+	
+	public LinkedList<FloatingTask> getFloatingList () {
+		return allFloatingTasks;
 	}
 
 }

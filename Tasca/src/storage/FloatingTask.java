@@ -1,8 +1,11 @@
 package storage;
-
+/**
+ * @author Narinderpal Singh Dhillon
+ * @Matric A0097416X
+ */
 public class FloatingTask {
 
-	private int taskID, priority;
+	private int taskID, priority,folder;
 	
 	private boolean isTaskDone;
 	private String taskTitle;
@@ -11,9 +14,10 @@ public class FloatingTask {
 	// Note for NARIN: The convention used for NLP: if a parameter is not
 	// specified then it's NULL.
 
-	public FloatingTask(int taskID, int priority,
+	public FloatingTask(int folder, int taskID, int priority,
 			boolean isTaskDone,  String taskTitle,
 			String location) {
+		this.folder = folder;
 		this.taskID = taskID;
 		this.priority = priority;
 
@@ -45,6 +49,15 @@ public class FloatingTask {
 
 	public int getTaskID() {
 		return taskID;
+	}
+	
+	public int getFolder() {
+		return folder;
+	}
+	
+	public void setFolder(int folder) {
+		this.folder = folder;
+		return;
 	}
 
 	public void setPriority(int priority) {

@@ -3,9 +3,9 @@ package logic;
 import io.Exporter;
 import io.Importer;
 
-import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import controller.SystemMessage;
 
 import storage.*;
 
@@ -18,25 +18,33 @@ public class Logic {
 	private static String MESSAGE_DELETE_SEARCH = "Do you want to delete all search results? (Y/N) ";
 
 	private static AllTasks _storage;
+	private static SystemMessage systemMessage;
 
 	// private static Scanner sc = new Scanner(System.in);
 
-	public static void initStorage(AllTasks alltasks) {
+	public static void initStorage(AllTasks alltasks, SystemMessage temp) {
 		_storage = alltasks;
+		systemMessage = temp;
+
 		return;
 	}
 
-	public static boolean addFloatingTask(int priority, boolean isTaskDone,
+	/**
+	 * 
+	 * @author Narinderpal Singh Dhillon
+	 * @Matric A0097416X
+	 */
+	public static boolean addFloatingTask(int folder,int priority, boolean isTaskDone,
 			String title, String location) {
 		int dummyID = 0;
-		FloatingTask temp = new FloatingTask(dummyID, priority, isTaskDone,
+		FloatingTask temp = new FloatingTask(folder, dummyID, priority, isTaskDone,
 				title, location);
 		_storage.addFloatingTask(temp);
 		return true;
 
 	}
 
-	public static boolean addTask(int priority, Date start, Date end,
+	public static boolean addTask(int folder, int priority, Date start, Date end,
 			boolean isThereReminder, boolean isTaskDone, boolean isAllDayEvent,
 			String title, String remarks, Date reminder) {
 
@@ -71,7 +79,7 @@ public class Logic {
 				count++;
 			}
 
-			Task task = new Task(TaskId, priority, taskStart, taskEnd,
+			Task task = new Task(folder, TaskId, priority, taskStart, taskEnd,
 					isThereReminder, isTaskDone, isAllDayEvent, title, remarks);
 
 			_storage.addTask(count, task);
@@ -103,7 +111,6 @@ public class Logic {
 
 				_storage.addReminder(count, taskReminder);
 			}
-			System.out.printf("Task Added\n");
 			return true;
 
 		}
@@ -113,7 +120,7 @@ public class Logic {
 	public static boolean deleteTask(int index) {
 		int totalNumOfTasks = _storage.getSize();
 		if (index < totalNumOfTasks && index >= 0) {
-			if (index < _storage.getTaskSize() ) {
+			if (index < _storage.getTaskSize()) {
 
 				if (_storage.getTask(index).getIsThereReminder()) {
 					_storage.deleteReminder(_storage.getTask(index));
@@ -122,11 +129,11 @@ public class Logic {
 			} else {
 				_storage.deleteFloatingTask(index);
 			}
-			System.out.printf("%s\n", MESSAGE_TASK_DELETED);
+
 			return true;
 
 		} else {
-			System.out.printf("%s\n", MESSAGE_TASK_NOT_DELETED);
+			systemMessage.setSystemMessage(MESSAGE_TASK_NOT_DELETED);
 			return false;
 		}
 	}
@@ -136,52 +143,47 @@ public class Logic {
 		if (index < totalNumOfTasks && index >= 0) {
 			if (index < _storage.getTaskSize() && index >= 0) {
 				_storage.getTask(index).setIsTaskDone(true);
-				System.out.printf("Task Number %d %s\n", index,
-						MESSAGE_TASK_IS_DONE);
 			} else {
 				_storage.getFloatingTask(index).setIsTaskDone(true);
-				System.out.printf("Task Number %d %s\n", index,
-						MESSAGE_TASK_IS_DONE);
 			}
 			return true;
 		} else {
-			System.out.printf("%s/n", MESSAGE_TASK_INDEX_INVALID);
+			systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
 			return false;
 		}
 
 	}
-	
-	public static LinkedList<Task> displayLL() {
-	    LinkedList<Task> list = new LinkedList<Task>();
-	    
-	    try {
+
+	public static boolean taskIsNotDone(int index) {
 		int totalNumOfTasks = _storage.getSize();
-		
-		for (int i=0; i<totalNumOfTasks; i++){
-		    if (i < _storage.getTaskSize() && i < totalNumOfTasks) {
-		    	list.add(_storage.getTask(i));
-		    }
+		if (index < totalNumOfTasks && index >= 0) {
+			if (index < _storage.getTaskSize() && index >= 0) {
+				_storage.getTask(index).setIsTaskDone(false);
+			} else {
+				_storage.getFloatingTask(index).setIsTaskDone(false);
+			}
+			return true;
+		} else {
+			systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
+			return false;
 		}
-		
-	    } catch (NullPointerException eN) {
-		System.out.println("Empty storage");
-	    }
-	    
-	    return list;
+
 	}
 
-	public static void displayTask(int index) {
+	public static void displayTask(int index, LinkedList<Task> list) {
 
 		int totalNumOfTasks = _storage.getSize();
 		if (index < _storage.getTaskSize()) {
 
 			if (index < totalNumOfTasks) {
 				Task task = _storage.getTask(index);
+				list.add(task);
 				int indexOfReminder = _storage
 						.searchForCorrespondingReminder(task);
 
 				SimpleDateFormat display = new SimpleDateFormat(
 						"E yyyy.MM.dd 'at' hh:mm:ss a zzz");
+				System.out.println("Folder: " + task.getFolder());
 				System.out.println("id: " + task.getTaskID());
 				System.out.println("priority: " + task.getPriority());
 				System.out.println("start: "
@@ -213,6 +215,7 @@ public class Logic {
 			if (index >= _storage.getTaskSize()) {
 				FloatingTask node = _storage.getFloatingTask(index);
 
+				System.out.println("Folder: " + node.getFolder());
 				System.out.println("id: " + node.getTaskID());
 				System.out.println("priority: " + node.getPriority());
 				System.out.println("title: " + node.getTaskTitle());
@@ -226,21 +229,24 @@ public class Logic {
 				System.out
 						.println("=========================================================================");
 			} else {
-				System.out.printf("%s\n", MESSAGE_TASK_INDEX_INVALID);
+				systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
 			}
 		}
 	}
 
 	public static void displayAllTasks() {
 		int totalNumOfTasks = _storage.getSize();
+		LinkedList<Task> list = new LinkedList<Task>();
 		for (int count = 0; count < totalNumOfTasks; count++) {
-			displayTask(count);
+			displayTask(count,list);
 		}
+		systemMessage.setTimedList(list);
 	}
 
 	public static void displayTasksAtPeriod(Date startDateSpecified,
 			Date endDateSpecified) {
 		int totalNumOfTasks = _storage.getTaskSize();
+		LinkedList<Task> list = new LinkedList<Task>();
 
 		Date startTime, endTime;
 		for (int count = 0; count < totalNumOfTasks; count++) {
@@ -256,9 +262,10 @@ public class Logic {
 					&& endTime.after(startDateSpecified);
 
 			if (hasTaskStarted || hasTaskNotEnded) {
-				displayTask(count);
+				displayTask(count,list);
 			}
 		}
+		systemMessage.setTimedList(list);
 	}
 
 	public static void export(String savePath) {
@@ -298,20 +305,22 @@ public class Logic {
 
 	public static void searchTask(String searchString) {
 		int totalNumOfTasks = _storage.getSize();
+		LinkedList<Task> list = new LinkedList<Task>();
 		for (int index = 0; index < totalNumOfTasks; index++) {
 			String taskTitle;
 			if (index < _storage.getTaskSize()) {
 				taskTitle = _storage.getTask(index).getTaskTitle();
 				if (isInString(taskTitle, searchString)) {
-					displayTask(index);
+					displayTask(index,list);
 				}
 			} else {
 				taskTitle = _storage.getFloatingTask(index).getTaskTitle();
 				if (isInString(taskTitle, searchString)) {
-					displayTask(index);
+					displayTask(index,list);
 				}
 			}
 		}
+		systemMessage.setTimedList(list);
 	}
 
 	private static boolean isInString(String mainString, String subString) {
@@ -342,9 +351,9 @@ public class Logic {
 		System.out.printf("%d Tasks have been done and deleted", count);
 	}
 
+	
 	public static void deleteSearch(String searchString, Scanner sc) {
 		searchTask(searchString);
-		System.out.printf("%s", MESSAGE_DELETE_SEARCH);
 
 		String s = sc.nextLine();
 		System.out.printf("%s", s);
@@ -362,72 +371,97 @@ public class Logic {
 					totalNumOfTasks--;
 				}
 			}
-			System.out.printf("All search results deleted.");
 		}
 	}
 
-	public static void updateFloatingTask (String indexString, String priority,
+	/**
+	 * 
+	 * @author Narinderpal Singh Dhillon
+	 * @Matric A0097416X
+	 */
+	public static void updateFloatingTask(int folder,String indexString, String priority,
 			String title, String location) throws IndexOutOfBoundsException {
 		int priorityInt, index = Integer.parseInt(indexString);
-		if (index < _storage.getTaskSize()){
+		if (index < _storage.getTaskSize()) {
 			throw new IndexOutOfBoundsException();
-		}
-		boolean isTaskDone = _storage.getFloatingTask(index).getIsTaskDone();
-		
-		
-
-		if (priority == "null") {
-			priorityInt = _storage.getFloatingTask(index).getPriority();
 		} else {
-			priorityInt = Integer.parseInt(priority);
-		}
-		if (title == null) {
-			title = _storage.getFloatingTask(index).getTaskTitle();
-		}
-		if (location == null) {
-			location = _storage.getFloatingTask(index).getLocation();
-		}
 
-		deleteTask(index);
-		addFloatingTask(priorityInt, isTaskDone, title, location);
-		return;
+			if (index < _storage.getSize() && index >= _storage.getTaskSize()) {
+				boolean isTaskDone = _storage.getFloatingTask(index)
+						.getIsTaskDone();
+
+				if (priority == "null") {
+					priorityInt = _storage.getFloatingTask(index).getPriority();
+				} else {
+					priorityInt = Integer.parseInt(priority);
+				}
+				if (title == null) {
+					title = _storage.getFloatingTask(index).getTaskTitle();
+				}
+				if (location == null) {
+					location = _storage.getFloatingTask(index).getLocation();
+				}
+
+				deleteTask(index);
+				addFloatingTask(folder,priorityInt, isTaskDone, title, location);
+				return;
+
+			} else {
+				systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
+			}
+		}
 	}
 
-	public static void updateTask(String indexString, String priority,
+	/**
+	 * 
+	 * @author Narinderpal Singh Dhillon
+	 * @Matric A0097416X
+	 */
+	public static void updateTask(int folder,String indexString, String priority,
 			Calendar start, Calendar end, boolean isThereReminder,
 			String title, String location, Date reminder) {
 
 		int priorityInt, index = Integer.parseInt(indexString);
-		if(_storage.isValidTaskId(index)){
-		boolean isTaskDone = _storage.getTask(index).getIsTaskDone(), isAllDayEvent = _storage
-				.getTask(index).getIsAllDayEvent();
+		if (_storage.isValidTaskId(index)) {
+			boolean isTaskDone = _storage.getTask(index).getIsTaskDone(), isAllDayEvent = _storage
+					.getTask(index).getIsAllDayEvent();
 
-		if (priority == "null") {
-			priorityInt = _storage.getTask(index).getPriority();
+			if (priority == "null") {
+				priorityInt = _storage.getTask(index).getPriority();
+			} else {
+				priorityInt = Integer.parseInt(priority);
+			}
+			if (start == null) {
+				start = Calendar.getInstance();
+				start.setTime(_storage.getTask(index).getStartTime().getTime());
+			}
+			if (end == null) {
+				end = Calendar.getInstance();
+				end.setTime(_storage.getTask(index).getEndTime().getTime());
+			}
+			if (title == null) {
+				title = _storage.getTask(index).getTaskTitle();
+			}
+			if (location == null) {
+				location = _storage.getTask(index).getLocation();
+			}
+			if (reminder == null) {
+				if (_storage.getTask(index).getIsThereReminder()) {
+					int temp = _storage.searchForCorrespondingReminder(_storage
+							.getTask(index));
+					reminder = _storage.getReminder(temp).getReminderTime()
+							.getTime();
+					isThereReminder = true;
+				}
+			}
+			deleteTask(index);
+			addTask(folder, priorityInt, start.getTime(), end.getTime(),
+					isThereReminder, isTaskDone, isAllDayEvent, title,
+					location, reminder);
 		} else {
-			priorityInt = Integer.parseInt(priority);
-		}
-		if (start == null) {
-			start = Calendar.getInstance();
-			start.setTime(_storage.getTask(index).getStartTime().getTime());
-		}
-		if (end == null) {
-			end = Calendar.getInstance();
-			end.setTime(_storage.getTask(index).getEndTime().getTime());
-		}
-		if (title == null) {
-			title = _storage.getTask(index).getTaskTitle();
-		}
-		if (location == null) {
-			location = _storage.getTask(index).getLocation();
-		}
-		deleteTask(index);
-		addTask(priorityInt, start.getTime(), end.getTime(), isThereReminder,
-				isTaskDone, isAllDayEvent, title, location, reminder);
-		} else {
-			if (index < _storage.getSize()){
+			if (index < _storage.getSize()) {
 				boolean isTaskDone = false;
-				boolean isAllDayEvent = false ;
+				boolean isAllDayEvent = false;
 				if (priority == "null") {
 					priorityInt = _storage.getFloatingTask(index).getPriority();
 				} else {
@@ -443,10 +477,11 @@ public class Logic {
 					start = Calendar.getInstance();
 				}
 				deleteTask(index);
-				addTask(priorityInt, start.getTime(), end.getTime(), isThereReminder,
-						isTaskDone, isAllDayEvent, title, location, reminder);
-			}else{
-			System.out.printf("The given ID is not valid \n");
+				addTask(folder, priorityInt, start.getTime(), end.getTime(),
+						isThereReminder, isTaskDone, isAllDayEvent, title,
+						location, reminder);
+			} else {
+				systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
 			}
 		}
 		return;
@@ -455,34 +490,54 @@ public class Logic {
 
 	public static void displayAll() {
 		int count = 0;
+		LinkedList<Task> list = new LinkedList<Task>();
 		while (count < _storage.getSize()) {
-			displayTask(count);
+			displayTask(count,list);
 			count = count + 1;
 		}
+		systemMessage.setTimedList(list);
 		return;
 	}
-	
-	public static void displayAllFloat () {
+
+	/**
+	 * 
+	 * @author Narinderpal Singh Dhillon
+	 * @Matric A0097416X
+	 */
+	public static void displayAllFloat() {
 		int count = _storage.getTaskSize();
-		while (count < _storage.getSize()){
-			displayTask(count);
+		LinkedList<Task> list = new LinkedList<Task>();
+		while (count < _storage.getSize()) {
+			displayTask(count,list);
 			count = count + 1;
 		}
+		systemMessage.setTimedList(list);
 	}
 
+	/**
+	 * @author Narinderpal Singh Dhillon
+	 * @Matric A0097416X
+	 */
 	public static void clearAll() {
 		_storage = new AllTasks();
 		return;
 
 	}
-	
-	public static void displayWeek () {
+
+	/**
+	 * Controller:
+	 * 
+	 * @author Narinderpal Singh Dhillon
+	 * @Matric A0097416X
+	 */
+	public static void displayWeek() {
 		Calendar monday = Calendar.getInstance();
-		monday.add(Calendar.DAY_OF_WEEK, monday.getFirstDayOfWeek() - monday.get(Calendar.DAY_OF_WEEK));
-		
+		monday.add(Calendar.DAY_OF_WEEK,
+				monday.getFirstDayOfWeek() - monday.get(Calendar.DAY_OF_WEEK));
+
 		Calendar sunday = (Calendar) monday.clone();
 		sunday.add(Calendar.DAY_OF_WEEK, 6);
-		
+
 		displayTasksAtPeriod(monday.getTime(), sunday.getTime());
 		return;
 	}

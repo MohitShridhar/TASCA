@@ -1,7 +1,10 @@
 package storage;
 
 import java.util.Calendar;
-
+/**
+ * @author Narinderpal Singh Dhillon
+ * @Matric A0097416X
+ */
 public class Reminder {
 	private Calendar reminderTime;
 	private Task task;

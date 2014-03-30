@@ -1,9 +1,12 @@
 package storage;
 
 import java.util.Calendar;
-
+/**
+ * @author Narinderpal Singh Dhillon
+ * @Matric A0097416X
+ */
 public class Task {
-	private int taskID, priority;
+	private int taskID, priority,folder;
 	private Calendar startTime, endTime;
 	private boolean isThereReminder;
 	private boolean isTaskDone;
@@ -13,8 +16,9 @@ public class Task {
 
 	// Note for NARIN: The convention used for NLP: if a parameter is not specified then it's NULL. 
 	
-	public Task (int taskID, int priority, Calendar startTime, Calendar endTime, boolean isThereReminder, boolean isTaskDone, 
+	public Task (int folder, int taskID, int priority, Calendar startTime, Calendar endTime, boolean isThereReminder, boolean isTaskDone, 
 			boolean isAllDayEvent, String taskTitle, String remarks) {
+		this.folder = folder;
 		this.taskID = taskID;
 		this.priority = priority;
 		
@@ -64,6 +68,15 @@ public class Task {
 	
 	public int getTaskID() {
 		return taskID;
+	}
+	
+	public int getFolder() {
+		return folder;
+	}
+	
+	public void setFolder(int folder) {
+		this.folder = folder;
+		return;
 	}
 	
 	public void setPriority(int priority) {
