@@ -303,7 +303,7 @@ public class Interpreter {
  
     
     public boolean hasParameters(CommandType command) {
-        if (command == CommandType.ADD || command == CommandType.DELETE || command == CommandType.MARK || command == CommandType.MODIFY || command == CommandType.SEARCH || command == CommandType.DISPLAY_IN_TIME) {
+        if (command == CommandType.ADD || command == CommandType.DELETE || command == CommandType.MARK || command == CommandType.UNMARK || command == CommandType.MODIFY || command == CommandType.SEARCH || command == CommandType.DISPLAY_IN_TIME) {
             return true;
         }
             
