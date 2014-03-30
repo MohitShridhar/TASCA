@@ -102,6 +102,15 @@ public class TaskItem extends JLayeredPane {
 		    setCheckMark(false);
 		 // TODO: Update that task in Storage: UNMARK Function
 		}
+		@Override
+		public void mouseEntered(MouseEvent e) {
+		    showDateInfoIcon();
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+		    hideDateInfoIcon();
+		}
 	});
 	checkMark.setLocation(8 + INITIAL_SPACE_OFFSET, 9);
 	checkMark.setSize(23, 23);
@@ -115,6 +124,15 @@ public class TaskItem extends JLayeredPane {
 		public void mouseClicked(MouseEvent e) {
 		    setCheckMark(true);
 		    Logic.taskIsDone(realTaskId);
+		}
+		@Override
+		public void mouseEntered(MouseEvent e) {
+		    showDateInfoIcon();
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+		    hideDateInfoIcon();
 		}
 	});
 	unchecked.setLocation(8 + INITIAL_SPACE_OFFSET, 9);
@@ -276,6 +294,7 @@ public class TaskItem extends JLayeredPane {
 	dateIcon.setVisible(true);
 	
 	setTimedDisplayText(description, location, infoDisplayTime);
+	placeEllipsis(description, location, infoDisplayTime);
     }
     
     private void activateDateState() {
@@ -284,10 +303,11 @@ public class TaskItem extends JLayeredPane {
 	infoIcon.setVisible(true);
 	
 	text.setText(dateDisplayTime);
+	ellipsis.setVisible(false);
     }
     
     private void reminderShortcut() {
-	// TODO: save and clear text
+	MainInterface.clearTextPane();
 	
 	String reminderTime = "<NARIN, how do I get remind time?>";
 	
@@ -298,12 +318,14 @@ public class TaskItem extends JLayeredPane {
 //	controller.executeCommands("delete -id " + guiId); // Increases coupling
 	
 	Logic.deleteTask(taskProperties.getTaskID());
+	int scrollPos = MainInterface.getScrollPos();
 	MainInterface.updateTaskDisplay();
+	MainInterface.setScollPos(scrollPos);
     }
     
     private void modifyDescriptionShortcut() {
 	
-	// TODO: save and clear text
+	MainInterface.clearTextPane();
 	
 	if (!inDateDisplayState) {
 	    String location = "";
@@ -507,14 +529,18 @@ public class TaskItem extends JLayeredPane {
 	}
     }
 
-    public void setTimedDisplayText(String description, String location, String displayTime) {
+    public void setTimedDisplayText(String description, String location, String infoDisplayTime) {
 	
-	// TODO: Check for NIL standards with Narin and add SWITCH CASE
-	String displayText = "<html><nobr> " + description + " – <font color='9a9695'>" + displayTime + location + "</font></nobr></html>";
+	String displayText = "<html><nobr> " + description + " – <font color='9a9695'>" + infoDisplayTime + location + "</font></nobr></html>";
 	
 	text.setText(displayText);
 
 	
+	placeEllipsis(description, location, infoDisplayTime);
+    }
+
+    public void placeEllipsis(String description, String location,
+	    String displayTime) {
 	Dimension dimensions = text.getPreferredSize();
 	if (dimensions.getWidth() > 600) {
 	    text.setSize(575, 24);

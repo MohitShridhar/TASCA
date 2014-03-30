@@ -62,6 +62,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JTabbedPane;
@@ -223,9 +224,11 @@ class HighlightDocumentFilter extends DocumentFilter {
         		quit = MainInterface.controller.executeCommands(userInput);
         		
         		if (!quit) {
+        		    int scrollPos = MainInterface.getScrollPos();
         		    MainInterface.updateTaskDisplay();
-        		    
-        		    clearTextPane();
+        		    MainInterface.clearTextPane();
+        		    MainInterface.inputNumRef = MainInterface.inputHistorySize;
+        		    MainInterface.setScollPos(scrollPos);
         		} else {
         		    mainFrame.dispose();
         		    System.exit(0);        			
@@ -488,17 +491,14 @@ class HighlightDocumentFilter extends DocumentFilter {
 	return count;
     }
 
-    public static void clearTextPane() {
-	textPane.setText("");
-    }
-    
-
 }
 
 
 public class MainInterface {
 
-  // TODO: Add more help error messages. And integrate ID & Folder & time validity checkers. Implement all user exceptions
+  private static final int INPUT_HISTORY_SIZE = 30;
+
+// TODO: Add more help error messages. And integrate ID & Folder & time validity checkers. Implement all user exceptions
   // TODO: Save before OS Quit 
   public static Controller controller = new Controller();
    
@@ -507,6 +507,9 @@ public class MainInterface {
   private static int posX=0,posY=0;
   
   private static MyTextPane textPane = null;
+  
+  private static List<InputHistory.Memento> savedUserInput = new ArrayList<InputHistory.Memento>();
+  private static InputHistory inputHistory = new InputHistory();
   
   private static JButton btnFolder2 = new JButton("");
   private static JButton btnFolder1 = new JButton("");
@@ -522,6 +525,9 @@ public class MainInterface {
   
   private static String userInput = null;
   private static HighlightDocumentFilter filter = null;
+  
+  public static int inputNumRef = -1;
+  public static int inputHistorySize = -1;
   
   private static JFrame frame = null;
   private static JFrame mainFrame;
@@ -789,6 +795,23 @@ private static JLabel emptyTaskListMsg;
           
  }
  
+ public static void clearTextPane() {
+     	
+     if (savedUserInput.size() > INPUT_HISTORY_SIZE) {
+	 savedUserInput.clear();
+	 inputNumRef = -1;
+     }
+     
+     if (!textPane.getText().trim().isEmpty()) {
+	 inputHistory.set(textPane.getText());
+	 savedUserInput.add(inputHistory.saveToMemento());
+	 inputNumRef++;
+	 inputHistorySize++;
+     }
+
+     textPane.setText("");
+ }
+ 
   
  private static void loadFolderNames(){
      cfg = new Config ();
@@ -870,6 +893,14 @@ private static JLabel emptyTaskListMsg;
      //	    frame.setComponentZOrder(folder5Label, 0);
  }
 
+ public static int getScrollPos() {
+     return taskPane.getVerticalScrollBar().getValue();
+ }
+ 
+ public static void setScollPos(int pos) {
+     taskPane.getVerticalScrollBar().setValue(pos);
+ }
+ 
 public static void initGui(final JFrame frame) {
     
     new MainInterface();
@@ -1282,6 +1313,16 @@ public static void initGui(final JFrame frame) {
         	    FolderName nextFolder = folderCycle[cycleRef];
 
         	    cycleTabsSwitchCase(nextFolder);
+        	} else if (e.isShiftDown() && e.getKeyCode() == KeyEvent.VK_UP) {
+            	    if (inputNumRef >= 0) {
+            		textPane.setText(inputHistory.restoreFromMemento(savedUserInput.get(inputNumRef)));
+            		inputNumRef--;
+            	    }
+        	} else if (e.isShiftDown() && e.getKeyCode() == KeyEvent.VK_DOWN) {
+        	    if (inputNumRef + 2 < savedUserInput.size()) {
+        		inputNumRef++;
+        		textPane.setText(inputHistory.restoreFromMemento(savedUserInput.get(inputNumRef+1)));
+        	    }
         	}
         	
         	lastPressProcessed = System.currentTimeMillis();
