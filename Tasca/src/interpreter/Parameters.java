@@ -136,7 +136,12 @@ public class Parameters {
             return CommandFeedback.INVALID_TASK_ID;
         }
 	
-        this.taskId = Interpreter.getRealId(id);
+        if (Interpreter.checkIsGuiIdEnabled()) {
+            this.taskId = Interpreter.getRealId(id);
+        } else {
+            this.taskId = id;
+        }
+        
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
@@ -200,6 +205,7 @@ public class Parameters {
     }
     
     private boolean isValidId(int id) {
+	
 	if (Interpreter.checkIsGuiIdEnabled() && Interpreter.getRealId(id) != -1) {
 	    return true;
 	} else if (!Interpreter.checkIsGuiIdEnabled() && id >= 0) {
