@@ -96,8 +96,12 @@ public class Controller {
 		return;
 	}
 
-	public String getSystemMessage() {
+	public String getSystemMessageString() {
 		return systemMessage.getSystemMessage();
+	}
+	
+	public SystemMessage getCurrentSystemState() {
+	    	return systemMessage;
 	}
 
 	public boolean executeCommands(String input) {
