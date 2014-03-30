@@ -1,12 +1,15 @@
 package storage;
 
+import interpreter.FolderName;
+
 import java.util.Calendar;
 /**
  * @author Narinderpal Singh Dhillon
  * @Matric A0097416X
  */
 public class Task {
-	private int taskID, priority,folder;
+	private int taskID, priority;
+	int folder;
 	private Calendar startTime, endTime;
 	private boolean isThereReminder;
 	private boolean isTaskDone;

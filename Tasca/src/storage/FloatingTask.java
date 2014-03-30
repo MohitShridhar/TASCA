@@ -1,11 +1,16 @@
 package storage;
+
+import interpreter.FolderName;
+
 /**
  * @author Narinderpal Singh Dhillon
  * @Matric A0097416X
  */
 public class FloatingTask {
 
-	private int taskID, priority,folder;
+	private int taskID, priority;
+
+	int folder;
 	
 	private boolean isTaskDone;
 	private String taskTitle;

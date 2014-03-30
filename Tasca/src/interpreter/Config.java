@@ -10,6 +10,7 @@ public class Config
    private static Map<String, FolderName> folderNameRef = new HashMap<String, FolderName>();
    private static Map<FolderName, String> folderIdRef = new HashMap<FolderName, String>();
    private static Map<String, FolderName> folderIdHeader = new HashMap<String, FolderName>();
+   private static Map<Integer, FolderName> intToFolderId = new HashMap<Integer, FolderName>();
    private static FolderName defaultFolder =  FolderName.FOLDER1;   
    
    public Config()
@@ -44,6 +45,13 @@ public class Config
        folderIdRef.put(FolderName.FOLDER5, getProperty("folder5").trim());
        folderIdRef.put(FolderName.DEFAULT, getProperty("default").trim());
        
+       intToFolderId.put(0, FolderName.DEFAULT);
+       intToFolderId.put(1, FolderName.FOLDER1);
+       intToFolderId.put(2, FolderName.FOLDER2);
+       intToFolderId.put(3, FolderName.FOLDER3);
+       intToFolderId.put(4, FolderName.FOLDER4);
+       intToFolderId.put(5, FolderName.FOLDER5);
+       
        defaultFolder = folderIdHeader.get(folderIdRef.get(FolderName.DEFAULT));
        
    }
@@ -67,5 +75,10 @@ public class Config
    
    public FolderName getDefaultFolder() {
        return defaultFolder;
+   }
+   
+   // Must be between 0 and 5 ASSERT
+   public FolderName getFolderId (int folderInt) {
+       return intToFolderId.get(folderInt);
    }
 }

@@ -1,24 +1,15 @@
-0 1 2014 2 29 0 50 2014 3 3 0 50 true true false ajhdw akjdw d text with a shit load of description bdhajwd aad wdajwhdawjhd adwjhdaw d
+0 0 1 2014 2 30 21 47 2014 3 3 21 47 true false false awjdkawd ajwd in PERSONAL
 NIL
-2014 3 3 22 54
-1 2 2014 2 29 23 55 2014 3 3 23 55 false false false nihaomap
-new location man
-2 1 2014 2 29 23 59 2014 3 3 9 59 true false false new monumental task
-new location here too ++ hello
-2014 3 3 9 59
-3 1 2014 2 30 12 46 2015 2 30 12 46 false true false new task
-new location added
-4 1 2014 2 30 12 47 2014 3 3 17 33 false true false adjkaawdjkawd
+2014 3 4 21 47
+0 1 3 2014 2 30 21 48 2014 3 4 21 48 true false false this was in the others folder
 NIL
-5 3 2014 2 30 14 23 2015 3 25 15 20 true false false new task with weird date
+2014 3 3 22 21
+4 2 3 2014 2 30 22 16 2015 2 30 22 16 true false false akjwdawkjd REMINDER for thursday
 NIL
-2014 3 1 17 15
-6 3 2014 2 30 18 12 2014 3 3 18 12 false false false akjdw
+2014 3 3 23 58
+0 3 1 2014 2 30 22 41 2014 3 3 22 41 false false false the task I am going to change pri
 NIL
-7 3 2014 2 30 18 7 2014 3 3 18 7 true false false awkjda
+0 4 1 2014 2 31 0 18 2014 3 3 0 18 false false false another task
 NIL
-2014 3 3 19 46
-8 3 2014 2 30 19 47 2015 2 30 19 47 false false false awdnjadjkw
+4 5 0 2014 2 31 0 36 2014 3 3 0 36 false false false awjkdaw
 NIL
-9 3 2014 2 30 19 48 2015 2 30 19 48 false false false akdwj
-new location added to this task
