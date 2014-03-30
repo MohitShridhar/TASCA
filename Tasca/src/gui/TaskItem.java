@@ -103,6 +103,7 @@ public class TaskItem extends JLayeredPane {
 		public void mouseClicked(MouseEvent e) {
 		    setCheckMark(false);
 		    TaskItem.controller.executeCommands("unmark -id " + guiId);
+		    MainInterface.systemStatusMessage.setText(TaskItem.controller.getSystemMessageString());
 		}
 		@Override
 		public void mouseEntered(MouseEvent e) {
@@ -126,6 +127,7 @@ public class TaskItem extends JLayeredPane {
 		public void mouseClicked(MouseEvent e) {
 		    setCheckMark(true);
 		    TaskItem.controller.executeCommands("mark -id " + guiId);
+		    MainInterface.systemStatusMessage.setText(TaskItem.controller.getSystemMessageString());
 		}
 		@Override
 		public void mouseEntered(MouseEvent e) {

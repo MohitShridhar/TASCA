@@ -194,6 +194,8 @@ private static Interpreter interpreter;
 private static Config cfg;
 
 private static JLabel emptyTaskListMsg;
+
+public static JLabel systemStatusMessage;
   
 //  public static enum FolderName {
 //      folder1, folder2, folder3, folder4, folder5
@@ -457,6 +459,8 @@ public static boolean isCurrentFolder(FolderName folder) {
      taskPane.setViewportView(tempPanel);
      
      taskPane.setVisible(true);
+     
+     systemStatusMessage.setText(controller.getSystemMessageString());
           
  }
  
@@ -736,6 +740,14 @@ public static void initGui(final JFrame frame) {
     emptyTaskListMsg.setFont(new Font("Lucida Grande", Font.PLAIN, 22));
     emptyTaskListMsg.setBounds(214, 200, 460, 28);
     emptyTaskListMsg.setVisible(false);
+    
+    systemStatusMessage = new JLabel("");
+    systemStatusMessage.setHorizontalAlignment(SwingConstants.CENTER);
+    systemStatusMessage.setBounds(0, 484, 888, 16);
+    systemStatusMessage.setFont(latoReg12);
+    systemStatusMessage.setForeground(Color.WHITE);
+    
+    mainFrame.getContentPane().add(systemStatusMessage);
     mainFrame.getContentPane().add(emptyTaskListMsg);
     
     
