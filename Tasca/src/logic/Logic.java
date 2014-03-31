@@ -20,8 +20,6 @@ public class Logic {
 	private static AllTasks _storage;
 	private static SystemMessage systemMessage;
 
-	// private static Scanner sc = new Scanner(System.in);
-
 	public static void initStorage(AllTasks alltasks, SystemMessage temp) {
 		_storage = alltasks;
 		systemMessage = temp;
@@ -49,7 +47,7 @@ public class Logic {
 
 	public static boolean addTask(int folder, int priority, Date start, Date end,
 			boolean isThereReminder, boolean isTaskDone, boolean isAllDayEvent,
-			String title, String remarks, Date reminder) {
+			String title, String location, Date reminder) {
 
 		boolean isTaskAdded = false;
 		
@@ -86,7 +84,7 @@ public class Logic {
 			}
 */
 			Task task = new Task(folder, TaskId, priority, taskStart, taskEnd,
-					isThereReminder, isTaskDone, isAllDayEvent, title, remarks);
+					isThereReminder, isTaskDone, isAllDayEvent, title, location);
 
 			isTaskAdded = _storage.addTask(count, task);
 
