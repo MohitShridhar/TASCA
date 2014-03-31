@@ -52,6 +52,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -338,8 +340,8 @@ public static JLabel systemStatusMessage;
 	      
 	      
 	      mainFrame.setVisible(true);
+	      
           }
-          
       });
       
       
@@ -585,6 +587,13 @@ public static void initGui(final JFrame frame) {
     
     // Load folder names:
     loadFolderNames();
+    
+    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+        public void run() {
+            controller.executeCommands("quit");
+        }
+    }));
        
          
     Container mainContainer = frame.getContentPane();     
@@ -595,9 +604,7 @@ public static void initGui(final JFrame frame) {
     btnClose.setBackground(Color.BLACK);
     btnClose.addActionListener(new ActionListener() {
     	public void actionPerformed(ActionEvent e) {
-    	    Controller controller = filter.getController();
-    	    controller.executeCommands("quit");
-    	    frame.dispose();
+    	    //frame.dispose();
     	    System.exit(0);
     	}
     });
@@ -1086,8 +1093,11 @@ public static void initGui(final JFrame frame) {
 //	    }
 //	}
 //    });
-}	
 }
 
-   
+
+	
+}
+
+
 

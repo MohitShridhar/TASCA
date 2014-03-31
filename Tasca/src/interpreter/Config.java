@@ -29,7 +29,7 @@ public class Config
        folderNameRef.put(getProperty("folder3").trim().toLowerCase(), FolderName.FOLDER3);
        folderNameRef.put(getProperty("folder4").trim().toLowerCase(), FolderName.FOLDER4);
        folderNameRef.put(getProperty("folder5").trim().toLowerCase(), FolderName.FOLDER5);
-       folderNameRef.put(getProperty("default").trim().toLowerCase(), FolderName.DEFAULT);
+       folderNameRef.put("default", FolderName.DEFAULT);
        
        folderIdHeader.put("folder1", FolderName.FOLDER1);
        folderIdHeader.put("folder2", FolderName.FOLDER2);

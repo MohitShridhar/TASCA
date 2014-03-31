@@ -1,2 +1,4 @@
-5 7 2 false akjwndakjwnd
-new location with pri
+0 8 1 false akjwdkajwd akdw floating tassk
+new location added
+0 9 2 true new task for default
+NIL
