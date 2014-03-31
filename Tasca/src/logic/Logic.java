@@ -5,15 +5,15 @@ import io.Importer;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
-import controller.SystemMessage;
 
+import controller.SystemMessage;
 import storage.*;
 
 public class Logic {
 
 	private static String MESSAGE_TASK_NOT_DELETED = "The task indicated cannot be deleted as it does not exist.";
 	private static String MESSAGE_TASK_INDEX_INVALID = "The given task number is invalid.";
-	private static String MESSAGE_TASK_DELETED = "The Task has been successfully deleted.";
+	private static String MESSAGE_TASK_DELETED = "The task has been successfully deleted.";
 	private static String MESSAGE_TASK_IS_DONE = "has been completed";
 	private static String MESSAGE_DELETE_SEARCH = "Do you want to delete all search results? (Y/N) ";
 
@@ -29,8 +29,11 @@ public class Logic {
 		return;
 	}
 
+	public static AllTasks getStorage() {
+		return _storage;
+	}
+
 	/**
-	 * 
 	 * @author Narinderpal Singh Dhillon
 	 * @Matric A0097416X
 	 */
@@ -48,6 +51,8 @@ public class Logic {
 			boolean isThereReminder, boolean isTaskDone, boolean isAllDayEvent,
 			String title, String remarks, Date reminder) {
 
+		boolean isTaskAdded = false;
+		
 		Calendar taskStart = Calendar.getInstance();
 		taskStart.setTime(start);
 
@@ -63,8 +68,8 @@ public class Logic {
 			int TaskId = 0;
 			int totalNumOfTasks = _storage.getTaskSize();
 			int count = 0;
-			// taskStart will have a larger time then the i task, incremental i
-			// task till taskStart smaller.
+			// taskStart may have a larger time then the i task,
+			// thus, increment the i task till taskStart smaller.
 			boolean IsTaskNotInCorrectPosition = true;
 			while ((count < totalNumOfTasks) && (IsTaskNotInCorrectPosition)) {
 
@@ -72,17 +77,18 @@ public class Logic {
 						.getTask(count).getStartTime()) > 0;
 				count++;
 			}
+			/*
 			if (count != 0) { // correct position
 				count--;
 			}
 			if (count == totalNumOfTasks - 1) {
 				count++;
 			}
-
+*/
 			Task task = new Task(folder, TaskId, priority, taskStart, taskEnd,
 					isThereReminder, isTaskDone, isAllDayEvent, title, remarks);
 
-			_storage.addTask(count, task);
+			isTaskAdded = _storage.addTask(count, task);
 
 			Reminder taskReminder = null;
 
@@ -111,13 +117,13 @@ public class Logic {
 
 				_storage.addReminder(count, taskReminder);
 			}
-			return true;
 
 		}
-		return false;
+		return isTaskAdded;
 	}
 
 	public static boolean deleteTask(int index) {
+		boolean isTaskDeleted = false;
 		int totalNumOfTasks = _storage.getSize();
 		if (index < totalNumOfTasks && index >= 0) {
 			if (index < _storage.getTaskSize()) {
@@ -125,17 +131,16 @@ public class Logic {
 				if (_storage.getTask(index).getIsThereReminder()) {
 					_storage.deleteReminder(_storage.getTask(index));
 				}
-				_storage.deleteTask(index);
+				isTaskDeleted = _storage.deleteTask(index);
 			} else {
-				_storage.deleteFloatingTask(index);
+				isTaskDeleted = _storage.deleteFloatingTask(index);
 			}
-
-			return true;
-
+			System.out.printf("%s\n", MESSAGE_TASK_DELETED);
+			
 		} else {
 			systemMessage.setSystemMessage(MESSAGE_TASK_NOT_DELETED);
-			return false;
 		}
+		return isTaskDeleted;
 	}
 
 	public static boolean taskIsDone(int index) {
@@ -303,28 +308,27 @@ public class Logic {
 		displayTasksAtDate(tomorrow.getTime());
 	}
 
-	public static void searchTask(String searchString) {
-		int totalNumOfTasks = _storage.getSize();
+	public static int searchTask(String searchString) {
+		int totalNumOfTasks = _storage.getSize(), count = 0;
 		LinkedList<Task> list = new LinkedList<Task>();
 		for (int index = 0; index < totalNumOfTasks; index++) {
 			String taskTitle;
 			if (index < _storage.getTaskSize()) {
 				taskTitle = _storage.getTask(index).getTaskTitle();
 				if (isInString(taskTitle, searchString)) {
+				    count++;
 					displayTask(index,list);
 				}
 			} else {
 				taskTitle = _storage.getFloatingTask(index).getTaskTitle();
 				if (isInString(taskTitle, searchString)) {
+				    count++;
 					displayTask(index,list);
 				}
 			}
 		}
 		systemMessage.setTimedList(list);
-	}
-
-	private static boolean isInString(String mainString, String subString) {
-		return (mainString.toLowerCase().contains(subString.toLowerCase()));
+		return count;
 	}
 
 	public static void deleteAlldone() {
@@ -352,12 +356,18 @@ public class Logic {
 	}
 
 	
+	public static String getUserInput(Scanner input) {
+		// Scanner input = new Scanner(System.in);
+		String result = input.nextLine();
+		return result;
+	}
+	
 	public static void deleteSearch(String searchString, Scanner sc) {
 		searchTask(searchString);
 
-		String s = sc.nextLine();
-		System.out.printf("%s", s);
-		if (s.equals("Y")) {
+		String getResponse = getUserInput(sc);
+		// System.out.printf("%s", s);
+		if (getResponse.equals("Y")) {
 			int totalNumOfTasks = _storage.getSize();
 			for (int index = 0; index < totalNumOfTasks; index++) {
 				String taskTitle;
@@ -371,11 +381,11 @@ public class Logic {
 					totalNumOfTasks--;
 				}
 			}
+			System.out.printf("All search results deleted.");
 		}
 	}
 
 	/**
-	 * 
 	 * @author Narinderpal Singh Dhillon
 	 * @Matric A0097416X
 	 */
@@ -413,14 +423,14 @@ public class Logic {
 	}
 
 	/**
-	 * 
 	 * @author Narinderpal Singh Dhillon
 	 * @Matric A0097416X
 	 */
-	public static void updateTask(int folder,String indexString, String priority,
+	public static boolean updateTask(int folder,String indexString, String priority,
 			Calendar start, Calendar end, boolean isThereReminder,
 			String title, String location, Date reminder) {
 
+		boolean isTaskUpdated = false, isTaskDeleted = false, isTaskAdded = false;
 		int priorityInt, index = Integer.parseInt(indexString);
 		if (_storage.isValidTaskId(index)) {
 			boolean isTaskDone = _storage.getTask(index).getIsTaskDone(), isAllDayEvent = _storage
@@ -454,8 +464,8 @@ public class Logic {
 					isThereReminder = true;
 				}
 			}
-			deleteTask(index);
-			addTask(folder, priorityInt, start.getTime(), end.getTime(),
+			isTaskDeleted = deleteTask(index);
+			isTaskAdded = addTask(folder, priorityInt, start.getTime(), end.getTime(),
 					isThereReminder, isTaskDone, isAllDayEvent, title,
 					location, reminder);
 		} else {
@@ -476,15 +486,16 @@ public class Logic {
 				if (start == null) {
 					start = Calendar.getInstance();
 				}
-				deleteTask(index);
-				addTask(folder, priorityInt, start.getTime(), end.getTime(),
+				isTaskDeleted = deleteTask(index);
+				isTaskAdded = addTask(folder, priorityInt, start.getTime(), end.getTime(),
 						isThereReminder, isTaskDone, isAllDayEvent, title,
 						location, reminder);
 			} else {
 				systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
 			}
 		}
-		return;
+		isTaskUpdated = isTaskDeleted && isTaskAdded;
+		return isTaskUpdated;
 
 	}
 
@@ -500,7 +511,6 @@ public class Logic {
 	}
 
 	/**
-	 * 
 	 * @author Narinderpal Singh Dhillon
 	 * @Matric A0097416X
 	 */
@@ -520,13 +530,10 @@ public class Logic {
 	 */
 	public static void clearAll() {
 		_storage = new AllTasks();
-		return;
-
 	}
 
 	/**
 	 * Controller:
-	 * 
 	 * @author Narinderpal Singh Dhillon
 	 * @Matric A0097416X
 	 */
@@ -540,5 +547,12 @@ public class Logic {
 
 		displayTasksAtPeriod(monday.getTime(), sunday.getTime());
 		return;
+	}
+	
+	private static boolean isInString(String mainString, String subString) {
+		if (subString.trim().length() == 0) {
+			return false;
+		}
+		return (mainString.toLowerCase().contains(subString.toLowerCase()));
 	}
 }
