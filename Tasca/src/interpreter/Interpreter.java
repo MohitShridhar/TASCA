@@ -4,6 +4,9 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -31,10 +34,12 @@ public class Interpreter {
     private static final String INVALID_TASK_ID = "Invalid task id reference";
     private static final String INVALID_PARAMETER_TYPE = "Invalid parameter type";
     private static final String INVALID_COMMAND_ARGUMENT = "The description for this command cannot be empty";
-    private static final String ERROR_DATABASE_DUPLICATE_PARA = "Duplicate keywords were found in the 'parameter' database";
-    private static final String ERROR_DATABASE_DUPLICATE_COMMAND = "Duplicate keywords were found in the 'command' database";
+    private static final String ERROR_DATABASE_DUPLICATE_PARA = "Duplicate keywords were found in the 'parameter' database for \"%1$s\"";
+    private static final String ERROR_DATABASE_DUPLICATE_COMMAND = "Duplicate keywords were found in the 'command' database for \"%1$s\"";
     private static final String EXCEPTION_EMPTY_LOCATION = "Initiated location parameter cannot have a empty argument";
     private static final String EXCEPTION_EMPTY_DESCRIPTION = "Description cannot be empty";
+    private static final String EXCEPTION_EMPTY_KEYWORD_IN_DATABASE = "The database contains empty synonym(s) in \"%1$s\"";
+    private static final String EXCEPTION_KEYWORD_MULTIPLE_WORDS = "The synonym(s) for \"%1$s\" have to be single words";
     
     private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
     private static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
@@ -100,8 +105,34 @@ public class Interpreter {
     public Interpreter() {
 	// Do nothing
     }
-   
     
+    /*
+     * To be used by settings pane for checking validity of keywords:
+     */
+   
+    public Interpreter(Properties props) {
+	commandKeywords.clear();
+	parameterKeywords.clear();
+	
+	readCommandDatabase(props);
+	readParameterDatabase(props);
+    }
+    
+    /*
+     * Used when Config file has to be re-read:
+     */
+    
+    public Interpreter(boolean rebuild) {
+	if (rebuild) {
+	    cfg = new Config();
+	    
+	    commandKeywords.clear();
+	    parameterKeywords.clear();
+	    
+	    readCommandDatabase();
+	    readParameterDatabase();
+	}
+    }
     
     /**
      * Reads keywords from txtfile and saves them in the local memory (hash table)
@@ -110,8 +141,6 @@ public class Interpreter {
     
     private static void readCommandDatabase() throws IllegalArgumentException {
         
-        
-        
         String[] headerKeySet = (String[])( commandHeaders.keySet().toArray( new String[commandHeaders.size()] ) );
         
         for (int i = 0; i < commandHeaders.size(); i++) {
@@ -119,11 +148,47 @@ public class Interpreter {
             CommandFeedback feedback = addCommandSynonyms(cfg, headerKeySet[i], commandHeaders.get(headerKeySet[i]));
 
             if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
-                throw new IllegalArgumentException(ERROR_DATABASE_DUPLICATE_COMMAND);
+                throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_COMMAND, headerKeySet[i].toString()));
+            }
+            
+            if (feedback == CommandFeedback.EMPTY_KEYWORD) {
+        	throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
+            }
+            
+            if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
+        	throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
             }
 
         }
     }
+    
+    /*
+     * Function to be used by settings pane:
+     */
+    
+    private static void readCommandDatabase(Properties props) throws IllegalArgumentException {
+        
+        String[] headerKeySet = (String[])( commandHeaders.keySet().toArray( new String[commandHeaders.size()] ) );
+        
+        for (int i = 0; i < commandHeaders.size(); i++) {
+
+            CommandFeedback feedback = addCommandSynonyms(props, headerKeySet[i], commandHeaders.get(headerKeySet[i]));
+
+            if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
+                throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_COMMAND, headerKeySet[i].toString()));
+            }
+            
+            if (feedback == CommandFeedback.EMPTY_KEYWORD) {
+        	throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
+            }
+            
+            if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
+        	throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
+            }
+        }
+    }
+    
+    
     
     private static CommandFeedback addCommandSynonyms(Config cfg, String type, CommandType commandType) 
     {
@@ -132,7 +197,36 @@ public class Interpreter {
         for (int i=0; i<keys.length; i++) {
             String key = keys[i].trim();
             
-            if (!commandKeywords.containsKey(key)) {
+            if (hasMultipleWords(key)) {
+        	return CommandFeedback.MULTIPLE_WORD_KEYWORD;
+            } else if (key.isEmpty()) {
+        	return CommandFeedback.EMPTY_KEYWORD;
+            } else if (!commandKeywords.containsKey(key)) {
+                commandKeywords.put(key, commandType);
+            } else {
+                return CommandFeedback.INVALID_DATABASE_DUPLICATES;
+            }
+        }
+        
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    /*
+     * Function to be used by settings pane:
+     */
+    
+    private static CommandFeedback addCommandSynonyms(Properties props, String type, CommandType commandType) 
+    {
+        String[] keys = ((String) props.get((String) type)).trim().toLowerCase().split(",");
+        
+        for (int i=0; i<keys.length; i++) {
+            String key = keys[i].trim();
+            
+            if (hasMultipleWords(key)) {
+        	return CommandFeedback.MULTIPLE_WORD_KEYWORD;
+            } else if (key.isEmpty()) {
+        	return CommandFeedback.EMPTY_KEYWORD;
+            } else if (!commandKeywords.containsKey(key)) {
                 commandKeywords.put(key, commandType);
             } else {
                 return CommandFeedback.INVALID_DATABASE_DUPLICATES;
@@ -153,9 +247,42 @@ public class Interpreter {
             CommandFeedback feedback = addParameterSynonyms(cfg, headerKeySet[i], parameterHeaders.get(headerKeySet[i]));
 
             if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
-                throw new IllegalArgumentException(ERROR_DATABASE_DUPLICATE_PARA);
+                throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_PARA, headerKeySet[i].toString()));
             }
+            
+            if (feedback == CommandFeedback.EMPTY_KEYWORD) {
+        	throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
+            }
+            
+            if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
+        	throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
+            }
+        }
+    }
+    
+    /*
+     * Function to be used by settings pane:
+     */
+    
+    private static void readParameterDatabase(Properties props) throws IllegalArgumentException {
+        
+        String[] headerKeySet = (String[])( parameterHeaders.keySet().toArray( new String[parameterHeaders.size()] ) );
+        
+        for (int i = 0; i < parameterHeaders.size(); i++) {
 
+            CommandFeedback feedback = addParameterSynonyms(props, headerKeySet[i], parameterHeaders.get(headerKeySet[i]));
+
+            if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
+                throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_PARA, headerKeySet[i].toString()));
+            }
+            
+            if (feedback == CommandFeedback.EMPTY_KEYWORD) {
+        	throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
+            }
+            
+            if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
+        	throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
+            }
         }
     }
     
@@ -167,7 +294,11 @@ public class Interpreter {
         for (int i=0; i<keys.length; i++) {
             String key = keys[i].trim();
             
-            if (!parameterKeywords.containsKey(key)) {
+            if (hasMultipleWords(key)) {
+        	return CommandFeedback.MULTIPLE_WORD_KEYWORD;
+            } else if (key.isEmpty()) {
+        	return CommandFeedback.EMPTY_KEYWORD;
+            } else if (!parameterKeywords.containsKey(key)) {
                 parameterKeywords.put(key, parameterType);
             } else {
                 return CommandFeedback.INVALID_DATABASE_DUPLICATES;
@@ -177,6 +308,34 @@ public class Interpreter {
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
+    /*
+     * Function to be used by settings pane:
+     */
+    
+    private static CommandFeedback addParameterSynonyms(Properties props, String type, ParameterType parameterType) 
+    {
+	String[] keys = ((String) props.get((String) type)).trim().toLowerCase().split(",");
+        
+        for (int i=0; i<keys.length; i++) {
+            String key = keys[i].trim();
+            
+            if (hasMultipleWords(key)) {
+        	return CommandFeedback.MULTIPLE_WORD_KEYWORD;
+            } else if (key.isEmpty()) {
+        	return CommandFeedback.EMPTY_KEYWORD;
+            } else if (!parameterKeywords.containsKey(key)) {
+                parameterKeywords.put(key, parameterType);
+            } else {
+                return CommandFeedback.INVALID_DATABASE_DUPLICATES;
+            }
+        }
+        
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    private static boolean hasMultipleWords(String input) {
+	return input.indexOf(' ') >= 0;
+    }
     
     public void processUserInput(String input) {
         String commandString = getFirstWord(input);

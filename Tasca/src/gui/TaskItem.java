@@ -411,6 +411,7 @@ public class TaskItem extends JLayeredPane {
 	    location = timedTask.getLocation();
 	    infoDisplayTime = "";
 	    
+	    
 	    this.realTaskId = timedTask.getTaskID();
 	    
 	    if (location.equals("NIL")) {

@@ -9,7 +9,7 @@ import javax.swing.ImageIcon;
 
 public class BufferedGraphics {
     
-    public ImageIcon checkMark, reminderIcon, highPri, medPri, lowPri, background, unchecked, delete, date, info;
+    public ImageIcon checkMark, reminderIcon, highPri, medPri, lowPri, background, unchecked, delete, date, info, keywordItem;
     public Image track, thumb;
     
     public BufferedGraphics() {
@@ -31,6 +31,9 @@ public class BufferedGraphics {
 	    
 	    track = ImageIO.read(MainInterface.class.getResource("/GUI Graphics/Scroll Track.png"));
 	    thumb = ImageIO.read(MainInterface.class.getResource("/GUI Graphics/Scroll Thumb.png"));
+	    
+	    keywordItem = new ImageIcon(ImageIO.read(MainInterface.class.getResource("/GUI Graphics/Keyword Item Background.png")));
+
 	    
 	} catch (IOException e) {
 	    // TODO Auto-generated catch block

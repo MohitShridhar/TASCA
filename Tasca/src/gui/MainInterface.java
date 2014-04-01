@@ -168,6 +168,7 @@ public class MainInterface {
   public static Font latoReg14 = null;
   public static Font latoReg12 = null;
   public static Font latoBold13 = null;
+  public static Font lucidaReg22 = null;
   
   public static Font menloReg = null;
   public static Font latoReg = null;
@@ -198,6 +199,8 @@ private static Config cfg;
 private static JLabel emptyTaskListMsg;
 
 public static JLabel systemStatusMessage;
+
+private static JButton btnSettings;
   
 //  public static enum FolderName {
 //      folder1, folder2, folder3, folder4, folder5
@@ -218,7 +221,7 @@ public static JLabel systemStatusMessage;
 	     GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 	     ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Menlo.ttf")));
 	     ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Lato-Reg.ttf")));
-	     
+	     ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Lucida Grande.ttf")));
 	     
 	} catch (IOException|FontFormatException e) {
 	     //Handle exception
@@ -232,10 +235,19 @@ public static JLabel systemStatusMessage;
       latoBold13 = new Font("Lato", Font.BOLD, 13);
       latoReg14 = new Font("Lato", Font.PLAIN, 14);
       latoReg12 = new Font("Lato", Font.PLAIN, 12);
+      lucidaReg22 = new Font("Lucida Grande", Font.PLAIN, 22);
+      
       
       
   }
-
+  
+  public static boolean isActiveFeedbackEnabled() {
+      return activeFeedbackEnabled;
+  }
+  
+  public static void setIsActiveFeedbackEnabled(boolean isEnabled) {
+      activeFeedbackEnabled = isEnabled;
+  }
 
   public static Component getComponentByName(String name) {
       if (componentMap.containsKey(name)) {
@@ -340,6 +352,8 @@ public static JLabel systemStatusMessage;
 	      
 	      
 	      mainFrame.setVisible(true);
+	      
+//	      new SettingsPane(mainFrame);
 	      
           }
       });
@@ -484,7 +498,7 @@ public static boolean isCurrentFolder(FolderName folder) {
  }
  
   
- private static void loadFolderNames(){
+ public static void loadFolderNames(){
      cfg = new Config ();
      
      folder1Name = cfg.getFolderName(FolderName.FOLDER1);
@@ -494,10 +508,6 @@ public static boolean isCurrentFolder(FolderName folder) {
      folder5Name = cfg.getFolderName(FolderName.FOLDER5);
      
      defaultFolder = cfg.getDefaultFolder();
-     currFolder = defaultFolder;
-     prevFolder = currFolder;
-     
-     cycleRef = Integer.parseInt( defaultFolder.toString().charAt(6) + "" ) - 1;
  }
  
  // TODO: Replace folder buttons with Common inheritance class
@@ -581,12 +591,27 @@ public static boolean isCurrentFolder(FolderName folder) {
      taskPane.getVerticalScrollBar().setValue(pos);
  }
  
+ 
+ public static JButton getBtnSettings() {
+     return btnSettings;
+ }
+ 
+ public static void setFolderLabels() {
+     folder1Label.setText(folder1Name);
+     folder2Label.setText(folder2Name);
+     folder3Label.setText(folder3Name);
+     folder4Label.setText(folder4Name);
+     folder5Label.setText(folder5Name);
+     
+ }
+ 
 public static void initGui(final JFrame frame) {
     
     new MainInterface();
     
     // Load folder names:
     loadFolderNames();
+    intiateFolderState();
     
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
@@ -608,8 +633,6 @@ public static void initGui(final JFrame frame) {
     	    System.exit(0);
     	}
     });
-    
-
     
     // Text pane:
     
@@ -744,7 +767,7 @@ public static void initGui(final JFrame frame) {
     emptyTaskListMsg = new JLabel("Just do it. Later.");
     emptyTaskListMsg.setForeground(Color.WHITE);
     emptyTaskListMsg.setHorizontalAlignment(SwingConstants.CENTER);
-    emptyTaskListMsg.setFont(new Font("Lucida Grande", Font.PLAIN, 22));
+    emptyTaskListMsg.setFont(lucidaReg22);
     emptyTaskListMsg.setBounds(214, 200, 460, 28);
     emptyTaskListMsg.setVisible(false);
     
@@ -796,7 +819,7 @@ public static void initGui(final JFrame frame) {
     
     folder1Label.setFont(latoBold13);  // new Font("Lato", Font.BOLD, 13)
     folder1Label.setForeground(Color.WHITE);
-    folder1Label.setBounds(56, 10, 61, 16);
+    folder1Label.setBounds(-2, 4, 177, 28);
     mainFrame.getContentPane().add(folder1Label);
     
     
@@ -828,7 +851,7 @@ public static void initGui(final JFrame frame) {
     folder2Label.setHorizontalAlignment(SwingConstants.CENTER);
     folder2Label.setForeground(Color.WHITE);
     folder2Label.setFont(latoBold13);
-    folder2Label.setBounds(215, 10, 61, 16);
+    folder2Label.setBounds(159, 4, 177, 28);
     mainFrame.getContentPane().add(folder2Label);
     
     if (defaultFolder == FolderName.FOLDER2) {
@@ -858,7 +881,7 @@ public static void initGui(final JFrame frame) {
     folder3Label.setHorizontalAlignment(SwingConstants.CENTER);
     folder3Label.setForeground(Color.WHITE);
     folder3Label.setFont(latoBold13);
-    folder3Label.setBounds(374, 10, 61, 16);
+    folder3Label.setBounds(318, 4, 177, 28);
     mainFrame.getContentPane().add(folder3Label);
     
    
@@ -888,19 +911,20 @@ public static void initGui(final JFrame frame) {
 
 
     });
+   
     
     folder4Label = new JLabel(folder4Name);
     folder4Label.setHorizontalAlignment(SwingConstants.CENTER);
     folder4Label.setForeground(Color.WHITE);
     folder4Label.setFont(latoBold13);
-    folder4Label.setBounds(533, 10, 61, 16);
+    folder4Label.setBounds(477, 4, 177, 28);
     mainFrame.getContentPane().add(folder4Label);
     
     folder5Label = new JLabel(folder5Name);
     folder5Label.setHorizontalAlignment(SwingConstants.CENTER);
     folder5Label.setForeground(Color.WHITE);
     folder5Label.setFont(latoBold13);
-    folder5Label.setBounds(694, 10, 61, 16);
+    folder5Label.setBounds(636, 4, 177, 28);
     mainFrame.getContentPane().add(folder5Label);
     
     
@@ -959,6 +983,28 @@ public static void initGui(final JFrame frame) {
     lblNewLabel.setBounds(37, 412, 814, 46);
     frame.getContentPane().add(lblNewLabel);
     
+    btnSettings = new JButton(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Settings Icon.png")));
+    btnSettings.setBounds(505, 365, 27, 27);
+    btnSettings.setContentAreaFilled(false);
+    btnSettings.setBorder(BorderFactory.createEmptyBorder());
+    btnSettings.addActionListener(new ActionListener() {
+	public void actionPerformed(ActionEvent e) {
+	    new SettingsPane(frame, interpreter, cfg);
+	}
+    });     
+    mainContainer.add(btnSettings);
+
+    JButton btnExport = new JButton(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Export Icon.png")));
+    btnExport.setBounds(351, 365, 26, 26);
+    btnExport.setContentAreaFilled(false);
+    btnExport.setBorder(BorderFactory.createEmptyBorder());
+    btnExport.addActionListener(new ActionListener() {
+	public void actionPerformed(ActionEvent e) {
+	    // TODO: Implement export feature
+	}
+    });   
+
+    mainContainer.add(btnExport);
     
     JLabel label = new JLabel(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/UI Background.png")));
     label.setBackground(Color.BLACK);
@@ -967,6 +1013,7 @@ public static void initGui(final JFrame frame) {
     
     frame.getContentPane().setBackground(Color.WHITE);
     
+ 
     
     frame.addMouseListener(new MouseAdapter()
     {
@@ -1093,6 +1140,13 @@ public static void initGui(final JFrame frame) {
 //	    }
 //	}
 //    });
+}
+
+public static void intiateFolderState() {
+    currFolder = defaultFolder;
+    prevFolder = currFolder;
+    
+    cycleRef = Integer.parseInt( defaultFolder.toString().charAt(6) + "" ) - 1;
 }
 
 

@@ -1,4 +1,5 @@
 package interpreter;
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -13,13 +14,23 @@ public class Config
    private static Map<Integer, FolderName> intToFolderId = new HashMap<Integer, FolderName>();
    private static FolderName defaultFolder =  FolderName.FOLDER1;   
    
+   private void clearAllMaps() {
+       folderNameRef.clear();
+       folderIdRef.clear();
+       folderIdHeader.clear();
+       intToFolderId.clear();
+   }
+   
    public Config()
    {
+       clearAllMaps();
+       
        configFile = new java.util.Properties();
        try {
-	   configFile.load(this.getClass().getClassLoader().
-		   getResourceAsStream("Config.cfg"));
+	   configFile.load(new FileInputStream("Config.cfg"));
+	   
        }catch(Exception eta){
+	   //TODO: Assert fail
 	   eta.printStackTrace();
 	   System.out.println("Reading config file failed");
        }
@@ -45,6 +56,7 @@ public class Config
        folderIdRef.put(FolderName.FOLDER5, getProperty("folder5").trim());
        folderIdRef.put(FolderName.DEFAULT, getProperty("default").trim());
        
+       // For logic decoding:
        intToFolderId.put(0, FolderName.DEFAULT);
        intToFolderId.put(1, FolderName.FOLDER1);
        intToFolderId.put(2, FolderName.FOLDER2);
@@ -80,5 +92,9 @@ public class Config
    // Must be between 0 and 5 ASSERT
    public FolderName getFolderId (int folderInt) {
        return intToFolderId.get(folderInt);
+   }
+   
+   public Properties getConfigFile() {
+       return configFile;
    }
 }
