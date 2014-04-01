@@ -15,6 +15,7 @@ public class Logic {
 	private static String MESSAGE_TASK_INDEX_INVALID = "The given task number is invalid.";
 	private static String MESSAGE_TASK_DELETED = "The task has been successfully deleted.";
 	private static String MESSAGE_TASK_IS_DONE = "has been completed";
+	private static String MESSAGE_TASK_FOUND = "%d matches found for string '%s'";
 	private static String MESSAGE_DELETE_SEARCH = "Do you want to delete all search results? (Y/N) ";
 
 	private static AllTasks _storage;
@@ -237,6 +238,15 @@ public class Logic {
 		}
 	}
 
+	public static void export(String savePath) {
+		new Exporter(savePath); // TODO: implement singleton
+	}
+
+	public static void importFile(String filePath) {
+		new Importer().importIcs(filePath); // TODO: implement singleton + be
+											// consistent with exporter
+	}
+	
 	public static void displayAllTasks() {
 		int totalNumOfTasks = _storage.getSize();
 		LinkedList<Task> list = new LinkedList<Task>();
@@ -269,15 +279,6 @@ public class Logic {
 			}
 		}
 		systemMessage.setTimedList(list);
-	}
-
-	public static void export(String savePath) {
-		new Exporter(savePath); // TODO: implement singleton
-	}
-
-	public static void importFile(String filePath) {
-		new Importer().importIcs(filePath); // TODO: implement singleton + be
-											// consistent with exporter
 	}
 
 	public static void displayTasksAtDate(Date dateSpecified) {
@@ -326,6 +327,7 @@ public class Logic {
 			}
 		}
 		systemMessage.setTimedList(list);
+		systemMessage.setSystemMessage(MESSAGE_TASK_FOUND.format(count,searchString));
 		return count;
 	}
 
