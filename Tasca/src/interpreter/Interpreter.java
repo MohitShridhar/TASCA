@@ -44,6 +44,9 @@ public class Interpreter {
     private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
     private static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
     
+    private static Map<CommandType, String> defaultCommandSynonym = new HashMap<CommandType, String>();
+    private static Map<ParameterType, String> defaultParameterSynonym = new HashMap<ParameterType, String>();
+    
     private static Map<Integer, Integer> guiIdRef = new HashMap<Integer, Integer>();
     private static Config cfg = new Config();
     
@@ -141,6 +144,8 @@ public class Interpreter {
     
     private static void readCommandDatabase() throws IllegalArgumentException {
         
+	defaultCommandSynonym.clear();
+	
         String[] headerKeySet = (String[])( commandHeaders.keySet().toArray( new String[commandHeaders.size()] ) );
         
         for (int i = 0; i < commandHeaders.size(); i++) {
@@ -158,7 +163,6 @@ public class Interpreter {
             if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
         	throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
             }
-
         }
     }
     
@@ -168,7 +172,9 @@ public class Interpreter {
     
     private static void readCommandDatabase(Properties props) throws IllegalArgumentException {
         
-        String[] headerKeySet = (String[])( commandHeaders.keySet().toArray( new String[commandHeaders.size()] ) );
+	defaultCommandSynonym.clear();
+	
+	String[] headerKeySet = (String[])( commandHeaders.keySet().toArray( new String[commandHeaders.size()] ) );
         
         for (int i = 0; i < commandHeaders.size(); i++) {
 
@@ -208,6 +214,8 @@ public class Interpreter {
             }
         }
         
+        defaultCommandSynonym.put(commandType, keys[0]);
+        
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
@@ -233,12 +241,16 @@ public class Interpreter {
             }
         }
         
+        defaultCommandSynonym.put(commandType, keys[0]);
+        
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
     
     
     private static void readParameterDatabase() throws IllegalArgumentException {
+	
+	defaultParameterSynonym.clear();
         
         String[] headerKeySet = (String[])( parameterHeaders.keySet().toArray( new String[parameterHeaders.size()] ) );
         
@@ -265,6 +277,8 @@ public class Interpreter {
      */
     
     private static void readParameterDatabase(Properties props) throws IllegalArgumentException {
+	
+	defaultParameterSynonym.clear();
         
         String[] headerKeySet = (String[])( parameterHeaders.keySet().toArray( new String[parameterHeaders.size()] ) );
         
@@ -305,6 +319,8 @@ public class Interpreter {
             }
         }
         
+        defaultParameterSynonym.put(parameterType, keys[0]);
+        
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
@@ -329,6 +345,8 @@ public class Interpreter {
                 return CommandFeedback.INVALID_DATABASE_DUPLICATES;
             }
         }
+        
+        defaultParameterSynonym.put(parameterType, keys[0]);
         
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
@@ -494,6 +512,14 @@ public class Interpreter {
         
         }
         
+    }
+    
+    public String getDefaultCommandSyn(CommandType commandType) {
+	return defaultCommandSynonym.get(commandType);
+    }
+    
+    public String getDefaultParaSyn(ParameterType parameterType) {
+	return defaultParameterSynonym.get(parameterType);
     }
     
     // GUI id to Logic id interfacing:

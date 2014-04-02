@@ -1,0 +1,20 @@
+3 12 0 false akjwdw
+NIL
+3 13 0 false akjwdawkjda
+NIL
+2 14 0 false akjwda
+NIL
+0 15 0 true akjwddw
+NIL
+0 16 0 false task for default folder work
+NIL
+3 17 0 false awkjda
+NIL
+4 18 0 false akwdakwd
+NIL
+4 19 0 false awdjkd
+NIL
+0 20 0 false akwjd for DEFAULT
+NIL
+3 21 0 false new task for personal
+NIL

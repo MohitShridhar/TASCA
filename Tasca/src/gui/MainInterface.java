@@ -13,6 +13,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
@@ -70,6 +71,7 @@ import java.util.Map;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
@@ -97,6 +99,7 @@ import controller.Controller;
 
 import storage.AllTasks;
 import storage.FloatingTask;
+import storage.Reminder;
 import storage.Task;
 import javax.swing.SwingConstants;
 import java.awt.event.KeyAdapter;
@@ -189,7 +192,7 @@ public class MainInterface {
   private static HashMap componentMap;
 
 
-private static LinkedList<Task> currentTimedTasks;
+private static LinkedList<Reminder> currentTimedTasks;
 private static LinkedList<FloatingTask> currentFloatingTasks;
 
 private static JScrollPane taskPane;
@@ -205,6 +208,8 @@ private static JLabel emptyTaskListMsg;
 public static JLabel systemStatusMessage;
 
 private static JButton btnSettings;
+
+private static JButton btnExport;
   
 //  public static enum FolderName {
 //      folder1, folder2, folder3, folder4, folder5
@@ -388,11 +393,11 @@ private static JButton btnSettings;
   }
   
 
-  private static LinkedList<Task> folderSortTimedTasks(LinkedList<Task> original) {
-      LinkedList<Task> sortedList = new LinkedList<Task>();
+  private static LinkedList<Reminder> folderSortTimedTasks(LinkedList<Reminder> original) {
+      LinkedList<Reminder> sortedList = new LinkedList<Reminder>();
       
       for (int i=0; i<original.size(); i++) {
-	  FolderName folder = cfg.getFolderId(original.get(i).getFolder());
+	  FolderName folder = cfg.getFolderId(original.get(i).getTask().getFolder());
 	  
 	  if (isCurrentFolder(folder)) {
 	      sortedList.add(original.get(i));
@@ -423,10 +428,12 @@ public static boolean isCurrentFolder(FolderName folder) {
   
   
  public static void updateTaskDisplay() {
+     int scrollPos = getScrollPos();
+     
      currentTimedTasks = controller.getCurrentSystemState().getTimedList();
      currentFloatingTasks = controller.getCurrentSystemState().getFloatingList();
      
-     LinkedList<Task> folderSortedTimedTasks = folderSortTimedTasks(currentTimedTasks); 
+     LinkedList<Reminder> folderSortedTimedTasks = folderSortTimedTasks(currentTimedTasks); 
      LinkedList<FloatingTask> folderSortedFloatingTasks = folderSortFloatingTasks(currentFloatingTasks);
      
      if (folderSortedTimedTasks.size() + folderSortedFloatingTasks.size() == 0) {
@@ -448,10 +455,11 @@ public static boolean isCurrentFolder(FolderName folder) {
      
      // Iterate through timed tasks:
      for (i=0; i< folderSortedTimedTasks.size(); i++) {
-	 TaskItem taskBar = new TaskItem(textPane, controller, i+1);
+	 TaskItem taskBar = new TaskItem(textPane, controller, i+1, interpreter);
 	 
-	 taskBar.loadTimedTaskDetails(folderSortedTimedTasks.get(i), i+1);
-	 Interpreter.addGuiId(i+1, folderSortedTimedTasks.get(i).getTaskID());
+	 taskBar.loadTimedTaskDetails(folderSortedTimedTasks.get(i).getTask(), i+1, folderSortedTimedTasks.get(i).getReminderTime());
+	 Interpreter.addGuiId(i+1, folderSortedTimedTasks.get(i).getTask().getTaskID());
+	 
 	 
 	 taskBar.setPreferredSize(new Dimension(888, 40));
 	 taskBar.setVisible(true);
@@ -461,7 +469,7 @@ public static boolean isCurrentFolder(FolderName folder) {
      
      // Iterate through floating tasks:
      for (j = 0; j< folderSortedFloatingTasks.size(); j++) {
-	 TaskItem taskBar = new TaskItem(textPane, controller, j+1+i);
+	 TaskItem taskBar = new TaskItem(textPane, controller, j+1+i, interpreter);
 	 
 	 taskBar.loadFloatingTaskDetails(folderSortedFloatingTasks.get(j), j+1+i);
 	 
@@ -485,6 +493,8 @@ public static boolean isCurrentFolder(FolderName folder) {
      taskPane.setViewportView(tempPanel);
      
      taskPane.setVisible(true);
+     
+     setScollPos(scrollPos);
      
      systemStatusMessage.setText(controller.getSystemMessageString());
           
@@ -604,6 +614,10 @@ public static boolean isCurrentFolder(FolderName folder) {
  
  public static JButton getBtnSettings() {
      return btnSettings;
+ }
+ 
+ public static JButton getExportButton() {
+     return btnExport;
  }
  
  public static void setFolderLabels() {
@@ -1004,13 +1018,14 @@ public static void initGui(final JFrame frame) {
     });     
     mainContainer.add(btnSettings);
 
-    JButton btnExport = new JButton(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Export Icon.png")));
+    btnExport = new JButton(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Export Icon.png")));
     btnExport.setBounds(351, 365, 26, 26);
     btnExport.setContentAreaFilled(false);
     btnExport.setBorder(BorderFactory.createEmptyBorder());
     btnExport.addActionListener(new ActionListener() {
 	public void actionPerformed(ActionEvent e) {
 	    // TODO: Implement export feature
+	    new IOWindow(frame, systemStatusMessage, controller);
 	}
     });   
 
@@ -1160,7 +1175,7 @@ public static void intiateFolderState() {
 }
 
 
-	
+
 }
 
 

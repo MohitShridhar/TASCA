@@ -246,7 +246,7 @@ public class Logic {
 	}
 
 	public static void importFile(String filePath) {
-		new Importer().importIcs(filePath); // TODO: implement singleton + be
+		new Importer(filePath); // TODO: implement singleton + be
 											// consistent with exporter
 	}
 

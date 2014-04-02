@@ -5,6 +5,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.SocketException;
 import java.security.InvalidParameterException;
+import java.util.LinkedList;
+
+import controller.Controller;
 
 import net.fortuna.ical4j.data.CalendarOutputter;
 import net.fortuna.ical4j.model.Date;
@@ -26,7 +29,7 @@ import storage.Reminder;
 import storage.Task;
 
 public class Exporter {
-    private static final String EXPORT_FILE_NAME = "TASCA_Export.ics";
+    private static String exportFileName = "TASCA_Export.ics";
     private static final String ERROR_ALL_FLOATING_TASKS = ".ics files are not used for storing ONLY floating tasks";
     
     private static final int EMPTY_PRIORITY_REF = 0;
@@ -35,8 +38,21 @@ public class Exporter {
     private static final int PRIORITY_HIGH = 1;
     private static final int PRIORITY_MEDIUM = 2;
     private static final int PRIORITY_LOW = 3;
-
+    
+    private static Controller controller;
+    
+    // For command line input
     public Exporter(String savePath) {
+	exportFileName = "TASCA_Export.ics";
+	controller = new Controller();
+	exportToIcs(savePath);
+    }
+    
+    // For GUI save dialog input
+    public Exporter(String savePath, String fileName, Controller controller) {
+	
+	exportFileName = fileName + ".ics";
+	this.controller = controller;
 	exportToIcs(savePath);
     }
     
@@ -67,9 +83,9 @@ public class Exporter {
 	newEvent.getProperties().add(ug.generateUid());
     }
     
-    private static VEvent addOtherProperties(VEvent newEvent, Task newTask, AllTasks allTasks)
+    private static VEvent addOtherProperties(VEvent newEvent, Task newTask, java.util.Calendar reminderTime)
     {
-	if (newTask.getLocation() != null) {
+	if (!newTask.getLocation().equals("NIL")) {
 	    newEvent.getProperties().add(new Location(newTask.getLocation()));
 	}
 	
@@ -86,10 +102,7 @@ public class Exporter {
 	}
 	
 	if (newTask.getIsThereReminder()) {
-	    Reminder reminderTime = allTasks.getReminder(allTasks.searchForCorrespondingReminder(newTask));
-	    
-	    // Reminder properties: CURRENTLY HANDLES ONLY 1 REMINDER. Waiting for recurring reminders support
-	    VAlarm reminder = new VAlarm(new DateTime(reminderTime.getReminderTime().getTime()));
+	    VAlarm reminder = new VAlarm(new DateTime(reminderTime.getTime()));
 	    reminder.getProperties().add(Action.DISPLAY);
 	    reminder.getProperties().add(new Description(newTask.getTaskTitle()));
 	    
@@ -103,17 +116,19 @@ public class Exporter {
 	net.fortuna.ical4j.model.Calendar exportCal = initializeCalExporter();
 	
 	// Initialize task list:
-	AllTasks allTasks = new AllTasks();
-	try {
-	    allTasks.loadData();
-	} catch (FileNotFoundException e1) {
-	    // TODO Auto-generated catch block
-	    e1.printStackTrace();
-	}
+//	AllTasks allTasks = new AllTasks();
+//	try {
+//	    allTasks.loadData();
+//	} catch (FileNotFoundException e1) {
+//	    // TODO Auto-generated catch block
+//	    e1.printStackTrace();
+//	}
+	
+	LinkedList<Reminder> timedTask = controller.getCurrentSystemState().getTimedList();
 	
 	int timedTaskCounter = 0;
 	
-	timedTaskCounter = calToEvent(exportCal, allTasks, timedTaskCounter);
+	timedTaskCounter = calToEvent(exportCal, timedTask, timedTaskCounter);
 	
 	if (timedTaskCounter == 0) {
 	    throw new InvalidParameterException(ERROR_ALL_FLOATING_TASKS);
@@ -121,9 +136,9 @@ public class Exporter {
 	
 	String outputPath;
 	if (savePath == null) {
-	    outputPath = EXPORT_FILE_NAME;
+	    outputPath = exportFileName;
 	} else {
-	    outputPath = savePath + "/" + EXPORT_FILE_NAME; // Save inside the specified folder
+	    outputPath = savePath + "/" + exportFileName; // Save inside the specified folder
 	}
 
 	FileOutputStream fout = null;
@@ -145,19 +160,19 @@ public class Exporter {
     }
 
     public static int calToEvent(net.fortuna.ical4j.model.Calendar exportCal,
-	    AllTasks allTasks, int timedTaskCounter) {
-	for (int i=0; i<allTasks.getTaskSize(); i++) {
-	    Task newTask = allTasks.getTask(i);
+	    LinkedList<Reminder> allTimedTasks, int timedTaskCounter) {
+	for (int i=0; i<allTimedTasks.size(); i++) {
+	    Task newTask = allTimedTasks.get(i).getTask();
 	    VEvent newEvent;
 	    
-	    if (newTask.getStartTime() != null && newTask.getEndTime() != null) { // Check if it's a floating task
+	    if (newTask.getStartTime() != null && newTask.getEndTime() != null) { // TODO: Assert
 		if (newTask.getIsAllDayEvent()) {
 		    newEvent = extractCalEvent(newTask.getStartTime(), newTask.getTaskTitle());
 		}
 
 		newEvent = extractCalEvent(newTask.getStartTime(), newTask.getEndTime(), newTask.getTaskTitle());
 		
-		newEvent = addOtherProperties(newEvent, newTask, allTasks);
+		newEvent = addOtherProperties(newEvent, newTask, allTimedTasks.get(i).getReminderTime());
 		
 		timedTaskCounter++;
 		exportCal.getComponents().add(newEvent);	  

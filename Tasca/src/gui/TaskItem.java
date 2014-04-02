@@ -1,5 +1,9 @@
 package gui;
 
+import interpreter.CommandType;
+import interpreter.Interpreter;
+import interpreter.ParameterType;
+
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -76,6 +80,7 @@ public class TaskItem extends JLayeredPane {
     private String infoDisplayTime, dateDisplayTime;
     private int realTaskId, guiId;
     private static Controller controller;
+    private Calendar reminderTime;
     
     private static JTextPane textPane;
     
@@ -83,12 +88,15 @@ public class TaskItem extends JLayeredPane {
     private boolean inDateDisplayState = false;
     
     private int withoutReminderOffset;
+    
+    private static Interpreter interpreter;
 
-    public TaskItem(JTextPane textPane, Controller controller, final int guiId) {
+    public TaskItem(JTextPane textPane, Controller controller, final int guiId, Interpreter interpreter) {
 	
 	super();
 	TaskItem.textPane = textPane;
 	this.controller = controller;
+	this.interpreter = interpreter;
 	this.guiId = guiId;
 	
 	new Timer(delay, taskPerformer).start(); // Update timings every minute 
@@ -102,7 +110,7 @@ public class TaskItem extends JLayeredPane {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 		    setCheckMark(false);
-		    TaskItem.controller.executeCommands("unmark -id " + guiId);
+		    TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.UNMARK) + " -id " + guiId);
 		    MainInterface.systemStatusMessage.setText(TaskItem.controller.getSystemMessageString());
 		}
 		@Override
@@ -126,7 +134,7 @@ public class TaskItem extends JLayeredPane {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 		    setCheckMark(true);
-		    TaskItem.controller.executeCommands("mark -id " + guiId);
+		    TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.MARK) + " -id " + guiId);
 		    MainInterface.systemStatusMessage.setText(TaskItem.controller.getSystemMessageString());
 		}
 		@Override
@@ -318,21 +326,19 @@ public class TaskItem extends JLayeredPane {
     private void reminderShortcut() {
 	MainInterface.clearTextPane();
 	
-	String reminderTime = "<NARIN, how do I get remind time?>";
+	String reminderTime = dateFormatter.format(this.reminderTime.getTime());
 	
-	textPane.setText("modify " + "-id " + guiId + " -remind " + reminderTime);
+	textPane.setText(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME) + " " + reminderTime);
     }
       
     private void deleteTaskShortcut() {
-	controller.executeCommands("delete -id " + guiId); 
+	controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.DELETE) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId); 
 	
 	refreshDisplay();
     }
 
     public void refreshDisplay() {
-	int scrollPos = MainInterface.getScrollPos();
 	MainInterface.updateTaskDisplay();
-	MainInterface.setScollPos(scrollPos);
     }
     
     private void modifyDescriptionShortcut() {
@@ -343,10 +349,10 @@ public class TaskItem extends JLayeredPane {
 	    String location = "";
 	    
 	    if (!floatingTask.getLocation().equals("NIL")) {
-		location = " -loc " + floatingTask.getLocation();
+		location = " -" + interpreter.getDefaultParaSyn(ParameterType.LOCATION) + " " + floatingTask.getLocation();
 	    }
 	    
-	    textPane.setText("modify " + floatingTask.getTaskTitle() + " -id " + guiId + location + " "); 
+	    textPane.setText(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " " + floatingTask.getTaskTitle() + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + location + " "); 
 	    
 	    return;
 	}
@@ -354,17 +360,17 @@ public class TaskItem extends JLayeredPane {
 	if (!inDateDisplayState) {
 	    String location = "";
 	    if (!timedTask.getLocation().equals("NIL")) {
-		location = " -loc " + timedTask.getLocation();
+		location = " -" + interpreter.getDefaultParaSyn(ParameterType.LOCATION) + " " + timedTask.getLocation();
 	    }
 
-	    textPane.setText("modify " + timedTask.getTaskTitle() + " -id " + guiId + location + " ");
+	    textPane.setText(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " " + timedTask.getTaskTitle() + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + location + " ");
 
 	} else {
 	    if (timedTask.getIsThereReminder()) {
-		textPane.setText("modify -id " + guiId + " -start " + dateFormatter.format(timedTask.getStartTime().getTime()) + " -end " 
-			+ dateFormatter.format(timedTask.getEndTime().getTime()) + " -remind " + dateFormatter.format(timedTask.getEndTime().getTime())); // TODO: Implement remind time
+		textPane.setText(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + " " + dateFormatter.format(timedTask.getStartTime().getTime()) + " -" + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + " "
+			+ dateFormatter.format(timedTask.getEndTime().getTime()) + " -" + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME) + " " + dateFormatter.format(this.reminderTime.getTime()));
 	    } else {
-		textPane.setText("modify -id " + guiId + " -start " + dateFormatter.format(timedTask.getStartTime().getTime()) + " -end " 
+		textPane.setText(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + " " + dateFormatter.format(timedTask.getStartTime().getTime()) + " -" + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + " " 
 			+ dateFormatter.format(timedTask.getEndTime().getTime())); // TODO: Implement remind time
 	    }
 	}
@@ -380,14 +386,14 @@ public class TaskItem extends JLayeredPane {
 	    return;
 	
 	case 1:
-	    controller.executeCommands("modify -id " + guiId + " -pri " + "low");
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + " " + "low");
 	    break;
 
 	case 2:
-	    controller.executeCommands("modify -id " + guiId + " -pri " + "high");
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + " " + "high");
 	    break;
 	case 3:
-	    controller.executeCommands("modify -id " + guiId + " -pri " + "med");
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + " " + "med");
 	    break;
 	}
 	
@@ -395,11 +401,13 @@ public class TaskItem extends JLayeredPane {
 
     }
 
-    public void loadTimedTaskDetails(Task item, int guiId) {
+    public void loadTimedTaskDetails(Task item, int guiId, Calendar reminderTime) {
 	
 	timedTask = item;
 	
 	if (timedTask != null) {
+	    
+	    this.reminderTime = reminderTime;
 	    
 	    isFloatingTask = false;
 	    
@@ -425,7 +433,7 @@ public class TaskItem extends JLayeredPane {
 	    infoDisplayTime = updateInfoTimings();
 	    
 	    if (timedTask.getIsThereReminder()) {
-	    	dateDisplayTime = updateDateTimings(timedTask.getStartTime(), timedTask.getEndTime(), timedTask.getStartTime()); // TODO: Replace last with remind time
+	    	dateDisplayTime = updateDateTimings(timedTask.getStartTime(), timedTask.getEndTime(), this.reminderTime); // TODO: Replace last with remind time
 	    } else {
 		dateDisplayTime = updateDateTimings(timedTask.getStartTime(), timedTask.getEndTime());
 	    }
