@@ -68,7 +68,7 @@ public class Controller {
 	public Controller() {
 		initialiseTasks();
 		Logic.initStorage(allTasks, systemMessage);
-		systemMessage.setTimedList(allTasks.getTimedList());
+		this.executeCommands("all");
 		systemMessage.setFloatingList(allTasks.getFloatingList());
 		try {
 			handler = new FileHandler("log.txt");
@@ -314,7 +314,7 @@ public class Controller {
 				folder = 0;
 			}
 		} catch (NullPointerException e) {
-			folder = 0;
+			folder = -1;
 		}
 		try {
 			if (command.getParameters().getEndTime() != null) {
@@ -447,6 +447,11 @@ public class Controller {
 			if (command.getParameters().getTaskId() != null) {
 				Logic.deleteTask(Integer.parseInt(command.getParameters()
 						.getTaskId()));
+			}else {
+				systemMessage.setSystemMessage(MESSAGE_SEARCH);
+				Logic.searchTask(command.getParameters().getDescription());
+				systemMessage.setDisplayStatus(STATUS_PERIOD);
+				
 			}
 		} catch (Exception e) {
 			// Logic.deleteSearch(command.getParameters().getDescription(),

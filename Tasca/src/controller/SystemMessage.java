@@ -2,7 +2,7 @@ package controller;
 
 import java.util.LinkedList;
 
-import storage.Task;
+import storage.Reminder;
 import storage.FloatingTask;
 
 /**
@@ -11,7 +11,7 @@ import storage.FloatingTask;
  */
 public class SystemMessage {
 	private String message;
-	private LinkedList<Task> timedTaskList;
+	private LinkedList<Reminder> timedTaskList;
 	private LinkedList<FloatingTask> floatingTaskList;
 	private int displayStatus = 0;
 	
@@ -24,12 +24,12 @@ public class SystemMessage {
 		return message;
 	}
 	
-	public void setTimedList (LinkedList<Task> list){
+	public void setTimedList (LinkedList<Reminder> list){
 		this.timedTaskList = list;
 		return;
 	}
 	
-	public LinkedList<Task> getTimedList (){
+	public LinkedList<Reminder> getTimedList (){
 		return timedTaskList;
 	}
 	
