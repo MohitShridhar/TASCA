@@ -76,10 +76,14 @@ public class Logic {
 						.getTask(count).getStartTime()) > 0;
 				count++;
 			}
-			/*
-			 * if (count != 0) { // correct position count--; } if (count ==
-			 * totalNumOfTasks - 1) { count++; }
-			 */
+			
+			  if (count != 0) { 
+				  //correct position 
+				  count--; 
+				  } 
+			  if (count ==totalNumOfTasks - 1) { 
+				  count++; }
+			 
 			Task task = new Task(folder, TaskId, priority, taskStart, taskEnd,
 					isThereReminder, isTaskDone, isAllDayEvent, title, location);
 
@@ -393,7 +397,9 @@ public class Logic {
 	public static void updateFloatingTask(int folder, String indexString,
 			String priority, String title, String location)
 			throws IndexOutOfBoundsException {
+		
 		int priorityInt, index = Integer.parseInt(indexString);
+		
 		if (index < _storage.getTaskSize()) {
 			throw new IndexOutOfBoundsException();
 		} else {
@@ -472,7 +478,7 @@ public class Logic {
 				}
 			}
 			if(folder == -1){
-				folder = _storage.getFloatingTask(index).getFolder();
+				folder = _storage.getTask(index).getFolder();
 			}
 			isTaskDeleted = deleteTask(index);
 			isTaskAdded = addTask(folder, priorityInt, start.getTime(),
