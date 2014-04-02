@@ -234,7 +234,7 @@ public class SettingsPane extends JFrame {
 	});    
 	
 	folder1Field = new JTextField();
-	folder1Field.setFont(new Font("Lato", Font.PLAIN, 15));
+	folder1Field.setFont(MainInterface.latoReg15); //(new Font("Lato", Font.PLAIN, 15));
 	folder1Field.setForeground(Color.WHITE);
 	folder1Field.setBackground(Color.decode("#443e3e"));
 	folder1Field.setHorizontalAlignment(SwingConstants.CENTER);
@@ -246,7 +246,7 @@ public class SettingsPane extends JFrame {
 	folder2Field = new JTextField();
 	folder2Field.setHorizontalAlignment(SwingConstants.CENTER);
 	folder2Field.setForeground(Color.WHITE);
-	folder2Field.setFont(new Font("Lato", Font.PLAIN, 15));
+	folder2Field.setFont(MainInterface.latoReg15);//new Font("Lato", Font.PLAIN, 15));
 	folder2Field.setColumns(10);
 	folder2Field.setBackground(new Color(68, 62, 62));
 	folder2Field.setBounds(308, 116, 140, 28);
@@ -256,7 +256,7 @@ public class SettingsPane extends JFrame {
 	folder3Field = new JTextField();
 	folder3Field.setHorizontalAlignment(SwingConstants.CENTER);
 	folder3Field.setForeground(Color.WHITE);
-	folder3Field.setFont(new Font("Lato", Font.PLAIN, 15));
+	folder3Field.setFont(MainInterface.latoReg15);//new Font("Lato", Font.PLAIN, 15));
 	folder3Field.setColumns(10);
 	folder3Field.setBackground(new Color(68, 62, 62));
 	folder3Field.setBounds(444, 116, 138, 28);
@@ -266,7 +266,7 @@ public class SettingsPane extends JFrame {
 	folder4Field = new JTextField();
 	folder4Field.setHorizontalAlignment(SwingConstants.CENTER);
 	folder4Field.setForeground(Color.WHITE);
-	folder4Field.setFont(new Font("Lato", Font.PLAIN, 15));
+	folder4Field.setFont(MainInterface.latoReg15);//new Font("Lato", Font.PLAIN, 15));
 	folder4Field.setColumns(10);
 	folder4Field.setBackground(new Color(68, 62, 62));
 	folder4Field.setBounds(578, 116, 140, 28);
@@ -276,7 +276,7 @@ public class SettingsPane extends JFrame {
 	folder5Field = new JTextField();
 	folder5Field.setHorizontalAlignment(SwingConstants.CENTER);
 	folder5Field.setForeground(Color.WHITE);
-	folder5Field.setFont(new Font("Lato", Font.PLAIN, 15));
+	folder5Field.setFont(MainInterface.latoReg15);//new Font("Lato", Font.PLAIN, 15));
 	folder5Field.setColumns(10);
 	folder5Field.setBackground(new Color(68, 62, 62));
 	folder5Field.setBounds(714, 116, 138, 28);
@@ -345,7 +345,7 @@ public class SettingsPane extends JFrame {
 	
 	defaultFolderSelector = new JComboBox();
 	defaultFolderSelector.setFocusable(false);
-	defaultFolderSelector.setFont(new Font("Lato", Font.PLAIN, 13));
+	defaultFolderSelector.setFont(MainInterface.latoReg13);//new Font("Lato", Font.PLAIN, 13));
 	defaultFolderSelector.setModel(new DefaultComboBoxModel(new String[] {"folder1", "folder2", "folder3", "folder4", "folder5"}));
 	defaultFolderSelector.setSelectedIndex(getCurrentDefaultFolder(defaultFolder));
 	defaultFolderSelector.setMaximumRowCount(5);
@@ -355,13 +355,13 @@ public class SettingsPane extends JFrame {
 	lblParameterKeywords = new JLabel("PARAMETERS");
 	lblParameterKeywords.setHorizontalAlignment(SwingConstants.CENTER);
 	lblParameterKeywords.setForeground(Color.WHITE);
-	lblParameterKeywords.setFont(new Font("Lato", Font.PLAIN, 14));
+	lblParameterKeywords.setFont(MainInterface.latoReg14);//new Font("Lato", Font.PLAIN, 14));
 	lblParameterKeywords.setBounds(588, 167, 201, 16);
 	getContentPane().add(lblParameterKeywords);
 	
 	JLabel lblActiveInputFeedback = new JLabel("Active Input Feedback");
 	lblActiveInputFeedback.setForeground(Color.WHITE);
-	lblActiveInputFeedback.setFont(new Font("Lato", Font.PLAIN, 13));
+	lblActiveInputFeedback.setFont(MainInterface.latoReg13);//new Font("Lato", Font.PLAIN, 13));
 	lblActiveInputFeedback.setHorizontalAlignment(SwingConstants.CENTER);
 	lblActiveInputFeedback.setBounds(21, 45, 157, 16);
 	getContentPane().add(lblActiveInputFeedback);
@@ -372,7 +372,7 @@ public class SettingsPane extends JFrame {
 	
 	warningLabel = new JLabel("");
 	warningLabel.setForeground(Color.WHITE);
-	warningLabel.setFont(new Font("Lato", Font.BOLD, 16));
+	warningLabel.setFont(MainInterface.latoBold16);//new Font("Lato", Font.BOLD, 16));
 	warningLabel.setHorizontalAlignment(SwingConstants.CENTER);
 	warningLabel.setBounds(110, 364, 700, 28);
 	getContentPane().add(warningLabel);
@@ -380,7 +380,7 @@ public class SettingsPane extends JFrame {
 	JLabel commandKeywordsLabel = new JLabel("COMMANDS");
 	commandKeywordsLabel.setForeground(Color.WHITE);
 	commandKeywordsLabel.setHorizontalAlignment(SwingConstants.CENTER);
-	commandKeywordsLabel.setFont(new Font("Lato", Font.PLAIN, 14));
+	commandKeywordsLabel.setFont(MainInterface.latoReg14);//new Font("Lato", Font.PLAIN, 14));
 	commandKeywordsLabel.setBounds(130, 165, 201, 16);
 	getContentPane().add(commandKeywordsLabel);
 		
@@ -396,7 +396,7 @@ public class SettingsPane extends JFrame {
 	
 	JLabel title = new JLabel("PREFERENCES");
 	title.setForeground(Color.WHITE);
-	title.setFont(new Font("Lato", Font.BOLD, 20));
+	title.setFont(MainInterface.latoBold20);//new Font("Lato", Font.BOLD, 20));
 	title.setHorizontalAlignment(SwingConstants.CENTER);
 	title.setBounds(369, 17, 182, 25);
 	getContentPane().add(title);

@@ -169,6 +169,10 @@ public class MainInterface {
   public static Font latoReg12 = null;
   public static Font latoBold13 = null;
   public static Font lucidaReg22 = null;
+  public static Font latoBold20 = null;
+  public static Font latoBold16 = null;
+  public static Font latoReg13 = null;
+  
   
   public static Font menloReg = null;
   public static Font latoReg = null;
@@ -231,10 +235,16 @@ private static JButton btnSettings;
       
       
       menloReg16 = new Font("Menlo", Font.PLAIN, 16);
-      latoReg15 = new Font("Lato", Font.PLAIN, 15);
+      
+      latoBold20 = new Font("Lato", Font.BOLD, 20);
+      latoBold16 = new Font("Lato", Font.BOLD, 16);
       latoBold13 = new Font("Lato", Font.BOLD, 13);
+      
+      latoReg15 = new Font("Lato", Font.PLAIN, 15);
       latoReg14 = new Font("Lato", Font.PLAIN, 14);
+      latoReg13 = new Font("Lato", Font.PLAIN, 13);
       latoReg12 = new Font("Lato", Font.PLAIN, 12);
+      
       lucidaReg22 = new Font("Lucida Grande", Font.PLAIN, 22);
       
       

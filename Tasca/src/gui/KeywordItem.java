@@ -21,7 +21,7 @@ public class KeywordItem extends JLayeredPane {
 	
 	synonymsField = new JTextField();
 	synonymsField.setBounds(135, 8, 227, 24);
-	synonymsField.setFont(new Font("Lato", Font.PLAIN, 13));
+	synonymsField.setFont(MainInterface.latoReg13);//new Font("Lato", Font.PLAIN, 13));
 	synonymsField.setForeground(Color.WHITE);
 	synonymsField.setBackground(Color.decode("#443e3e"));
 	synonymsField.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -32,7 +32,7 @@ public class KeywordItem extends JLayeredPane {
 	JLabel keywordLabel = new JLabel("Keyword");
 	keywordLabel.setHorizontalAlignment(SwingConstants.CENTER);
 	keywordLabel.setForeground(Color.WHITE);
-	keywordLabel.setFont(new Font("Lato", Font.BOLD, 13));
+	keywordLabel.setFont(MainInterface.latoBold13);//new Font("Lato", Font.BOLD, 13));
 	keywordLabel.setBounds(0, 0, 123, 41);
 	keywordLabel.setText(keyword);
 	add(keywordLabel);

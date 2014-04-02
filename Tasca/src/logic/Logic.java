@@ -327,7 +327,7 @@ public class Logic {
 			}
 		}
 		systemMessage.setTimedList(list);
-		systemMessage.setSystemMessage(MESSAGE_TASK_FOUND.format(count,searchString));
+//		systemMessage.setSystemMessage(MESSAGE_TASK_FOUND.format(count,searchString));
 		return count;
 	}
 

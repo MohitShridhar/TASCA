@@ -16,3 +16,7 @@ NIL
 NIL
 0 20 0 false akwjd for DEFAULT
 NIL
+3 21 0 false new task for personal
+NIL
+0 22 0 false new task added to be SAVED
+NIL
