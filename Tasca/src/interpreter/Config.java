@@ -1,5 +1,8 @@
 package interpreter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -27,13 +30,15 @@ public class Config
        
        configFile = new java.util.Properties();
        try {
-	   configFile.load(new FileInputStream("Config.cfg"));
-	   
+           configFile.load(new FileInputStream("Config.cfg"));
+           
        }catch(Exception eta){
-	   //TODO: Assert fail
-	   eta.printStackTrace();
-	   System.out.println("Reading config file failed");
+           System.out.println("Config.cfg file not found. Generating Default Configurations");
+           loadDefaultConfig();
        }
+       
+       
+      
            
        folderNameRef.put(getProperty("folder1").trim().toLowerCase(), FolderName.FOLDER1);
        folderNameRef.put(getProperty("folder2").trim().toLowerCase(), FolderName.FOLDER2);
@@ -68,6 +73,30 @@ public class Config
        
    }
 
+   public void loadDefaultConfig() {
+       try {
+	   configFile.load(Config.class.getResourceAsStream("Default_Config.cfg"));
+       }catch(Exception eta){
+	   eta.printStackTrace();
+	 //TODO: Assert fail
+	   System.out.println("Serious error: Default config file not found");
+       }
+       
+       saveDefaultConfig();
+   }
+   
+   public void saveDefaultConfig() {
+	try {
+	    configFile.store(new FileOutputStream("Config.cfg"), null);
+	} catch (FileNotFoundException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	} catch (IOException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+   }
+   
    public String getProperty(String key)
    {
     return this.configFile.getProperty(key);

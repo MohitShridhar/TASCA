@@ -67,37 +67,37 @@ public class SettingsPane extends JFrame {
     private ArrayList<KeywordItem> paraKeywordItems = new ArrayList<KeywordItem>();
 
     private String[][] commandDatabase = new String[][]{
-	    {"Add","add"},
-	    {"Delete","delete"},
-	    {"Clear Completed","clearCompleted"},
-	    {"Clear", "clear"},
-	    {"Modify", "modify"},
-	    {"Mark", "mark"},
-	    {"Unmark", "unmark"},
-	    {"Search", "search"},
-	    {"Now", "now"},
-	    {"Today", "today"},
-	    {"Tomorrow", "tomorrow"},
-	    {"Week", "week"},
-	    {"Month", "month"},
-	    {"Undo", "undo"},
-	    {"Redo", "redo"},
-	    {"Show All", "displayAll"},
-	    {"Non-Timed Tasks", "displayFloat"},
-	    {"Show in Time", "display"},
-	    {"Export", "export"},
-	    {"Import", "import"},
-	    {"Quit", "quit"}
+	    {"Add","add","How to use <>"},
+	    {"Delete","delete","How to use <>"},
+	    {"Clear Completed","clearCompleted","How to use <>"},
+	    {"Clear", "clear","How to use <>"},
+	    {"Modify", "modify","How to use <>"},
+	    {"Mark", "mark","How to use <>"},
+	    {"Unmark", "unmark","How to use <>"},
+	    {"Search", "search","How to use <>"},
+	    {"Now", "now","How to use <>"},
+	    {"Today", "today","How to use <>"},
+	    {"Tomorrow", "tomorrow","How to use <>"},
+	    {"Week", "week","How to use <>"},
+	    {"Month", "month","How to use <>"},
+	    {"Undo", "undo","How to use <>"},
+	    {"Redo", "redo","How to use <>"},
+	    {"Show All", "displayAll","How to use <>"},
+	    {"Non-Timed Tasks", "displayFloat","How to use <>"},
+	    {"Show in Time", "display","How to use <>"},
+	    {"Export", "export","How to use <>"},
+	    {"Import", "import","How to use <>"},
+	    {"Quit", "quit","How to use <>"}
     };
     
     private String[][] parameterDatabase = new String[][] {
-	    {"Start Time","startTime"},
-	    {"End Time", "endTime"},
-	    {"Reminder Time", "reminderTime"},
-	    {"Priority", "priority"},
-	    {"Location", "location"},
-	    {"Folder", "folder"},
-	    {"Task ID", "taskID"}
+	    {"Start Time","startTime","How to use <>"},
+	    {"End Time", "endTime","How to use <>"},
+	    {"Reminder Time", "reminderTime","How to use <>"},
+	    {"Priority", "priority","How to use <>"},
+	    {"Location", "location","How to use <>"},
+	    {"Folder", "folder","How to use <>"},
+	    {"Task ID", "taskID","How to use <>"}
     };
     
     public SettingsPane(JFrame mainFrame, Interpreter interpreter, Config cfg) {
@@ -184,6 +184,7 @@ public class SettingsPane extends JFrame {
 	    KeywordItem keywordBar = new KeywordItem(commandDatabase[i][0], cfg.getProperty(commandDatabase[i][1]));
 
 	    keywordBar.setPreferredSize(new Dimension(396, 41));
+	    keywordBar.setToolTipText(commandDatabase[i][2]);
 	    keywordBar.setVisible(true);
 	    commandPanel.add(keywordBar);
 	    
@@ -206,6 +207,7 @@ public class SettingsPane extends JFrame {
 	    KeywordItem keywordBar = new KeywordItem(parameterDatabase[i][0], cfg.getProperty(parameterDatabase[i][1]));
 	    
 	    keywordBar.setPreferredSize(new Dimension(396, 41));
+	    keywordBar.setToolTipText(parameterDatabase[i][2]);
 	    keywordBar.setVisible(true);
 	    paraPanel.add(keywordBar);
 	    
