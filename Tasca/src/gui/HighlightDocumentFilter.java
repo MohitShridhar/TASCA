@@ -32,12 +32,13 @@ import controller.Controller;
 
 public class HighlightDocumentFilter extends DocumentFilter {
 
+    private static final int VISIBLE_RECT_HEIGHT = 23;
     private static final int INDICATOR_UPDATE_PERIOD = 100;
     private DefaultHighlightPainter highlightPainter = new DefaultHighlightPainter(Color.YELLOW);
     private static JTextPane textPane;
     private JFrame mainFrame;
     private AttributeSet duplicateParameter, normalSetting, parameterSetting, commandSetting;
-    private Interpreter interpreter;
+    private static Interpreter interpreter;
     private JLabel background, feedbackBackground, feedbackText;
     
     private Map<CommandType, Color> commandColors = new HashMap<CommandType, Color>();
@@ -121,6 +122,8 @@ public class HighlightDocumentFilter extends DocumentFilter {
         StyleConstants.setBold((MutableAttributeSet) parameterSetting, false);
         
         commandSetting = new SimpleAttributeSet();
+        StyleConstants.setFontFamily((MutableAttributeSet) commandSetting, "Meslo LG S");
+        StyleConstants.setFontSize((MutableAttributeSet) commandSetting, 16);
         StyleConstants.setBold((MutableAttributeSet) commandSetting, true);
         
         new Timer(INDICATOR_UPDATE_PERIOD, taskUpdateIndicator).start();
@@ -140,7 +143,8 @@ public class HighlightDocumentFilter extends DocumentFilter {
         	    if (userInput != null) {
         		boolean quit = false;
         		
-        		quit = MainInterface.controller.executeCommands(userInput);
+        		HighlightDocumentFilter.interpreter.setCurrentFolder(MainInterface.getCurrentFolderName());        		
+        		quit = MainInterface.controller.executeCommands(userInput, MainInterface.getCurrentFolderName());
         		
         		if (!quit) {
         		    MainInterface.updateTaskDisplay();
@@ -197,20 +201,22 @@ public class HighlightDocumentFilter extends DocumentFilter {
     }
 
     public void setIndicators() {
-
+	
+//	System.out.println("Preferred size: " + textPane.getPreferredSize() + " Visible rect: " + textPane.getVisibleRect());
+	
 	int preferredHeight = textPane.getPreferredSize().height;
 	int visibleYPos = textPane.getVisibleRect().y;
 
-	if (preferredHeight == 19) {
+	if (preferredHeight == VISIBLE_RECT_HEIGHT) {
 	    MainInterface.setUpIndicator(false);
 	    MainInterface.setDownIndicator(false);
-	} else if (preferredHeight > 19 && visibleYPos == 0 && preferredHeight - visibleYPos != 19) {
+	} else if (preferredHeight > VISIBLE_RECT_HEIGHT && visibleYPos == 0 && preferredHeight - visibleYPos != VISIBLE_RECT_HEIGHT) {
 	    MainInterface.setUpIndicator(false);
 	    MainInterface.setDownIndicator(true);
-	} else if (preferredHeight > 19 && visibleYPos > 0 && preferredHeight - visibleYPos != 19) {
+	} else if (preferredHeight > VISIBLE_RECT_HEIGHT && visibleYPos > 0 && preferredHeight - visibleYPos != VISIBLE_RECT_HEIGHT) {
 	    MainInterface.setUpIndicator(true);
 	    MainInterface.setDownIndicator(true);
-	} else if (preferredHeight > 19 && visibleYPos > 0 && preferredHeight - visibleYPos == 19) {
+	} else if (preferredHeight > VISIBLE_RECT_HEIGHT && visibleYPos > 0 && preferredHeight - visibleYPos == VISIBLE_RECT_HEIGHT) {
 	    MainInterface.setUpIndicator(true);
 	    MainInterface.setDownIndicator(false);
 	}

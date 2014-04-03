@@ -21,6 +21,7 @@ public class Parameters {
     
     private static final int FIRST_DATE = 0;
     
+    private static final int PRIORITY_NONE = 0;
     private static final int PRIORITY_HIGH = 1;
     private static final int PRIORITY_MEDIUM = 2;
     private static final int PRIORITY_LOW = 3;
@@ -216,12 +217,14 @@ public class Parameters {
     }
     
     private int stringToIntPriority(String priorityString) {
-        if (priorityString.equalsIgnoreCase("HIGH") || priorityString.equalsIgnoreCase("H") || priorityString.equalsIgnoreCase("imp") || priorityString.equalsIgnoreCase("important")) {
+        if (priorityString.equalsIgnoreCase("HIGH") || priorityString.equalsIgnoreCase("H") || priorityString.equalsIgnoreCase("imp") || priorityString.equalsIgnoreCase("important") || priorityString.equalsIgnoreCase("1")) {
             return PRIORITY_HIGH;
-        } else if (priorityString.equalsIgnoreCase("MEDIUM") || priorityString.equalsIgnoreCase("MED") || priorityString.equalsIgnoreCase("M")) {
+        } else if (priorityString.equalsIgnoreCase("MEDIUM") || priorityString.equalsIgnoreCase("MED") || priorityString.equalsIgnoreCase("M") || priorityString.equalsIgnoreCase("2") ) {
             return PRIORITY_MEDIUM;
-        } else if (priorityString.equalsIgnoreCase("LOW") || priorityString.equalsIgnoreCase("not imp") || priorityString.equalsIgnoreCase("L")) {
+        } else if (priorityString.equalsIgnoreCase("LOW") || priorityString.equalsIgnoreCase("not imp") || priorityString.equalsIgnoreCase("L") || priorityString.equalsIgnoreCase("3")) {
             return PRIORITY_LOW;
+        } else if (priorityString.equalsIgnoreCase("none") || priorityString.equalsIgnoreCase("remove") || priorityString.equalsIgnoreCase("nothing") || priorityString.equalsIgnoreCase("0")) {
+            return PRIORITY_NONE;
         }
         
         

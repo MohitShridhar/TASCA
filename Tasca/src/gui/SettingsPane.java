@@ -240,6 +240,7 @@ public class SettingsPane extends JFrame {
 	folder1Field.setHorizontalAlignment(SwingConstants.CENTER);
 	folder1Field.setBounds(171, 116, 141, 28);
 	folder1Field.setText(folder1Name);
+	folder1Field.setCaretColor(Color.WHITE);
 	getContentPane().add(folder1Field);
 	folder1Field.setColumns(10);
 	
@@ -251,6 +252,7 @@ public class SettingsPane extends JFrame {
 	folder2Field.setBackground(new Color(68, 62, 62));
 	folder2Field.setBounds(308, 116, 140, 28);
 	folder2Field.setText(folder2Name);
+	folder2Field.setCaretColor(Color.WHITE);
 	getContentPane().add(folder2Field);
 	
 	folder3Field = new JTextField();
@@ -261,6 +263,7 @@ public class SettingsPane extends JFrame {
 	folder3Field.setBackground(new Color(68, 62, 62));
 	folder3Field.setBounds(444, 116, 138, 28);
 	folder3Field.setText(folder3Name);
+	folder3Field.setCaretColor(Color.WHITE);
 	getContentPane().add(folder3Field);
 	
 	folder4Field = new JTextField();
@@ -271,6 +274,7 @@ public class SettingsPane extends JFrame {
 	folder4Field.setBackground(new Color(68, 62, 62));
 	folder4Field.setBounds(578, 116, 140, 28);
 	folder4Field.setText(folder4Name);
+	folder4Field.setCaretColor(Color.WHITE);
 	getContentPane().add(folder4Field);
 	
 	folder5Field = new JTextField();
@@ -281,6 +285,7 @@ public class SettingsPane extends JFrame {
 	folder5Field.setBackground(new Color(68, 62, 62));
 	folder5Field.setBounds(714, 116, 138, 28);
 	folder5Field.setText(folder5Name);
+	folder5Field.setCaretColor(Color.WHITE);
 	getContentPane().add(folder5Field);
 	
 	activeFeedbackCheckbox = new Checkbox("New check box");
@@ -390,7 +395,8 @@ public class SettingsPane extends JFrame {
 	setBackground(Color.decode("#272822"));
 	
 	getContentPane().setBackground(Color.decode("#272822"));
-	
+	setAlwaysOnTop( true );
+	setLocationByPlatform( true );
 	
 	getContentPane().setLayout(null);
 	

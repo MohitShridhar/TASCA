@@ -53,6 +53,8 @@ public class Interpreter {
     private ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>(); // For duplicates
     private Command command = new Command();
     
+    private String currentFolder = "default";
+    
     private static boolean isGuiIdEnabled = false;
     
     /* Keyword Headers: Mapping Config file elements to Command & Parameter types */
@@ -108,6 +110,7 @@ public class Interpreter {
     public Interpreter() {
 	// Do nothing
     }
+  
     
     /*
      * To be used by settings pane for checking validity of keywords:
@@ -136,6 +139,7 @@ public class Interpreter {
 	    readParameterDatabase();
 	}
     }
+    
     
     /**
      * Reads keywords from txtfile and saves them in the local memory (hash table)
@@ -368,7 +372,14 @@ public class Interpreter {
         
         command.setCommandType(mainCommand); 
         
+        updateFolderReference();
+    }
     
+    private void updateFolderReference() {
+	if (command.getParameters().getFolder() == null) {
+	    command.getParameters().setFolder(currentFolder);
+	    System.out.println("Folder updated!!!!!");
+	}
     }
     
     public boolean isFloatingTask() {
@@ -579,4 +590,11 @@ public class Interpreter {
         return command;
     }
     
+    public String getCurrentFolder() {
+	return currentFolder;
+    }
+    
+    public void setCurrentFolder(String currFolderName) {
+	currentFolder = currFolderName;
+    }
 }

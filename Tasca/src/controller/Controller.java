@@ -123,6 +123,25 @@ public class Controller {
 		}
 
 	}
+	
+	/*
+	 * To be used by GUI for default folder context reference
+	 */
+	public boolean executeCommands(String input, String currFolder) {
+		Interpreter newInt = new Interpreter();
+
+		try {
+		    	newInt.setCurrentFolder(currFolder);
+			newInt.processUserInput(input);
+			Command command = newInt.getCommandAndPara();
+			assert (command.getCommandType() != null);
+			return executeLogic(command);
+		} catch (IllegalArgumentException eI) {
+			System.out.println("Exception - " + eI + "\n");
+			return false;
+		}
+
+	}
 
 	private void executeQuit() {
 		try {

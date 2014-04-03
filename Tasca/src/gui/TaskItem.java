@@ -110,7 +110,7 @@ public class TaskItem extends JLayeredPane {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 		    setCheckMark(false);
-		    TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.UNMARK) + " -id " + guiId);
+		    TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.UNMARK) + " -" + TaskItem.interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId);
 		    MainInterface.systemStatusMessage.setText(TaskItem.controller.getSystemMessageString());
 		}
 		@Override
@@ -134,7 +134,7 @@ public class TaskItem extends JLayeredPane {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 		    setCheckMark(true);
-		    TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.MARK) + " -id " + guiId);
+		    TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.MARK) + " -" + TaskItem.interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId);
 		    MainInterface.systemStatusMessage.setText(TaskItem.controller.getSystemMessageString());
 		}
 		@Override
@@ -555,18 +555,18 @@ public class TaskItem extends JLayeredPane {
 
 
     }
-
+    
     public void setLowPri(int withoutReminderOffset) {
 	priority.setIcon(graphics.lowPri);
-	priority.setSize(6, 20);
-	priority.setLocation(672 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset,  10);
+	priority.setSize(23, 20);
+	priority.setLocation(655 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset,  10);
 	priority.setVisible(true);
     }
 
     public void setMedPri(int withoutReminderOffset) {
 	priority.setIcon(graphics.medPri);
-	priority.setSize(15, 20);
-	priority.setLocation(663 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset,  10);
+	priority.setSize(23, 20);
+	priority.setLocation(655 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset,  10);
 	priority.setVisible(true);
     }
 
@@ -576,6 +576,27 @@ public class TaskItem extends JLayeredPane {
 	priority.setLocation(655 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset, 10);
 	priority.setVisible(true);
     }
+
+//    public void setLowPri(int withoutReminderOffset) {
+//	priority.setIcon(graphics.lowPri);
+//	priority.setSize(6, 20);
+//	priority.setLocation(672 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset,  10);
+//	priority.setVisible(true);
+//    }s
+//
+//    public void setMedPri(int withoutReminderOffset) {
+//	priority.setIcon(graphics.medPri);
+//	priority.setSize(15, 20);
+//	priority.setLocation(663 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset,  10);
+//	priority.setVisible(true);
+//    }
+//
+//    public void setHighPri(int withoutReminderOffset) {
+//	priority.setIcon(graphics.highPri);
+//	priority.setSize(23, 20);
+//	priority.setLocation(655 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset, 10);
+//	priority.setVisible(true);
+//    }
     
     public void setReminderIcon (boolean show) {
 	if (show) {

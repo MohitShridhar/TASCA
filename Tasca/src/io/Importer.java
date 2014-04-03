@@ -1,5 +1,8 @@
 package io;
 
+import interpreter.CommandType;
+import interpreter.Interpreter;
+import interpreter.ParameterType;
 import interpreter.Parameters;
 
 import java.io.FileInputStream;
@@ -81,6 +84,8 @@ public class Importer {
 
     public void saveItem() {
 	
+	Interpreter interpreter = new Interpreter();
+	
 	String description = "No Description";
 	String startTime = "";
 	String endTime = "";
@@ -93,28 +98,28 @@ public class Importer {
 	}
 	
 	if (this.endTime == null && this.startTime != null) {
-	    endTime = " -end " + dateFormatter.format(this.startTime.getTime());
+	    endTime = " -" + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + " " + dateFormatter.format(this.startTime.getTime());
 	} else if (this.endTime != null && this.startTime == null) {
-	    endTime = " -end " + dateFormatter.format(this.endTime.getTime());
+	    endTime = " -" + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + " " + dateFormatter.format(this.endTime.getTime());
 	} else if (this.endTime != null && this.startTime != null) {
-	    startTime = " -start " + dateFormatter.format(this.startTime.getTime());
-	    endTime = " -end " + dateFormatter.format(this.endTime.getTime());
+	    startTime = " -" + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + " " + dateFormatter.format(this.startTime.getTime());
+	    endTime = " -" + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + " " + dateFormatter.format(this.endTime.getTime());
 	}
 	
 	if (this.remindTime != null) {
-	    remindTime = " -remind " + dateFormatter.format(this.remindTime.getTime());
+	    remindTime = " -" + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME) + " " + dateFormatter.format(this.remindTime.getTime());
 	}
 	
 	if (this.location != null) {
-	    location = " -loc " + this.location.replaceAll("LOCATION:","");
+	    location = " -" + interpreter.getDefaultParaSyn(ParameterType.LOCATION) + " " + this.location.replaceAll("LOCATION:","");
 	}
 	
 	if (this.priority != null) {
-	    priority = " -pri " + decodePriority();
+	    priority = " -" + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + " " + decodePriority();
 	}
 	
 		
-	controller.executeCommands("add " + description + endTime + startTime + remindTime + location + priority);	
+	controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.ADD) + " " + description + endTime + startTime + remindTime + location + priority);	
     }
     
     private String decodePriority() {

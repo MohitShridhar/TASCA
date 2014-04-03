@@ -57,10 +57,13 @@ public class IOWindow extends JFrame {
 
 	setUndecorated(true); 
 	
-	setLocationRelativeTo(mainFrame); 
+	setAlwaysOnTop( true );
+	setLocationByPlatform( true );
 	
 	setResizable(false); 
 	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	
+	setLocationRelativeTo(mainFrame); 
 	
 	JButton btnClose = new JButton(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Close button.png")));
 
@@ -70,6 +73,11 @@ public class IOWindow extends JFrame {
 		executeQuit();
 	    }
 	});
+	
+	btnClose.setBorderPainted(false);
+	btnClose.setContentAreaFilled(false);
+	btnClose.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+	
 	btnClose.setBounds(373, 10, 17, 17);
 	
 	getContentPane().add(btnClose);
@@ -81,6 +89,7 @@ public class IOWindow extends JFrame {
 	btnExport.setBorder(BorderFactory.createEmptyBorder());
 	btnExport.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
+		setAlwaysOnTop( false );
 		exportFileFinder(mainFrame);
 	    }
 	});  
@@ -99,6 +108,7 @@ public class IOWindow extends JFrame {
 	btnImport.setBorder(BorderFactory.createEmptyBorder());
 	btnImport.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
+		setAlwaysOnTop( false );
 		importFileFinder(mainFrame);
 	    }
 	});  

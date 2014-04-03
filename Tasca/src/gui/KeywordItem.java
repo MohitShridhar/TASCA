@@ -26,6 +26,7 @@ public class KeywordItem extends JLayeredPane {
 	synonymsField.setBackground(Color.decode("#443e3e"));
 	synonymsField.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 	synonymsField.setText(synonyms);
+	synonymsField.setCaretColor(Color.WHITE);
 	add(synonymsField);
 	synonymsField.setColumns(10);
 	
