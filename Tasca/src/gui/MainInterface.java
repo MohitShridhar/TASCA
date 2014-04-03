@@ -358,7 +358,7 @@ private static JLabel upIndicator, downIndicator;
 
 	      mainFrame = new JFrame("TitleLessJFrame");
 	      
-	      mainFrame.setBackground(UIManager.getColor("Label.disabledShadow"));
+	      mainFrame.setBackground(Color.decode("#272822"));
 	      mainFrame.getContentPane().setLayout(null);
 	      mainFrame.setUndecorated(true); 
 	      mainFrame.setSize(888, 500);
@@ -367,9 +367,9 @@ private static JLabel upIndicator, downIndicator;
 	      mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	      initGui(mainFrame);
 	      
+	      updateTaskDisplay();
 	      
 	      mainFrame.setVisible(true);
-	      
           }
       });
       
