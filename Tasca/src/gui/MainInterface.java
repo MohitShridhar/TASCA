@@ -210,6 +210,8 @@ public static JLabel systemStatusMessage;
 private static JButton btnSettings;
 
 private static JButton btnExport;
+
+private static JLabel upIndicator, downIndicator;
   
 //  public static enum FolderName {
 //      folder1, folder2, folder3, folder4, folder5
@@ -367,8 +369,6 @@ private static JButton btnExport;
 	      
 	      
 	      mainFrame.setVisible(true);
-	      
-//	      new SettingsPane(mainFrame);
 	      
           }
       });
@@ -629,6 +629,15 @@ public static boolean isCurrentFolder(FolderName folder) {
      
  }
  
+ public static void setUpIndicator(boolean state) {
+     upIndicator.setVisible(state);
+ }
+ 
+ public static void setDownIndicator(boolean state) {
+     downIndicator.setVisible(state);
+ }
+ 
+ 
 public static void initGui(final JFrame frame) {
     
     new MainInterface();
@@ -767,6 +776,29 @@ public static void initGui(final JFrame frame) {
     JLabel lblNewLabel = new JLabel("New label");
     JLabel feedbackText = new JLabel("Feed");
     JLabel feedbackBackground = new JLabel("");
+    
+    try {
+	upIndicator = new JLabel(new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Size Arrow Up.png")))));
+    } catch (IOException e2) {
+	// TODO Auto-generated catch block
+	e2.printStackTrace();
+    }
+    
+    upIndicator.setBounds(861, 412, 18, 18);
+    upIndicator.setVisible(false);
+    frame.getContentPane().add(upIndicator);
+    
+    try {
+	downIndicator = new JLabel(new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Size Arrow Down.png")))));
+    } catch (IOException e2) {
+	// TODO Auto-generated catch block
+	e2.printStackTrace();
+    }
+    
+    downIndicator.setBounds(861, 440, 18, 18);
+    downIndicator.setVisible(false);
+    frame.getContentPane().add(downIndicator);
+    
     
     filter = (new HighlightDocumentFilter(frame, textPane, interpreter, lblNewLabel, feedbackText, feedbackBackground));
     

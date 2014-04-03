@@ -5,6 +5,8 @@ import interpreter.Interpreter;
 import interpreter.ParameterType;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
@@ -14,6 +16,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextPane;
+import javax.swing.Timer;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
@@ -29,6 +32,7 @@ import controller.Controller;
 
 public class HighlightDocumentFilter extends DocumentFilter {
 
+    private static final int INDICATOR_UPDATE_PERIOD = 100;
     private DefaultHighlightPainter highlightPainter = new DefaultHighlightPainter(Color.YELLOW);
     private static JTextPane textPane;
     private JFrame mainFrame;
@@ -42,6 +46,12 @@ public class HighlightDocumentFilter extends DocumentFilter {
     private String userInput = null;
     
     private StyledDocument doc;
+    
+    ActionListener taskUpdateIndicator = new ActionListener() {
+        public void actionPerformed(ActionEvent evt) {
+            setIndicators();
+        }
+    };
     
     private void initColorMap() {
 	
@@ -81,7 +91,7 @@ public class HighlightDocumentFilter extends DocumentFilter {
 	parameterColors.put(ParameterType.TASK_ID, Color.YELLOW.brighter());
 	parameterColors.put(ParameterType.INVALID, Color.white);
 	
-	// START_TIME, END_TIME, REMINDER_TIME, PRIORITY, LOCATION, FOLDER, TASK_ID,
+	
     }
     
     public Controller getController() {
@@ -113,6 +123,8 @@ public class HighlightDocumentFilter extends DocumentFilter {
         commandSetting = new SimpleAttributeSet();
         StyleConstants.setBold((MutableAttributeSet) commandSetting, true);
         
+        new Timer(INDICATOR_UPDATE_PERIOD, taskUpdateIndicator).start();
+        
         textPane.addKeyListener(new KeyAdapter() {
         	@Override
         	public void keyPressed(KeyEvent e) {
@@ -124,18 +136,16 @@ public class HighlightDocumentFilter extends DocumentFilter {
 
         	public void processUserAction() {
         	    userInput = getUserInput();
-
+        	    
         	    if (userInput != null) {
         		boolean quit = false;
         		
         		quit = MainInterface.controller.executeCommands(userInput);
         		
         		if (!quit) {
-        		    int scrollPos = MainInterface.getScrollPos();
         		    MainInterface.updateTaskDisplay();
         		    MainInterface.clearTextPane();
         		    MainInterface.inputNumRef = MainInterface.inputHistorySize;
-        		    MainInterface.setScollPos(scrollPos);
         		} else {
         		    mainFrame.dispose();
         		    System.exit(0);        			
@@ -164,7 +174,6 @@ public class HighlightDocumentFilter extends DocumentFilter {
 	 // TODO: intial spaces are considered when remove format 
 	// TODO: Add duplicate parameters highlighting
         super.replace(fb, offset, length, text.replaceAll("\\n", ""), attrs);
-        
 	
         String allText = fb.getDocument().getText(0, fb.getDocument().getLength()).toLowerCase();
 	String commandMatch = interpreter.getFirstWord(allText).toLowerCase();
@@ -187,7 +196,28 @@ public class HighlightDocumentFilter extends DocumentFilter {
         updateBar(fb, interpreter);
     }
 
-    
+    public void setIndicators() {
+
+	int preferredHeight = textPane.getPreferredSize().height;
+	int visibleYPos = textPane.getVisibleRect().y;
+
+	if (preferredHeight == 19) {
+	    MainInterface.setUpIndicator(false);
+	    MainInterface.setDownIndicator(false);
+	} else if (preferredHeight > 19 && visibleYPos == 0 && preferredHeight - visibleYPos != 19) {
+	    MainInterface.setUpIndicator(false);
+	    MainInterface.setDownIndicator(true);
+	} else if (preferredHeight > 19 && visibleYPos > 0 && preferredHeight - visibleYPos != 19) {
+	    MainInterface.setUpIndicator(true);
+	    MainInterface.setDownIndicator(true);
+	} else if (preferredHeight > 19 && visibleYPos > 0 && preferredHeight - visibleYPos == 19) {
+	    MainInterface.setUpIndicator(true);
+	    MainInterface.setDownIndicator(false);
+	}
+
+    }
+
+
 
     public void updateBar(FilterBypass fb, Interpreter interpreter) throws BadLocationException {
 	String allText = fb.getDocument().getText(0, fb.getDocument().getLength());
