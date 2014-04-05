@@ -1,127 +1,85 @@
 package gui;
 
-import interpreter.Command;
 import interpreter.CommandType;
 import interpreter.Config;
 import interpreter.FolderName;
 import interpreter.Interpreter;
 import interpreter.ParameterType;
-import io.Exporter;
 
-import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JViewport;
-import javax.swing.RowFilter;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-
-import java.awt.BorderLayout;
+import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.ComponentOrientation;
 import java.awt.Container;
-import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontFormatException;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.Insets;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-
-import javax.swing.JButton;
-import java.awt.event.ActionListener;
+import java.awt.Robot;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.image.BufferStrategy;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-import javax.swing.JTabbedPane;
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
-import javax.swing.event.DocumentEvent;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.plaf.ComponentUI;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultCaret;
-import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Document;
-import javax.swing.text.DocumentFilter;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-import java.awt.Font;
-import javax.swing.ScrollPaneConstants;
 
-import org.antlr.runtime.tree.RewriteEmptyStreamException;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-
-import controller.Controller;
-
-
-import storage.AllTasks;
 import storage.FloatingTask;
 import storage.Reminder;
-import storage.Task;
-import javax.swing.SwingConstants;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-
-import logic.Logic;
+import controller.Controller;
 
 
 class MyTextPane extends JTextPane {
     public MyTextPane() {
 	super();
     }
+    
+    private static Interpreter interpreter;
 
-    public MyTextPane(StyledDocument doc) {
+    public MyTextPane(StyledDocument doc, Interpreter interpreter) {
 	super(doc);
+	this.interpreter = interpreter;
     }
 
     @Override
     public void replaceSelection(String content) {
 	getInputAttributes().removeAttribute(StyleConstants.Foreground);
 	getInputAttributes().removeAttribute(StyleConstants.Bold);
+	getInputAttributes().removeAttribute(StyleConstants.FontFamily);
 	super.replaceSelection(content);
+    }
+    
+    public void appendParameter(String str, SimpleAttributeSet parameterSetting) throws BadLocationException
+    {
+	StyledDocument document = (StyledDocument) this.getDocument();
+	document.insertString(document.getLength(), str, parameterSetting);
     }
 }
 
@@ -213,6 +171,26 @@ public class MainInterface {
     private static JButton btnExport;
 
     private static JLabel upIndicator, downIndicator;
+    
+    
+    private static Robot colorCodeActivator; // Used by one-click edit macros to activate color coding
+
+    private static JLabel lblNewLabel;
+
+    private static JLabel feedbackText;
+
+    private static JLabel feedbackBackground;
+    
+    static {
+
+	try {
+	    colorCodeActivator = new Robot();
+	} catch (AWTException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+
+    }
 
     public MainInterface() {
 
@@ -336,7 +314,7 @@ public class MainInterface {
 
 
     public static boolean isCurrentFolder(FolderName folder) {
-	return folder == currFolder || (folder == FolderName.DEFAULT && defaultFolder == currFolder);
+	return folder == currFolder ||  currFolder == defaultFolder;//(folder == FolderName.DEFAULT && defaultFolder == currFolder);
     }
 
     private static LinkedList<FloatingTask> folderSortFloatingTasks(LinkedList<FloatingTask> original) {
@@ -581,9 +559,9 @@ public class MainInterface {
 	
 	createTaskListPane(frame);
 	
-	JLabel lblNewLabel = new JLabel("New label");
-	JLabel feedbackText = new JLabel("Feed");
-	JLabel feedbackBackground = new JLabel("");
+	lblNewLabel = new JLabel("New label");
+	feedbackText = new JLabel("Feed");
+	feedbackBackground = new JLabel("");
 
 	createInputBar(frame, lblNewLabel, feedbackText, feedbackBackground);   
 
@@ -827,67 +805,143 @@ public class MainInterface {
 	KeyboardFocusManager.getCurrentKeyboardFocusManager()
 	.addKeyEventDispatcher(new KeyEventDispatcher() {
 	    private long lastPressProcessed = 0;
-
+	    
 	    @Override
 	    public boolean dispatchKeyEvent(KeyEvent e) {
+
+
 		if(System.currentTimeMillis() - lastPressProcessed > 170) {
-		    if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_TAB && !e.isShiftDown()) {
-			cycleRef = (cycleRef + NUM_FOLDERS + 1) % NUM_FOLDERS;
 
-			FolderName nextFolder = folderCycle[cycleRef];
 
-			cycleTabsSwitchCase(nextFolder);
-
-		    } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_TAB && e.isShiftDown()) {
-			cycleRef = (cycleRef + NUM_FOLDERS - 1) % NUM_FOLDERS;
-			FolderName nextFolder = folderCycle[cycleRef];
-
-			cycleTabsSwitchCase(nextFolder);
-		    } else if (e.isShiftDown() && e.getKeyCode() == KeyEvent.VK_UP) {
-			if (inputNumRef >= 0) {
-			    textPane.setText(inputHistory.restoreFromMemento(savedUserInput.get(inputNumRef)));
-			    inputNumRef--;
-			}
-		    } else if (e.isShiftDown() && e.getKeyCode() == KeyEvent.VK_DOWN) {
-			if (inputNumRef + 2 < savedUserInput.size()) {
-			    inputNumRef++;
-			    textPane.setText(inputHistory.restoreFromMemento(savedUserInput.get(inputNumRef+1)));
-			}
-		    } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_UP) {
-			taskPane.getVerticalScrollBar().setValue((taskPane.getVerticalScrollBar().getValue()) - 262);
-		    } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_DOWN) {
-			taskPane.getVerticalScrollBar().setValue((taskPane.getVerticalScrollBar().getValue()) + 262);
+		    if (e.isControlDown()){
+			processParameterShortcut(e);
 		    }
+		    else if (e.isShiftDown()) {
+			if (e.getKeyCode() == KeyEvent.VK_UP) {
+			    if (inputNumRef >= 0) {
+				textPane.setText("");
+				textPane.replaceSelection(inputHistory.restoreFromMemento(savedUserInput.get(inputNumRef)));
+				inputNumRef--;
+			    }
+			} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+			    if (inputNumRef + 2 < savedUserInput.size()) {
+				inputNumRef++;
+				textPane.setText("");
+				textPane.replaceSelection(inputHistory.restoreFromMemento(savedUserInput.get(inputNumRef+1)));
+			    }
+			} 
+		    }
+
 
 		    lastPressProcessed = System.currentTimeMillis();
 		}
 
+
 		return false;
 	    }
 
-	    public void cycleTabsSwitchCase(FolderName nextFolder) {
-		switch (nextFolder) {
-		case FOLDER1:
-		    folder1Activate();
-		    break;
-		case FOLDER2:
-		    folder2Activate();
-		    break;
-		case FOLDER3:
-		    folder3Activate();
-		    break;
-		case FOLDER4:
-		    folder4Activate();
-		    break;
-		case FOLDER5:
-		    folder5Activate();
-		    break;
-
-		default:
-		    break;
-		}
-	    }
 	});
+    }
+
+    public static void processParameterShortcut(KeyEvent e) {
+	if (e.getKeyCode() == KeyEvent.VK_S || e.getKeyCode() == KeyEvent.VK_O) {
+	    appendToTextPane(textPane, "-" + interpreter.getDefaultParaSyn(ParameterType.START_TIME), ParameterType.START_TIME);
+	} else if (e.getKeyCode() == KeyEvent.VK_M && e.isShiftDown()) {
+	    textPane.setText("");
+	    textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " " + "-" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " ");
+	} else if (e.getKeyCode() == KeyEvent.VK_N || e.getKeyCode() == KeyEvent.VK_I) {
+	    appendToTextPane(textPane, "-" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID), ParameterType.TASK_ID);
+	} else if (e.getKeyCode() == KeyEvent.VK_E || e.getKeyCode() == KeyEvent.VK_D) {
+	    appendToTextPane(textPane, "-" + interpreter.getDefaultParaSyn(ParameterType.END_TIME), ParameterType.END_TIME);
+	} else if (e.getKeyCode() == KeyEvent.VK_P) {
+	    appendToTextPane(textPane, "-" + interpreter.getDefaultParaSyn(ParameterType.PRIORITY), ParameterType.PRIORITY);
+	} else if (e.getKeyCode() == KeyEvent.VK_R || e.getKeyCode() == KeyEvent.VK_A) {
+	    appendToTextPane(textPane, "-" + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME), ParameterType.REMINDER_TIME);
+	} else if (e.getKeyCode() == KeyEvent.VK_L) {
+	    appendToTextPane(textPane, "-" + interpreter.getDefaultParaSyn(ParameterType.LOCATION), ParameterType.LOCATION);
+	} else if (e.getKeyCode() == KeyEvent.VK_F) {
+	    appendToTextPane(textPane, "-" + interpreter.getDefaultParaSyn(ParameterType.FOLDER), ParameterType.FOLDER);
+	}
+
+	else if (e.getKeyCode() == KeyEvent.VK_TAB && !e.isShiftDown()) {
+	    cycleRef = (cycleRef + NUM_FOLDERS + 1) % NUM_FOLDERS;
+
+	    FolderName nextFolder = folderCycle[cycleRef];
+
+	    cycleTabsSwitchCase(nextFolder);
+
+	} else if (e.getKeyCode() == KeyEvent.VK_TAB && e.isShiftDown()) {
+	    cycleRef = (cycleRef + NUM_FOLDERS - 1) % NUM_FOLDERS;
+	    FolderName nextFolder = folderCycle[cycleRef];
+
+	    cycleTabsSwitchCase(nextFolder);
+	} else if (e.getKeyCode() == KeyEvent.VK_UP) {
+	    taskPane.getVerticalScrollBar().setValue((taskPane.getVerticalScrollBar().getValue()) - 262);
+	} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+	    taskPane.getVerticalScrollBar().setValue((taskPane.getVerticalScrollBar().getValue()) + 262);
+	}
+
+    }
+    
+    public static void cycleTabsSwitchCase(FolderName nextFolder) {
+	switch (nextFolder) {
+	case FOLDER1:
+	    folder1Activate();
+	    break;
+	case FOLDER2:
+	    folder2Activate();
+	    break;
+	case FOLDER3:
+	    folder3Activate();
+	    break;
+	case FOLDER4:
+	    folder4Activate();
+	    break;
+	case FOLDER5:
+	    folder5Activate();
+	    break;
+
+	default:
+	    break;
+	}
+    }
+    
+    private static SimpleAttributeSet parameterSetting = new SimpleAttributeSet();
+    private static SimpleAttributeSet normalSetting = new SimpleAttributeSet();
+    
+    static {
+        StyleConstants.setBold((MutableAttributeSet) parameterSetting, false);
+        StyleConstants.setForeground((MutableAttributeSet) parameterSetting, Color.WHITE);
+	
+        StyleConstants.setBold((MutableAttributeSet) normalSetting, false);
+        StyleConstants.setForeground((MutableAttributeSet) normalSetting, Color.WHITE);
+    }
+    
+    private static void appendToTextPane(MyTextPane textPane, String newString, ParameterType parameterType) {
+	if (textPane.getText().isEmpty()) {
+	    return;
+	}
+	
+	if (textPane.getText().indexOf(newString) >= 0) {
+	    textPane.setCaretPosition(textPane.getText().indexOf(newString)+newString.length() + 1);
+	    return;
+	}
+	
+	
+	if (textPane.getText().charAt(textPane.getText().length() - 1) != ' ') {
+	    newString = " " + newString;
+	}
+
+        StyleConstants.setForeground((MutableAttributeSet) parameterSetting, HighlightDocumentFilter.getParameterColor(parameterType));
+        
+	try {
+	    textPane.appendParameter(newString, parameterSetting);
+	    textPane.appendParameter(" ", normalSetting);	    
+	} catch (BadLocationException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	
     }
 
     public static void loadTabStateIcons() {
@@ -941,7 +995,7 @@ public class MainInterface {
 
     public static void createInputBar(final JFrame frame, JLabel lblNewLabel,
 	    JLabel feedbackText, JLabel feedbackBackground) {
-	textPane = new MyTextPane(new DefaultStyledDocument());
+	textPane = new MyTextPane(new DefaultStyledDocument(), interpreter);
 	textPane.setOpaque(false);
 	textPane.setText("memora vivere");
 	textPane.setFont(mesloReg16);
@@ -1082,6 +1136,14 @@ public class MainInterface {
     
     public static String getCurrentFolderName() {
 	return cfg.getFolderName(currFolder);
+    }
+    
+    public static void activateColorCoding() {
+	
+	textPane.requestFocus();
+	
+	colorCodeActivator.keyPress(KeyEvent.VK_ENTER); // Pressing enter activates 'insertString' function in JTextPane
+	colorCodeActivator.keyRelease(KeyEvent.VK_ENTER);
     }
 
 

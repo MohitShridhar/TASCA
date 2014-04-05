@@ -32,6 +32,9 @@ import controller.Controller;
 
 public class HighlightDocumentFilter extends DocumentFilter {
 
+    private static final ImageIcon GRAPHIC_FAILED_INPUT_BAR = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Failed Input Bar.gif"));
+    private static final ImageIcon GRAPHIC_SUCCESS_INPUT_BAR = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Success Input Bar.gif"));
+    private static final ImageIcon GRAPHIC_EMPTY_INPUT_BAR = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Empty Input Bar.gif"));
     private static final int VISIBLE_RECT_HEIGHT = 23;
     private static final int INDICATOR_UPDATE_PERIOD = 100;
     private DefaultHighlightPainter highlightPainter = new DefaultHighlightPainter(Color.YELLOW);
@@ -41,8 +44,8 @@ public class HighlightDocumentFilter extends DocumentFilter {
     private static Interpreter interpreter;
     private JLabel background, feedbackBackground, feedbackText;
     
-    private Map<CommandType, Color> commandColors = new HashMap<CommandType, Color>();
-    private Map<ParameterType, Color> parameterColors = new HashMap<ParameterType, Color>();
+    private static Map<CommandType, Color> commandColors = new HashMap<CommandType, Color>();
+    private static Map<ParameterType, Color> parameterColors = new HashMap<ParameterType, Color>();
     private boolean hasColor = false;
     private String userInput = null;
     
@@ -127,6 +130,7 @@ public class HighlightDocumentFilter extends DocumentFilter {
         StyleConstants.setBold((MutableAttributeSet) commandSetting, true);
         
         new Timer(INDICATOR_UPDATE_PERIOD, taskUpdateIndicator).start();
+        
         
         textPane.addKeyListener(new KeyAdapter() {
         	@Override
@@ -259,13 +263,13 @@ public class HighlightDocumentFilter extends DocumentFilter {
 	}
         
         if (emptyInput) {
-            background.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Empty Input Bar.gif")));
+            background.setIcon(GRAPHIC_EMPTY_INPUT_BAR);
 	    feedbackText.setVisible(false);
 	    feedbackBackground.setVisible(false);
         } else if (successParse) {
-            background.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Success Input Bar.gif")));
+            background.setIcon(GRAPHIC_SUCCESS_INPUT_BAR);
         } else {
-            background.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Failed Input Bar.gif")));
+            background.setIcon(GRAPHIC_FAILED_INPUT_BAR);
         }
     }
     
@@ -300,8 +304,9 @@ public class HighlightDocumentFilter extends DocumentFilter {
 	int paraLength = interpreter.getFirstWord(paraMatch).length();
 	
 //	System.out.println("Start index: " + startIndex + " End index: " +  (startIndex + paraLength));
+//	System.out.println(paraMatch);
 	
-	if (hasNextSpace(interpreter.getFirstWord("-" + paraMatch), allInput)) {
+	if (hasNextSpace(interpreter.getFirstWord("-" + paraMatch), allInput) && allInput.charAt(allInput.indexOf(paraMatch)-1) == '-') {
 	    StyleConstants.setForeground((MutableAttributeSet) parameterSetting, parameterColors.get(interpreter.interpretParameter(interpreter.getFirstWord(paraMatch))));
 	    textPane.getStyledDocument().setCharacterAttributes(startIndex, startIndex + paraLength, parameterSetting, true);
 	    textPane.getStyledDocument().setCharacterAttributes(startIndex + paraLength + 1, startIndex + paraLength + 1, normalSetting, true);
@@ -433,5 +438,10 @@ public class HighlightDocumentFilter extends DocumentFilter {
 	
 	return count;
     }
-
+    
+    public static Color getParameterColor(ParameterType parameterType) {
+	return parameterColors.get(parameterType);
+    }
+    
+    
 }

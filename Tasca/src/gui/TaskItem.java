@@ -25,12 +25,15 @@ import storage.AllTasks;
 import storage.FloatingTask;
 import storage.Task;
 
+import java.awt.AWTException;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Color;
+import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 
 import logic.Logic;
 import javax.swing.SwingConstants;
@@ -53,6 +56,7 @@ public class TaskItem extends JLayeredPane {
     
     public static PrettyTime p = new PrettyTime();
     public static BufferedGraphics graphics = new BufferedGraphics();
+    
     private JLabel background;
     private JLabel checkMark;
     private JLabel reminder;
@@ -328,7 +332,7 @@ public class TaskItem extends JLayeredPane {
 	
 	String reminderTime = dateFormatter.format(this.reminderTime.getTime());
 	
-	textPane.setText(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME) + " " + reminderTime);
+	textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME) + " " + reminderTime);
     }
       
     private void deleteTaskShortcut() {
@@ -352,7 +356,7 @@ public class TaskItem extends JLayeredPane {
 		location = " -" + interpreter.getDefaultParaSyn(ParameterType.LOCATION) + " " + floatingTask.getLocation();
 	    }
 	    
-	    textPane.setText(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " " + floatingTask.getTaskTitle() + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + location + " "); 
+	    textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " " + floatingTask.getTaskTitle() + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + location + " "); 
 	    
 	    return;
 	}
@@ -363,14 +367,15 @@ public class TaskItem extends JLayeredPane {
 		location = " -" + interpreter.getDefaultParaSyn(ParameterType.LOCATION) + " " + timedTask.getLocation();
 	    }
 
-	    textPane.setText(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " " + timedTask.getTaskTitle() + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + location + " ");
-
+	    textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " " + timedTask.getTaskTitle() + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + location + " ");
+	    
+	    
 	} else {
 	    if (timedTask.getIsThereReminder()) {
-		textPane.setText(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + " " + dateFormatter.format(timedTask.getStartTime().getTime()) + " -" + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + " "
+		textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + " " + dateFormatter.format(timedTask.getStartTime().getTime()) + " -" + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + " "
 			+ dateFormatter.format(timedTask.getEndTime().getTime()) + " -" + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME) + " " + dateFormatter.format(this.reminderTime.getTime()));
 	    } else {
-		textPane.setText(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + " " + dateFormatter.format(timedTask.getStartTime().getTime()) + " -" + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + " " 
+		textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + " " + dateFormatter.format(timedTask.getStartTime().getTime()) + " -" + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + " " 
 			+ dateFormatter.format(timedTask.getEndTime().getTime())); // TODO: Implement remind time
 	    }
 	}

@@ -40,6 +40,8 @@ public class Interpreter {
     private static final String EXCEPTION_EMPTY_DESCRIPTION = "Description cannot be empty";
     private static final String EXCEPTION_EMPTY_KEYWORD_IN_DATABASE = "The database contains empty synonym(s) in \"%1$s\"";
     private static final String EXCEPTION_KEYWORD_MULTIPLE_WORDS = "The synonym(s) for \"%1$s\" have to be single words";
+    private static final String EXCEPTION_NO_END_TIME_SPECIFIED = "You must specify 'end time' since you have specified 'start time' OR just specify 'end time'";
+    private static final String EXCEPTION_END_TIME_BEFORE_START_TIME = "Please check that 'start time' occurs chronologically before 'end time'";
     
     private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
     private static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
@@ -370,9 +372,22 @@ public class Interpreter {
             parseAndProcessParameters(input);
         }
         
+        checkForOtherException();
+        
         command.setCommandType(mainCommand); 
         
         updateFolderReference();
+    }
+    
+    private void checkForOtherException() throws IllegalArgumentException {
+	
+	if (!currentParameters.contains(ParameterType.END_TIME) && currentParameters.contains(ParameterType.START_TIME)) {
+	    throw new IllegalArgumentException(EXCEPTION_NO_END_TIME_SPECIFIED);
+	}
+	
+	if ((currentParameters.contains(ParameterType.END_TIME) && currentParameters.contains(ParameterType.START_TIME)) && command.getParameters().getStartTime().after(command.getParameters().getEndTime())) {
+	    throw new IllegalArgumentException(EXCEPTION_END_TIME_BEFORE_START_TIME);
+	}
     }
     
     private void updateFolderReference() {
@@ -457,8 +472,8 @@ public class Interpreter {
 	if (currentParameters.contains(parameterType)) {
             throw new IllegalArgumentException(EXCEPTION_DUPLICATE_PARAMETERS);
         }
+	
         currentParameters.add(parameterType);
-        
     }
     
     private void isParameterArgumentValid (CommandFeedback feedback) throws InvalidParameterException {
