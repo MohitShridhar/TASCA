@@ -1,7 +1,6 @@
 package gui;
 
 import java.awt.Image;
-
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -9,37 +8,185 @@ import javax.swing.ImageIcon;
 
 public class BufferedGraphics {
     
-    public ImageIcon checkMark, reminderIcon, highPri, medPri, lowPri, background, unchecked, delete, date, info, keywordItem;
-    public Image track, thumb;
+    private static final String FILEPATH_KEYWORD_ITEM_BACKGROUND = "/GUI Graphics/Keyword Item Background.png";
+    private static final String FILEPATH_SCROLL_THUMB = "/GUI Graphics/Scroll Thumb.png";
+    private static final String FILEPATH_SCROLL_TRACK = "/GUI Graphics/Scroll Track.png";
+    private static final String FILEPATH_UI_BACKGROUND = "/GUI Graphics/Task Item Background.gif";
+    private static final String FILEPATH_INFO_ICON = "/GUI Graphics/Info Icon.png";
+    private static final String FILEPATH_DATE_TOGGLE_ICON = "/GUI Graphics/Time Display Icon.png";
+    private static final String FILEPATH_LOW_PRIORITY_ICON = "/GUI Graphics/Task Item Low Pri.png";
+    private static final String FILEPATH_MEDIUM_PRIORITY_ICON = "/GUI Graphics/Task Item Med Pri.png";
+    private static final String FILEPATH_HIGH_PRIORITY_ICON = "/GUI Graphics/Task Item High Pri.png";
+    private static final String FILEPATH_DELETE_ICON = "/GUI Graphics/Delete Icon.png";
+    private static final String FILEPATH_REMINDER_ICON = "/GUI Graphics/Task Item Reminder Icon.png";
+    private static final String FILEPATH_UNCHECKED = "/GUI Graphics/Unchecked Icon.png";
+    private static final String FILEPATH_CHECK_MARK = "/GUI Graphics/Task Item Check Mark.gif";
+    
+    private ImageIcon checkMark;
+    private ImageIcon reminderIcon;
+    private ImageIcon highPri;
+    private ImageIcon medPri;
+    private ImageIcon lowPri;
+    private ImageIcon background;
+    private ImageIcon unchecked;
+    private ImageIcon delete;
+    private ImageIcon date;
+    private ImageIcon info;
+    private ImageIcon keywordItem;
+    private Image track;
+    private Image thumb;
     
     public BufferedGraphics() {
 	
 	try {
-	    checkMark = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item Check Mark.gif"))));
-	    unchecked = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Unchecked Icon.png"))));
-	    reminderIcon = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item Reminder Icon.png"))));
-	    delete = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Delete Icon.png"))));
+	    bufferTaskItemUi();
+	    loadMainInterfaceUi();
 	    
-	    highPri = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item High Pri.png"))));
-	    medPri = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item Med Pri.png"))));
-	    lowPri = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Task Item Low Pri.png"))));
+	    bufferPriorityIcons();
+	    bufferTimePropertyIcons();
 	    
-	    date = new ImageIcon(ImageIO.read(MainInterface.class.getResource("/GUI Graphics/Time Display Icon.png")));
-	    info = new ImageIcon(ImageIO.read(MainInterface.class.getResource("/GUI Graphics/Info Icon.png")));
-	    
-	    background = new ImageIcon(ImageIO.read(MainInterface.class.getResource("/GUI Graphics/Task Item Background.gif")));
-	    
-	    track = ImageIO.read(MainInterface.class.getResource("/GUI Graphics/Scroll Track.png"));
-	    thumb = ImageIO.read(MainInterface.class.getResource("/GUI Graphics/Scroll Thumb.png"));
-	    
-	    keywordItem = new ImageIcon(ImageIO.read(MainInterface.class.getResource("/GUI Graphics/Keyword Item Background.png")));
-
-	    
+	    bufferScrollBarUi();
+	    bufferSettingsPaneUi();
+	   
 	} catch (IOException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
 	
+    }
+
+    public void loadMainInterfaceUi() throws IOException {
+	setBackground(new ImageIcon(ImageIO.read(MainInterface.class.getResource(FILEPATH_UI_BACKGROUND))));
+    }
+
+    public void bufferTaskItemUi() throws IOException {
+	setCheckMark(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_CHECK_MARK)))));
+	setUnchecked(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_UNCHECKED)))));
+	setReminderIcon(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_REMINDER_ICON)))));
+	setDelete(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_DELETE_ICON)))));
+    }
+
+    public void bufferSettingsPaneUi() throws IOException {
+	setKeywordItem(new ImageIcon(ImageIO.read(MainInterface.class.getResource(FILEPATH_KEYWORD_ITEM_BACKGROUND))));
+    }
+
+    public void bufferTimePropertyIcons() throws IOException {
+	setDate(new ImageIcon(ImageIO.read(MainInterface.class.getResource(FILEPATH_DATE_TOGGLE_ICON))));
+	setInfo(new ImageIcon(ImageIO.read(MainInterface.class.getResource(FILEPATH_INFO_ICON))));
+    }
+
+    public void bufferScrollBarUi() throws IOException {
+	setTrack(ImageIO.read(MainInterface.class.getResource(FILEPATH_SCROLL_TRACK)));
+	setThumb(ImageIO.read(MainInterface.class.getResource(FILEPATH_SCROLL_THUMB)));
+    }
+
+    public void bufferPriorityIcons() throws IOException {
+	setHighPri(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_HIGH_PRIORITY_ICON)))));
+	setMedPri(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_MEDIUM_PRIORITY_ICON)))));
+	setLowPri(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_LOW_PRIORITY_ICON)))));
+    }
+
+    public ImageIcon getCheckMark() {
+	return checkMark;
+    }
+
+    private void setCheckMark(ImageIcon checkMark) {
+	this.checkMark = checkMark;
+    }
+
+    public ImageIcon getReminderIcon() {
+	return reminderIcon;
+    }
+
+    private void setReminderIcon(ImageIcon reminderIcon) {
+	this.reminderIcon = reminderIcon;
+    }
+
+    public ImageIcon getHighPri() {
+	return highPri;
+    }
+
+    private void setHighPri(ImageIcon highPri) {
+	this.highPri = highPri;
+    }
+
+    public ImageIcon getMedPri() {
+	return medPri;
+    }
+
+    private void setMedPri(ImageIcon medPri) {
+	this.medPri = medPri;
+    }
+
+    public ImageIcon getLowPri() {
+	return lowPri;
+    }
+
+    private void setLowPri(ImageIcon lowPri) {
+	this.lowPri = lowPri;
+    }
+
+    public ImageIcon getBackground() {
+	return background;
+    }
+
+    private void setBackground(ImageIcon background) {
+	this.background = background;
+    }
+
+    public ImageIcon getUnchecked() {
+	return unchecked;
+    }
+
+    private void setUnchecked(ImageIcon unchecked) {
+	this.unchecked = unchecked;
+    }
+
+    public ImageIcon getDelete() {
+	return delete;
+    }
+
+    private void setDelete(ImageIcon delete) {
+	this.delete = delete;
+    }
+
+    public ImageIcon getDate() {
+	return date;
+    }
+
+    private void setDate(ImageIcon date) {
+	this.date = date;
+    }
+
+    public ImageIcon getInfo() {
+	return info;
+    }
+
+    private void setInfo(ImageIcon info) {
+	this.info = info;
+    }
+
+    public ImageIcon getKeywordItem() {
+	return keywordItem;
+    }
+
+    private void setKeywordItem(ImageIcon keywordItem) {
+	this.keywordItem = keywordItem;
+    }
+
+    public Image getTrack() {
+	return track;
+    }
+
+    private void setTrack(Image track) {
+	this.track = track;
+    }
+
+    public Image getThumb() {
+	return thumb;
+    }
+
+    private void setThumb(Image thumb) {
+	this.thumb = thumb;
     }
     
 }

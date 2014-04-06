@@ -1,7 +1,5 @@
 package gui;
 
-import java.util.List;
-import java.util.ArrayList;
 class InputHistory {
     private String state;
  
@@ -9,19 +7,19 @@ class InputHistory {
         this.state = state;
     }
  
-    public Memento saveToMemento() {
-        return new Memento(state);
+    public StateMemory saveToMemento() {
+        return new StateMemory(state);
     }
  
-    public String restoreFromMemento(Memento memento) {
-        state = memento.getSavedInput();
+    public String restoreFromMemento(StateMemory stateMemory) {
+        state = stateMemory.getSavedInput();
         return state;
     }
  
-    public static class Memento {
+    public static class StateMemory {
         private final String state;
  
-        public Memento(String stateToSave) {
+        public StateMemory(String stateToSave) {
             state = stateToSave;
         }
  

@@ -6,9 +6,7 @@ import interpreter.FolderName;
 import interpreter.Interpreter;
 import interpreter.ParameterType;
 
-import java.awt.AWTException;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -17,7 +15,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
-import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -25,7 +22,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,7 +35,6 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -49,55 +44,36 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 
 import storage.FloatingTask;
 import storage.Reminder;
 import controller.Controller;
 
 
-class MyTextPane extends JTextPane {
-    public MyTextPane() {
-	super();
-    }
-    
-    private static Interpreter interpreter;
-
-    public MyTextPane(StyledDocument doc, Interpreter interpreter) {
-	super(doc);
-	this.interpreter = interpreter;
-    }
-
-    @Override
-    public void replaceSelection(String content) {
-	getInputAttributes().removeAttribute(StyleConstants.Foreground);
-	getInputAttributes().removeAttribute(StyleConstants.Bold);
-	getInputAttributes().removeAttribute(StyleConstants.FontFamily);
-	super.replaceSelection(content);
-    }
-    
-    public void appendParameter(String str, SimpleAttributeSet parameterSetting) throws BadLocationException
-    {
-	StyledDocument document = (StyledDocument) this.getDocument();
-	document.insertString(document.getLength(), str, parameterSetting);
-    }
-}
-
 public class MainInterface {
 
-    private static final int INPUT_HISTORY_SIZE = 30;
+    private static final String FONT_NAME_LUCIDA_GRANDE = "Lucida Grande";
+    private static final String FONT_NAME_LATO = "Lato";
+    private static final String FONT_NAME_MESLO_BOLD = "Meslo LG S";
+    private static final String FONT_NAME_MESLO_PLAIN = "Meslo LG M";
+    
+    private static final String FILEPATH_FONT_MESLO_BOLD = "/GUI Graphics/Fonts/MesloLGS-Bold.ttf";
+    private static final String FILEPATH_FONT_MESLO_REG = "/GUI Graphics/Fonts/MesloLGM-Regular.ttf";
+    private static final String FILEPATH_FONT_LUCIDA_GRANDE = "/GUI Graphics/Fonts/Lucida Grande.ttf";
+    private static final String FILEPATH_FONT_LATO_REG = "/GUI Graphics/Fonts/Lato-Reg.ttf";
+
+    private static final int MAX_STACK_SIZE_INPUT_HISTORY = 30;
 
     // TODO: Add more help error messages. And integrate ID & Folder & time validity checkers. Implement all user exceptions
-    // TODO: Save before OS Quit 
     public static Controller controller = new Controller();
 
     private static final int NUM_FOLDERS = 5;  
 
     private static int posX=0,posY=0;
 
-    private static MyTextPane textPane = null;
+    private static UserInputTextPane textPane = null;
 
-    private static List<InputHistory.Memento> savedUserInput = new ArrayList<InputHistory.Memento>();
+    private static List<InputHistory.StateMemory> savedUserInput = new ArrayList<InputHistory.StateMemory>();
     private static InputHistory inputHistory = new InputHistory();
 
     private static JButton btnFolder2 = new JButton("");
@@ -113,7 +89,7 @@ public class MainInterface {
     private static JLabel folder5Label = null;
 
     private static String userInput = null;
-    private static HighlightDocumentFilter filter = null;
+    private static InputColorFilter filter = null;
 
     public static int inputNumRef = -1;
     public static int inputHistorySize = -1;
@@ -141,96 +117,84 @@ public class MainInterface {
 
     private static String folder1Name, folder2Name, folder3Name, folder4Name, folder5Name;
 
-    public static boolean activeFeedbackEnabled = true;
+    private static boolean activeFeedbackEnabled = true;
 
     private static FolderName currFolder, prevFolder, defaultFolder;
 
     private static FolderName folderCycle[] = {FolderName.FOLDER1, FolderName.FOLDER2, FolderName.FOLDER3, FolderName.FOLDER4, FolderName.FOLDER5};
     private static int cycleRef = 1;
 
-    private static HashMap componentMap;
-
-
     private static LinkedList<Reminder> currentTimedTasks;
     private static LinkedList<FloatingTask> currentFloatingTasks;
 
     private static JScrollPane taskPane;
-
-    private static JScrollPane twin;
-
     private static Interpreter interpreter;
 
     private static Config cfg;
 
     private static JLabel emptyTaskListMsg;
-
-    public static JLabel systemStatusMessage;
+    private static JLabel systemStatusMessage;
 
     private static JButton btnSettings;
-
     private static JButton btnExport;
 
     private static JLabel upIndicator, downIndicator;
     
-    
-    private static Robot colorCodeActivator; // Used by one-click edit macros to activate color coding
-
     private static JLabel lblNewLabel;
-
     private static JLabel feedbackText;
-
     private static JLabel feedbackBackground;
     
-    static {
-
-	try {
-	    colorCodeActivator = new Robot();
-	} catch (AWTException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
-	}
-
+    public MainInterface() {
+	
+	readFonts();
+	customizeAndLoadFonts();
+	
     }
 
-    public MainInterface() {
+    private void customizeAndLoadFonts() {
+	
+	mesloReg16 = new Font(FONT_NAME_MESLO_PLAIN, Font.PLAIN, 16);
+	mesloBold16 = new Font(FONT_NAME_MESLO_BOLD, Font.BOLD, 16);
 
-	//      try {
-	//	menloReg = Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Menlo.ttf"));
-	//	latoReg = Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Lato-Reg.ttf"));
-	//    } catch (FontFormatException | IOException e1) {
-	//	// TODO Auto-generated catch block
-	//	e1.printStackTrace();
-	//    }
+	latoBold20 = new Font(FONT_NAME_LATO, Font.BOLD, 20);
+	latoBold16 = new Font(FONT_NAME_LATO, Font.BOLD, 16);
+	latoBold13 = new Font(FONT_NAME_LATO, Font.PLAIN, 13);
 
+	latoReg15 = new Font(FONT_NAME_LATO, Font.PLAIN, 15);
+	latoReg14 = new Font(FONT_NAME_LATO, Font.PLAIN, 14);
+	latoReg13 = new Font(FONT_NAME_LATO, Font.PLAIN, 13);
+	latoReg12 = new Font(FONT_NAME_LATO, Font.PLAIN, 12);
+
+	lucidaReg22 = new Font(FONT_NAME_LUCIDA_GRANDE, Font.PLAIN, 22);
+	
+    }
+
+    private void readFonts() {
 	try {
 	    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Lato-Reg.ttf")));
-	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/Lucida Grande.ttf")));
-	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/MesloLGM-Regular.ttf")));
-	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream("/GUI Graphics/Fonts/MesloLGS-Bold.ttf")));
+	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream(FILEPATH_FONT_LATO_REG)));
+	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream(FILEPATH_FONT_LUCIDA_GRANDE)));
+	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream(FILEPATH_FONT_MESLO_REG)));
+	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream(FILEPATH_FONT_MESLO_BOLD)));
 
-	} catch (IOException|FontFormatException e) {
-	    //Handle exception
+	} catch (IOException | FontFormatException e) {
 	    e.printStackTrace();
 	}
-	
-//	menloReg16 = new Font("Menlo", Font.PLAIN, 16);
+    }
+    
+    public static void main(String[] args)  {
 
-	mesloReg16 = new Font("Meslo LG M", Font.PLAIN, 16);
-	mesloBold16 = new Font("Meslo LG S", Font.BOLD, 16);
-
-	latoBold20 = new Font("Lato", Font.BOLD, 20);
-	latoBold16 = new Font("Lato", Font.BOLD, 16);
-	latoBold13 = new Font("Lato", Font.BOLD, 13);
-
-	latoReg15 = new Font("Lato", Font.PLAIN, 15);
-	latoReg14 = new Font("Lato", Font.PLAIN, 14);
-	latoReg13 = new Font("Lato", Font.PLAIN, 13);
-	latoReg12 = new Font("Lato", Font.PLAIN, 12);
-
-	lucidaReg22 = new Font("Lucida Grande", Font.PLAIN, 22);
-
-
+	SwingUtilities.invokeLater(new Runnable() {
+	    public void run() {
+		
+		loadFrameSettings();
+		initializeGuiComponents(mainFrame);
+		
+		updateTaskDisplay();
+		showMainFrame();
+		
+	    }
+	});
 
     }
 
@@ -239,65 +203,144 @@ public class MainInterface {
     }
 
     public static void setIsActiveFeedbackEnabled(boolean isEnabled) {
-	activeFeedbackEnabled = isEnabled;
+	setActiveFeedbackEnabled(isEnabled);
     }
 
-    public static Component getComponentByName(String name) {
-	if (componentMap.containsKey(name)) {
-	    return (Component) componentMap.get(name);
-	}
-	else return null;
+    public static void setActiveFeedbackEnabled(boolean activeFeedbackEnabled) {
+	MainInterface.activeFeedbackEnabled = activeFeedbackEnabled;
     }
 
     public static String getUserInput() {
 	return filter.getUserInput();
     }
 
+    /*
+     * Current folder implementation:
+     */
+    
     private static void clearPreviousTab (FolderName prevFolder) {
 	switch (prevFolder) {
 	case FOLDER1:
-	    btnFolder1.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
+	    btnFolder1.setIcon(tabNotClicked);
 	    break;
 	case FOLDER2:
-	    btnFolder2.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
+	    btnFolder2.setIcon(tabNotClicked);
 	    break;
 	case FOLDER3:
-	    btnFolder3.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
+	    btnFolder3.setIcon(tabNotClicked);
 	    break;
 	case FOLDER4:
-	    btnFolder4.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
+	    btnFolder4.setIcon(tabNotClicked);
 	    break;
 	case FOLDER5:
-	    btnFolder5.setIcon(new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif")));
-	    break;
-	case DEFAULT:
-	    //TODO: Need to manage default case
-	    break;      
+	    btnFolder5.setIcon(tabNotClicked);
+	    break;   
 	default:
 	    break;
 	}
     }
 
+    public static boolean isCurrentFolder(FolderName folder) {
+	return folder == currFolder ||  currFolder == defaultFolder;//(folder == FolderName.DEFAULT && defaultFolder == currFolder);
+    }
+    
+    public static void loadFolderNames(){
+	cfg = new Config ();
 
-    public static void main(String[] args)  {
+	folder1Name = cfg.getFolderName(FolderName.FOLDER1);
+	folder2Name = cfg.getFolderName(FolderName.FOLDER2);
+	folder3Name = cfg.getFolderName(FolderName.FOLDER3);
+	folder4Name = cfg.getFolderName(FolderName.FOLDER4);
+	folder5Name = cfg.getFolderName(FolderName.FOLDER5);
 
+	defaultFolder = cfg.getDefaultFolder();
+    }
+    
+    // TODO: Replace folder buttons with Common inheritance class
+    public static void folder1Activate() {
+	prevFolder = currFolder;
+	currFolder = FolderName.FOLDER1;
 
+	// Clear previous:
+	clearPreviousTab(prevFolder);
 
-	SwingUtilities.invokeLater(new Runnable() {
-	    public void run() {
+	// Update:
+	btnFolder1.setIcon(tabClicked);
 
-		setupFrame();
-		initGui(mainFrame);
+	updateTaskDisplay();
+	//frame.setComponentZOrder(btnFolder1, 0);
+	//frame.setComponentZOrder(folder1Label, 0);
+    }
 
-		updateTaskDisplay();
+    public static void folder2Activate() {
+	prevFolder = currFolder;
+	currFolder = FolderName.FOLDER2;
 
-		mainFrame.setVisible(true);
-	    }
-	});
+	// Clear previous:
+	clearPreviousTab(prevFolder);
 
+	// Update:
+	btnFolder2.setIcon(tabClicked);
+
+	updateTaskDisplay();
+	//frame.setComponentZOrder(btnFolder2, 0);
+	//    	    frame.setComponentZOrder(folder2Label, 0);
+    }
+
+    public static void folder3Activate() {
+	prevFolder = currFolder;
+	currFolder = FolderName.FOLDER3;
+
+	// Clear previous:
+	clearPreviousTab(prevFolder);
+
+	btnFolder3.setIcon(tabClicked);	
+
+	updateTaskDisplay();
+	//frame.setComponentZOrder(btnFolder3, 0);
+	//	    frame.setComponentZOrder(folder3Label, 0);    
     }
 
 
+    public static void folder4Activate() {
+	prevFolder = currFolder;
+	currFolder = FolderName.FOLDER4;
+
+	// Clear previous:
+	clearPreviousTab(prevFolder);
+
+	btnFolder4.setIcon(tabClicked);
+
+	updateTaskDisplay();
+	//frame.setComponentZOrder(btnFolder4, 0);
+	//	    frame.setComponentZOrder(folder4Label,0);
+    }
+
+    public static void folder5Activate() {
+	prevFolder = currFolder;
+	currFolder = FolderName.FOLDER5;
+
+	// Clear previous:
+	clearPreviousTab(prevFolder);
+
+	btnFolder5.setIcon(tabClicked);	    
+	updateTaskDisplay();
+	//frame.setComponentZOrder(btnFolder5, 0);
+	//	    frame.setComponentZOrder(folder5Label, 0);
+    }
+    
+    public static void setFolderLabels() {
+	folder1Label.setText(folder1Name);
+	folder2Label.setText(folder2Name);
+	folder3Label.setText(folder3Name);
+	folder4Label.setText(folder4Name);
+	folder5Label.setText(folder5Name);
+    }
+    
+    /*
+     * Current folder implementation ^
+     */
+    
     private static LinkedList<Reminder> folderSortTimedTasks(LinkedList<Reminder> original) {
 	LinkedList<Reminder> sortedList = new LinkedList<Reminder>();
 
@@ -312,10 +355,6 @@ public class MainInterface {
 	return sortedList;
     }
 
-
-    public static boolean isCurrentFolder(FolderName folder) {
-	return folder == currFolder ||  currFolder == defaultFolder;//(folder == FolderName.DEFAULT && defaultFolder == currFolder);
-    }
 
     private static LinkedList<FloatingTask> folderSortFloatingTasks(LinkedList<FloatingTask> original) {
 	LinkedList<FloatingTask> sortedList = new LinkedList<FloatingTask>();
@@ -401,13 +440,13 @@ public class MainInterface {
 
 	    setScollPos(scrollPos);
 
-	    systemStatusMessage.setText(controller.getSystemMessageString());
+	    getSystemStatusMessage().setText(controller.getSystemMessageString());
 
     }
 
     public static void clearTextPane() {
 
-	if (savedUserInput.size() > INPUT_HISTORY_SIZE) {
+	if (savedUserInput.size() > MAX_STACK_SIZE_INPUT_HISTORY) {
 	    savedUserInput.clear();
 	    inputNumRef = -1;
 	}
@@ -420,92 +459,6 @@ public class MainInterface {
 	}
 
 	textPane.setText("");
-    }
-
-
-    public static void loadFolderNames(){
-	cfg = new Config ();
-
-	folder1Name = cfg.getFolderName(FolderName.FOLDER1);
-	folder2Name = cfg.getFolderName(FolderName.FOLDER2);
-	folder3Name = cfg.getFolderName(FolderName.FOLDER3);
-	folder4Name = cfg.getFolderName(FolderName.FOLDER4);
-	folder5Name = cfg.getFolderName(FolderName.FOLDER5);
-
-	defaultFolder = cfg.getDefaultFolder();
-    }
-
-    // TODO: Replace folder buttons with Common inheritance class
-    public static void folder1Activate() {
-	prevFolder = currFolder;
-	currFolder = FolderName.FOLDER1;
-
-	// Clear previous:
-	clearPreviousTab(prevFolder);
-
-	// Update:
-	btnFolder1.setIcon(tabClicked);
-
-	updateTaskDisplay();
-	//frame.setComponentZOrder(btnFolder1, 0);
-	//frame.setComponentZOrder(folder1Label, 0);
-    }
-
-    public static void folder2Activate() {
-	prevFolder = currFolder;
-	currFolder = FolderName.FOLDER2;
-
-	// Clear previous:
-	clearPreviousTab(prevFolder);
-
-	// Update:
-	btnFolder2.setIcon(tabClicked);
-
-	updateTaskDisplay();
-	//frame.setComponentZOrder(btnFolder2, 0);
-	//    	    frame.setComponentZOrder(folder2Label, 0);
-    }
-
-    public static void folder3Activate() {
-	prevFolder = currFolder;
-	currFolder = FolderName.FOLDER3;
-
-	// Clear previous:
-	clearPreviousTab(prevFolder);
-
-	btnFolder3.setIcon(tabClicked);	
-
-	updateTaskDisplay();
-	//frame.setComponentZOrder(btnFolder3, 0);
-	//	    frame.setComponentZOrder(folder3Label, 0);    
-    }
-
-
-    public static void folder4Activate() {
-	prevFolder = currFolder;
-	currFolder = FolderName.FOLDER4;
-
-	// Clear previous:
-	clearPreviousTab(prevFolder);
-
-	btnFolder4.setIcon(tabClicked);
-
-	updateTaskDisplay();
-	//frame.setComponentZOrder(btnFolder4, 0);
-	//	    frame.setComponentZOrder(folder4Label,0);
-    }
-
-    public static void folder5Activate() {
-	prevFolder = currFolder;
-	currFolder = FolderName.FOLDER5;
-
-	// Clear previous:
-	clearPreviousTab(prevFolder);
-
-	btnFolder5.setIcon(tabClicked);	    
-	updateTaskDisplay();
-	//frame.setComponentZOrder(btnFolder5, 0);
-	//	    frame.setComponentZOrder(folder5Label, 0);
     }
 
     public static int getScrollPos() {
@@ -525,15 +478,6 @@ public class MainInterface {
 	return btnExport;
     }
 
-    public static void setFolderLabels() {
-	folder1Label.setText(folder1Name);
-	folder2Label.setText(folder2Name);
-	folder3Label.setText(folder3Name);
-	folder4Label.setText(folder4Name);
-	folder5Label.setText(folder5Name);
-
-    }
-
     public static void setUpIndicator(boolean state) {
 	upIndicator.setVisible(state);
     }
@@ -543,7 +487,7 @@ public class MainInterface {
     }
 
 
-    public static void initGui(final JFrame frame) {
+    public static void initializeGuiComponents(final JFrame frame) {
 
 	new MainInterface();
 	
@@ -767,8 +711,7 @@ public class MainInterface {
 	btnExport.setBorder(BorderFactory.createEmptyBorder());
 	btnExport.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
-		// TODO: Implement export feature
-		new IOWindow(frame, systemStatusMessage, controller);
+		new IOPane(frame, getSystemStatusMessage(), controller);
 	    }
 	});   
 
@@ -841,6 +784,7 @@ public class MainInterface {
 	    }
 
 	});
+	
     }
 
     public static void processParameterShortcut(KeyEvent e) {
@@ -861,6 +805,8 @@ public class MainInterface {
 	    appendToTextPane(textPane, "-" + interpreter.getDefaultParaSyn(ParameterType.LOCATION), ParameterType.LOCATION);
 	} else if (e.getKeyCode() == KeyEvent.VK_F) {
 	    appendToTextPane(textPane, "-" + interpreter.getDefaultParaSyn(ParameterType.FOLDER), ParameterType.FOLDER);
+	} else if (e.getKeyCode() == KeyEvent.VK_T) {
+	    textPane.requestFocus();
 	}
 
 	else if (e.getKeyCode() == KeyEvent.VK_TAB && !e.isShiftDown()) {
@@ -917,7 +863,7 @@ public class MainInterface {
         StyleConstants.setForeground((MutableAttributeSet) normalSetting, Color.WHITE);
     }
     
-    private static void appendToTextPane(MyTextPane textPane, String newString, ParameterType parameterType) {
+    private static void appendToTextPane(UserInputTextPane textPane, String newString, ParameterType parameterType) {
 	if (textPane.getText().isEmpty()) {
 	    return;
 	}
@@ -932,13 +878,13 @@ public class MainInterface {
 	    newString = " " + newString;
 	}
 
-        StyleConstants.setForeground((MutableAttributeSet) parameterSetting, HighlightDocumentFilter.getParameterColor(parameterType));
+        StyleConstants.setForeground((MutableAttributeSet) parameterSetting, InputColorFilter.getParameterColor(parameterType));
         
 	try {
 	    textPane.appendParameter(newString, parameterSetting);
-	    textPane.appendParameter(" ", normalSetting);	    
+	    textPane.appendParameter(" ", normalSetting);
+	    textPane.setCaretPosition(textPane.getText().length());
 	} catch (BadLocationException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
 	
@@ -949,7 +895,6 @@ public class MainInterface {
 	    tabNotClicked = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Tab NotClicked.gif"))));
 	    tabClicked = new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Tab Clicked.gif"))));
 	} catch (IOException e1) {
-	    // TODO Auto-generated catch block
 	    e1.printStackTrace();
 	}
     }
@@ -974,13 +919,13 @@ public class MainInterface {
     }
 
     public static void createSystemMessageLabel() {
-	systemStatusMessage = new JLabel("");
-	systemStatusMessage.setHorizontalAlignment(SwingConstants.CENTER);
-	systemStatusMessage.setBounds(0, 484, 888, 16);
-	systemStatusMessage.setFont(latoReg12);
-	systemStatusMessage.setForeground(Color.WHITE);
+	setSystemStatusMessage(new JLabel(""));
+	getSystemStatusMessage().setHorizontalAlignment(SwingConstants.CENTER);
+	getSystemStatusMessage().setBounds(0, 484, 888, 16);
+	getSystemStatusMessage().setFont(latoReg12);
+	getSystemStatusMessage().setForeground(Color.WHITE);
 
-	mainFrame.getContentPane().add(systemStatusMessage);
+	mainFrame.getContentPane().add(getSystemStatusMessage());
     }
 
     public static void createEmptyListMessageLabel() {
@@ -995,7 +940,7 @@ public class MainInterface {
 
     public static void createInputBar(final JFrame frame, JLabel lblNewLabel,
 	    JLabel feedbackText, JLabel feedbackBackground) {
-	textPane = new MyTextPane(new DefaultStyledDocument(), interpreter);
+	textPane = new UserInputTextPane(new DefaultStyledDocument());
 	textPane.setOpaque(false);
 	textPane.setText("memora vivere");
 	textPane.setFont(mesloReg16);
@@ -1010,7 +955,7 @@ public class MainInterface {
 
 	initiateIndicators(frame);
 
-	filter = (new HighlightDocumentFilter(frame, textPane, interpreter, lblNewLabel, feedbackText, feedbackBackground));
+	filter = (new InputColorFilter(frame, textPane, interpreter, lblNewLabel, feedbackText, feedbackBackground));
 
 	((AbstractDocument) textPane.getDocument()).setDocumentFilter(filter);
 
@@ -1035,7 +980,6 @@ public class MainInterface {
 	try {
 	    upIndicator = new JLabel(new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Size Arrow Up.png")))));
 	} catch (IOException e2) {
-	    // TODO Auto-generated catch block
 	    e2.printStackTrace();
 	}
 
@@ -1046,7 +990,6 @@ public class MainInterface {
 	try {
 	    downIndicator = new JLabel(new ImageIcon(ImageIO.read((MainInterface.class.getResource("/GUI Graphics/Size Arrow Down.png")))));
 	} catch (IOException e2) {
-	    // TODO Auto-generated catch block
 	    e2.printStackTrace();
 	}
 
@@ -1082,7 +1025,7 @@ public class MainInterface {
 
 	JScrollBar mainScrollBar = taskPane.getVerticalScrollBar();
 	mainScrollBar.setPreferredSize(new Dimension(16, Integer.MAX_VALUE));
-	mainScrollBar.setUI(new MyScrollbarUI());
+	mainScrollBar.setUI(new ScrollBarUI());
 
 	taskPane.getVerticalScrollBar().setUnitIncrement(1);
 
@@ -1117,7 +1060,7 @@ public class MainInterface {
 	cycleRef = Integer.parseInt( defaultFolder.toString().charAt(6) + "" ) - 1;
     }
 
-    public static void setupFrame() {
+    public static void loadFrameSettings() {
 	mainFrame = new JFrame("TitleLessJFrame");
 
 	mainFrame.setBackground(Color.decode("#272822"));
@@ -1137,15 +1080,19 @@ public class MainInterface {
     public static String getCurrentFolderName() {
 	return cfg.getFolderName(currFolder);
     }
-    
-    public static void activateColorCoding() {
-	
-	textPane.requestFocus();
-	
-	colorCodeActivator.keyPress(KeyEvent.VK_ENTER); // Pressing enter activates 'insertString' function in JTextPane
-	colorCodeActivator.keyRelease(KeyEvent.VK_ENTER);
+
+    public static JLabel getSystemStatusMessage() {
+	return systemStatusMessage;
     }
 
+    public static void setSystemStatusMessage(JLabel systemStatusMessage) {
+	MainInterface.systemStatusMessage = systemStatusMessage;
+    }
+
+    private static void showMainFrame() {
+	mainFrame.setVisible(true);
+	textPane.requestFocus();
+    }
 
 }
 

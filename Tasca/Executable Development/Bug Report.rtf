@@ -3,7 +3,7 @@
 {\colortbl;\red255\green255\blue255;}
 {\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}}
 {\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
-\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\paperw11900\paperh16840\margl1440\margr1440\vieww13920\viewh10400\viewkind0
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
 \f0\fs24 \cf0 Index out of bounds: modify -id 12 -loc kjnad\
@@ -31,21 +31,24 @@ Folder: default\
 TaskID: always\
 \
 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
-\b NEW:
+\b \cf0 Bugs:
 \b0 \
 \
-example how to get reminder\
-\
-cc always leaves on task undeleted.\
-modify changes folder to default\
-id still changes after modification\
+cc leaves exactly one task undeleted.\
+ids still changes after modification sometimes \
 delete search not working\
 Search displays all floating tasks\
+Changing priority using GUI changes the folder\
+Floating tasks change id after modification (should be sorted by time of addition not time of modification)\
+Tasks that have ended are at the top of the list? Precedence should be: ends in -> starts in -> ended (no need for dynamic updating)\
 \
-For Nigel:\
-Documentation\
-Messages\
-Font Rendering on Windows\
-Aleert Function\
+
+\b Features:
+\b0 \
+Clear by folder\
+Add reminder to a floating task?\
+Undo stack limit\
+Endtime required? Design consideration: Default 1-day time period might be a better option\
 }

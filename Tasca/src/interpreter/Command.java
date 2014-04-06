@@ -15,7 +15,7 @@ public class Command {
         parameters = new Parameters();
     }
     
-    // Initializers: 
+    
     public Command(CommandType command) {
         this.command = command;
         parameters = null;
@@ -26,7 +26,8 @@ public class Command {
         parameters = this.parameters;
     }
     
-    // Mutators:
+
+    
     public void setCommandType(CommandType command) {
         this.command = command;
     }
@@ -64,12 +65,7 @@ public class Command {
     }
     
     
-//    private String description, location, folder;
-//    private Integer priority, taskId;
-//    private StringToTime dateTime;
-    
-    
-    //Accessors:
+
     public CommandType getCommandType() {
         return command;
     }

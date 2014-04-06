@@ -5,13 +5,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 /**
  * Interpreter:
- * Currently batch processes data
  * 
  * @author Mohit Shridhar
  * @Matric A0105912N
@@ -21,8 +18,41 @@ import java.util.regex.Pattern;
 
 
 public class Interpreter {
-   
-    // Exceptions:
+    
+    // Config keys:
+    private static final String KEY_QUIT = "quit";
+    private static final String KEY_IMPORT = "import";
+    private static final String KEY_EXPORT = "export";
+    private static final String KEY_DISPLAY_IN_TIME = "display";
+    private static final String KEY_DISPLAY_FLOAT = "displayFloat";
+    private static final String KEY_DISPLAY_ALL = "displayAll";
+    private static final String KEY_REDO = "redo";
+    private static final String KEY_UNDO = "undo";
+    private static final String KEY_MONTH = "month";
+    private static final String KEY_WEEK = "week";
+    private static final String KEY_TOMORROW = "tomorrow";
+    private static final String KEY_TODAY = "today";
+    private static final String KEY_NOW = "now";
+    private static final String KEY_SEARACH = "search";
+    private static final String KEY_UNMARK = "unmark";
+    private static final String KEY_MARK = "mark";
+    private static final String KEY_MODIFY = "modify";
+    private static final String KEY_CLEAR = "clear";
+    private static final String KEY_CLEAR_COMPLETED = "clearCompleted";
+    private static final String KEY_DELETE = "delete";
+    private static final String KEY_ADD = "add";
+    private static final String STRING_DEFAULT = "default";
+    private static final String DELIMETER = "-";
+    
+    private static final String KEY_TASK_ID = "taskID";
+    private static final String KEY_FOLDER = "folder";
+    private static final String KEY_LOCATION = "location";
+    private static final String KEY_PRIORITY = "priority";
+    private static final String KEY_REMIND_TIME = "reminderTime";
+    private static final String KEY_END_TIME = "endTime";
+    private static final String KEY_START_TIME = "startTime";
+    
+    // Exception Messages:
     private static final String INVALID_COMMAND_TYPE = "Invalid command type";
     private static final String EXCEPTION_EMPTY_ARGUMENT = "Cannot accept empty parameter argument";
     private static final String EXCEPTION_DUPLICATE_PARAMETERS = "Duplicate parameters found";
@@ -43,6 +73,10 @@ public class Interpreter {
     private static final String EXCEPTION_NO_END_TIME_SPECIFIED = "You must specify 'end time' since you have specified 'start time' OR just specify 'end time'";
     private static final String EXCEPTION_END_TIME_BEFORE_START_TIME = "Please check that 'start time' occurs chronologically before 'end time'";
     
+    // Other exceptions:
+    private static final int EXCEPTION_NON_EXISTENT_ID = -1;
+    
+    
     private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
     private static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
     
@@ -55,7 +89,7 @@ public class Interpreter {
     private ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>(); // For duplicates
     private Command command = new Command();
     
-    private String currentFolder = "default";
+    private String currentFolder = STRING_DEFAULT;
     
     private static boolean isGuiIdEnabled = false;
     
@@ -67,42 +101,41 @@ public class Interpreter {
         // Main Commands:  
         
         commandHeaders = new HashMap<String, CommandType>();
-           
-        commandHeaders.put("add", CommandType.ADD);
-        commandHeaders.put("delete", CommandType.DELETE);
-        commandHeaders.put("clearCompleted", CommandType.DELETE_ALL_COMPLETED);
-        commandHeaders.put("clear", CommandType.CLEAR);
-        commandHeaders.put("modify", CommandType.MODIFY);
-        commandHeaders.put("mark", CommandType.MARK);
-        commandHeaders.put("unmark", CommandType.UNMARK);
-        commandHeaders.put("search", CommandType.SEARCH);
-        commandHeaders.put("now", CommandType.DISPLAY_NOW);
-        commandHeaders.put("today", CommandType.DISPLAY_TODAY);
-        commandHeaders.put("tomorrow", CommandType.DISPLAY_TOMORROW);
-        commandHeaders.put("week", CommandType.DISPLAY_WEEK);
-        commandHeaders.put("month", CommandType.DISPLAY_MONTH);
-        commandHeaders.put("undo", CommandType.UNDO);
-        commandHeaders.put("redo", CommandType.REDO);
-        commandHeaders.put("displayAll", CommandType.DISPLAY_ALL);
-        commandHeaders.put("displayFloat", CommandType.DISPLAY_ALL_FLOAT);
-        commandHeaders.put("display", CommandType.DISPLAY_IN_TIME);
-        commandHeaders.put("export", CommandType.EXPORT);
-        commandHeaders.put("import", CommandType.IMPORT);
-        commandHeaders.put("quit", CommandType.QUIT);
+        
+        commandHeaders.put(KEY_ADD, CommandType.ADD);
+        commandHeaders.put(KEY_DELETE, CommandType.DELETE);
+        commandHeaders.put(KEY_CLEAR_COMPLETED, CommandType.DELETE_ALL_COMPLETED);
+        commandHeaders.put(KEY_CLEAR, CommandType.CLEAR);
+        commandHeaders.put(KEY_MODIFY, CommandType.MODIFY);
+        commandHeaders.put(KEY_MARK, CommandType.MARK);
+        commandHeaders.put(KEY_UNMARK, CommandType.UNMARK);
+        commandHeaders.put(KEY_SEARACH, CommandType.SEARCH);
+        commandHeaders.put(KEY_NOW, CommandType.DISPLAY_NOW);
+        commandHeaders.put(KEY_TODAY, CommandType.DISPLAY_TODAY);
+        commandHeaders.put(KEY_TOMORROW, CommandType.DISPLAY_TOMORROW);
+        commandHeaders.put(KEY_WEEK, CommandType.DISPLAY_WEEK);
+        commandHeaders.put(KEY_MONTH, CommandType.DISPLAY_MONTH);
+        commandHeaders.put(KEY_UNDO, CommandType.UNDO);
+        commandHeaders.put(KEY_REDO, CommandType.REDO);
+        commandHeaders.put(KEY_DISPLAY_ALL, CommandType.DISPLAY_ALL);
+        commandHeaders.put(KEY_DISPLAY_FLOAT, CommandType.DISPLAY_ALL_FLOAT);
+        commandHeaders.put(KEY_DISPLAY_IN_TIME, CommandType.DISPLAY_IN_TIME);
+        commandHeaders.put(KEY_EXPORT, CommandType.EXPORT);
+        commandHeaders.put(KEY_IMPORT, CommandType.IMPORT);
+        commandHeaders.put(KEY_QUIT, CommandType.QUIT);
         
         // Parameter Commands:
         
         parameterHeaders = new HashMap<String, ParameterType>();
         
-        parameterHeaders.put("startTime", ParameterType.START_TIME);
-        parameterHeaders.put("endTime", ParameterType.END_TIME);
-        parameterHeaders.put("reminderTime", ParameterType.REMINDER_TIME);
-        parameterHeaders.put("priority",ParameterType.PRIORITY);
-        parameterHeaders.put("location", ParameterType.LOCATION);
-        parameterHeaders.put("folder", ParameterType.FOLDER);
-        parameterHeaders.put("taskID", ParameterType.TASK_ID);
+        parameterHeaders.put(KEY_START_TIME, ParameterType.START_TIME);
+        parameterHeaders.put(KEY_END_TIME, ParameterType.END_TIME);
+        parameterHeaders.put(KEY_REMIND_TIME, ParameterType.REMINDER_TIME);
+        parameterHeaders.put(KEY_PRIORITY,ParameterType.PRIORITY);
+        parameterHeaders.put(KEY_LOCATION, ParameterType.LOCATION);
+        parameterHeaders.put(KEY_FOLDER, ParameterType.FOLDER);
+        parameterHeaders.put(KEY_TASK_ID, ParameterType.TASK_ID);
         
-        // Read and Load command/parameter keyword database:
         
 	readCommandDatabase();
 	readParameterDatabase();
@@ -158,17 +191,7 @@ public class Interpreter {
 
             CommandFeedback feedback = addCommandSynonyms(cfg, headerKeySet[i], commandHeaders.get(headerKeySet[i]));
 
-            if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
-                throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_COMMAND, headerKeySet[i].toString()));
-            }
-            
-            if (feedback == CommandFeedback.EMPTY_KEYWORD) {
-        	throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
-            }
-            
-            if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
-        	throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
-            }
+            checkCommandDatabaseExceptions(headerKeySet, i, feedback);
         }
     }
     
@@ -186,22 +209,25 @@ public class Interpreter {
 
             CommandFeedback feedback = addCommandSynonyms(props, headerKeySet[i], commandHeaders.get(headerKeySet[i]));
 
-            if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
-                throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_COMMAND, headerKeySet[i].toString()));
-            }
-            
-            if (feedback == CommandFeedback.EMPTY_KEYWORD) {
-        	throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
-            }
-            
-            if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
-        	throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
-            }
+            checkCommandDatabaseExceptions(headerKeySet, i, feedback);
         }
     }
-    
-    
-    
+
+    public static void checkCommandDatabaseExceptions(String[] headerKeySet, int i,
+	    CommandFeedback feedback) {
+	if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
+	    throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_COMMAND, headerKeySet[i].toString()));
+	}
+
+	if (feedback == CommandFeedback.EMPTY_KEYWORD) {
+	    throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
+	}
+
+	if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
+	    throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
+	}
+    }
+
     private static CommandFeedback addCommandSynonyms(Config cfg, String type, CommandType commandType) 
     {
         String[] keys = cfg.getSynonyms(type);
@@ -231,7 +257,7 @@ public class Interpreter {
     
     private static CommandFeedback addCommandSynonyms(Properties props, String type, CommandType commandType) 
     {
-        String[] keys = ((String) props.get((String) type)).trim().toLowerCase().split(",");
+        String[] keys = parseProperties(props, type);
         
         for (int i=0; i<keys.length; i++) {
             String key = keys[i].trim();
@@ -264,17 +290,7 @@ public class Interpreter {
 
             CommandFeedback feedback = addParameterSynonyms(cfg, headerKeySet[i], parameterHeaders.get(headerKeySet[i]));
 
-            if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
-                throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_PARA, headerKeySet[i].toString()));
-            }
-            
-            if (feedback == CommandFeedback.EMPTY_KEYWORD) {
-        	throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
-            }
-            
-            if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
-        	throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
-            }
+            checkParameterDatabaseExceptions(headerKeySet, i, feedback);
         }
     }
     
@@ -292,32 +308,38 @@ public class Interpreter {
 
             CommandFeedback feedback = addParameterSynonyms(props, headerKeySet[i], parameterHeaders.get(headerKeySet[i]));
 
-            if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
-                throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_PARA, headerKeySet[i].toString()));
-            }
-            
-            if (feedback == CommandFeedback.EMPTY_KEYWORD) {
-        	throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
-            }
-            
-            if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
-        	throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
-            }
+            checkParameterDatabaseExceptions(headerKeySet, i, feedback);
         }
     }
-    
-    
+
+
+    public static void checkParameterDatabaseExceptions(String[] headerKeySet,
+	    int i, CommandFeedback feedback) {
+	if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
+	    throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_PARA, headerKeySet[i].toString()));
+	}
+
+	if (feedback == CommandFeedback.EMPTY_KEYWORD) {
+	    throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
+	}
+
+	if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
+	    throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
+	}
+    }
+
+
     private static CommandFeedback addParameterSynonyms(Config cfg, String type, ParameterType parameterType) 
     {
-        String[] keys = cfg.getSynonyms(type);
-        
-        for (int i=0; i<keys.length; i++) {
-            String key = keys[i].trim();
-            
-            if (hasMultipleWords(key)) {
-        	return CommandFeedback.MULTIPLE_WORD_KEYWORD;
-            } else if (key.isEmpty()) {
-        	return CommandFeedback.EMPTY_KEYWORD;
+	String[] keys = cfg.getSynonyms(type);
+
+	for (int i=0; i<keys.length; i++) {
+	    String key = keys[i].trim();
+
+	    if (hasMultipleWords(key)) {
+		return CommandFeedback.MULTIPLE_WORD_KEYWORD;
+	    } else if (key.isEmpty()) {
+		return CommandFeedback.EMPTY_KEYWORD;
             } else if (!parameterKeywords.containsKey(key)) {
                 parameterKeywords.put(key, parameterType);
             } else {
@@ -336,7 +358,7 @@ public class Interpreter {
     
     private static CommandFeedback addParameterSynonyms(Properties props, String type, ParameterType parameterType) 
     {
-	String[] keys = ((String) props.get((String) type)).trim().toLowerCase().split(",");
+	String[] keys = parseProperties(props, type);
         
         for (int i=0; i<keys.length; i++) {
             String key = keys[i].trim();
@@ -356,30 +378,40 @@ public class Interpreter {
         
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
+
+
+    public static String[] parseProperties(Properties props, String type) {
+	return ((String) props.get((String) type)).trim().toLowerCase().split(",");
+    }
     
     private static boolean hasMultipleWords(String input) {
 	return input.indexOf(' ') >= 0;
     }
     
     public void processUserInput(String input) {
-        String commandString = getFirstWord(input);
-        CommandType mainCommand = interpretCommand(commandString);
+        CommandType mainCommand = extractMainCommand(input);
         
-        checkCommandValidity(mainCommand); // throws invalid error
+        checkCommandValidity(mainCommand);
         processCommandArgument(input);
         
         if (hasParameters(mainCommand)) {
             parseAndProcessParameters(input);
         }
         
-        checkForOtherException();
-        
+        checkForOtherExceptions();
         command.setCommandType(mainCommand); 
         
-        updateFolderReference();
+        updateCurrFolderReference();
+    }
+
+
+    public CommandType extractMainCommand(String input) {
+	String commandString = getFirstWord(input);
+        CommandType mainCommand = interpretCommand(commandString);
+	return mainCommand;
     }
     
-    private void checkForOtherException() throws IllegalArgumentException {
+    private void checkForOtherExceptions() throws IllegalArgumentException {
 	
 	if (!currentParameters.contains(ParameterType.END_TIME) && currentParameters.contains(ParameterType.START_TIME)) {
 	    throw new IllegalArgumentException(EXCEPTION_NO_END_TIME_SPECIFIED);
@@ -390,10 +422,9 @@ public class Interpreter {
 	}
     }
     
-    private void updateFolderReference() {
+    private void updateCurrFolderReference() {
 	if (command.getParameters().getFolder() == null) {
 	    command.getParameters().setFolder(currentFolder);
-	    System.out.println("Folder updated!!!!!");
 	}
     }
     
@@ -410,7 +441,7 @@ public class Interpreter {
 	String commandArgument = null;
 	
 	try {
-		commandArgument = (input.replaceFirst(getFirstWord(input), "").trim()).split("-")[0].trim();
+		commandArgument = (input.replaceFirst(getFirstWord(input), "").trim()).split(DELIMETER)[0].trim();
 	} catch (ArrayIndexOutOfBoundsException aE) {
 	    return;
 	}
@@ -441,23 +472,17 @@ public class Interpreter {
     
     
     private void parseAndProcessParameters(String input) throws IllegalArgumentException {
-        String[] inputParameters = input.split("-");
+        String[] inputParameters = input.split(DELIMETER);
         
         currentParameters.clear();
         
         for (int i=1; i<inputParameters.length; i++) { // Ignore the command, focus on the parameter arguments
             String paraTypeString = getFirstWord(inputParameters[i]);
-            String paraArgument = inputParameters[i].substring(paraTypeString.length()).trim();
+            String paraArgument = isolateArgument(inputParameters, i, paraTypeString);
             
             
             ParameterType parameterType = interpretParameter(paraTypeString);
-            if (parameterType == ParameterType.INVALID) {
-                throw new IllegalArgumentException(INVALID_PARAMETER_TYPE);
-            }
-            
-            if (paraArgument.isEmpty()) {
-                throw new IllegalArgumentException(EXCEPTION_EMPTY_ARGUMENT);
-            }
+            checkForParameterExceptions(paraArgument, parameterType);
             
             CommandFeedback feedback = processParameter(parameterType, paraArgument);
             isParameterArgumentValid(feedback);
@@ -465,6 +490,24 @@ public class Interpreter {
             checkIfParameterExists(parameterType); 
         }
         
+    }
+
+
+    public String isolateArgument(String[] inputParameters, int i,
+	    String paraTypeString) {
+	return inputParameters[i].substring(paraTypeString.length()).trim();
+    }
+
+
+    public void checkForParameterExceptions(String paraArgument,
+	    ParameterType parameterType) {
+	if (parameterType == ParameterType.INVALID) {
+	    throw new IllegalArgumentException(INVALID_PARAMETER_TYPE);
+	}
+	
+	if (paraArgument.isEmpty()) {
+	    throw new IllegalArgumentException(EXCEPTION_EMPTY_ARGUMENT);
+	}
     }
 
 
@@ -495,7 +538,7 @@ public class Interpreter {
         case INVALID_TASK_ID:
             throw new InvalidParameterException(INVALID_TASK_ID);           
         default:
-            return; // Do nothing           
+            return;        
         }
         
     }
@@ -548,7 +591,9 @@ public class Interpreter {
 	return defaultParameterSynonym.get(parameterType);
     }
     
-    // GUI id to Logic id interfacing:
+    /*
+     * For interfacing with GUI:
+     */
     
     public static void setIsGuiIdEnabled(boolean isGuiIdEnabled) {
 	Interpreter.isGuiIdEnabled = isGuiIdEnabled;
@@ -557,28 +602,28 @@ public class Interpreter {
     public static boolean checkIsGuiIdEnabled() {
 	return isGuiIdEnabled;
     }
-    
+
     public static void addGuiId(int guiId, int realTaskId){
 	if (isGuiIdEnabled) {
-		guiIdRef.put(guiId, realTaskId);
+	    guiIdRef.put(guiId, realTaskId);
 	}
-	
+
 	return;
     }
-    
+
     public static int getRealId(int guiId) {
 	if (isGuiIdEnabled) {
 
 	    if (guiIdRef.get(guiId) == null) {
-		return -1; // -1 is used to indicate invalid/non-existent id reference
+		return EXCEPTION_NON_EXISTENT_ID;
 	    }
 
 	    return guiIdRef.get(guiId);
 	}
-	
-	return -1;
+
+	return EXCEPTION_NON_EXISTENT_ID;
     }
-    
+
     public static void clearGuiIdMap() {
 	guiIdRef.clear();
     }

@@ -6,124 +6,158 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
- 
+
+import junit.framework.Assert;
+
 
 public class Config
 {
-   Properties configFile;
-   private static Map<String, FolderName> folderNameRef = new HashMap<String, FolderName>();
-   private static Map<FolderName, String> folderIdRef = new HashMap<FolderName, String>();
-   private static Map<String, FolderName> folderIdHeader = new HashMap<String, FolderName>();
-   private static Map<Integer, FolderName> intToFolderId = new HashMap<Integer, FolderName>();
-   private static FolderName defaultFolder =  FolderName.FOLDER1;   
-   
-   private void clearAllMaps() {
-       folderNameRef.clear();
-       folderIdRef.clear();
-       folderIdHeader.clear();
-       intToFolderId.clear();
-   }
-   
-   public Config()
-   {
-       clearAllMaps();
-       
-       configFile = new java.util.Properties();
-       try {
-           configFile.load(new FileInputStream("Config.cfg"));
-           
-       }catch(Exception eta){
-           System.out.println("Config.cfg file not found. Generating Default Configurations");
-           loadDefaultConfig();
-       }
-       
-       
-      
-           
-       folderNameRef.put(getProperty("folder1").trim().toLowerCase(), FolderName.FOLDER1);
-       folderNameRef.put(getProperty("folder2").trim().toLowerCase(), FolderName.FOLDER2);
-       folderNameRef.put(getProperty("folder3").trim().toLowerCase(), FolderName.FOLDER3);
-       folderNameRef.put(getProperty("folder4").trim().toLowerCase(), FolderName.FOLDER4);
-       folderNameRef.put(getProperty("folder5").trim().toLowerCase(), FolderName.FOLDER5);
-       folderNameRef.put("default", FolderName.DEFAULT);
-       
-       folderIdHeader.put("folder1", FolderName.FOLDER1);
-       folderIdHeader.put("folder2", FolderName.FOLDER2);
-       folderIdHeader.put("folder3", FolderName.FOLDER3);
-       folderIdHeader.put("folder4", FolderName.FOLDER4);
-       folderIdHeader.put("folder5", FolderName.FOLDER5);
-       folderIdHeader.put("default", FolderName.DEFAULT);
-       
-       folderIdRef.put(FolderName.FOLDER1, getProperty("folder1").trim());
-       folderIdRef.put(FolderName.FOLDER2, getProperty("folder2").trim());
-       folderIdRef.put(FolderName.FOLDER3, getProperty("folder3").trim());
-       folderIdRef.put(FolderName.FOLDER4, getProperty("folder4").trim());
-       folderIdRef.put(FolderName.FOLDER5, getProperty("folder5").trim());
-       folderIdRef.put(FolderName.DEFAULT, getProperty("default").trim());
-       
-       // For logic decoding:
-       intToFolderId.put(0, FolderName.DEFAULT);
-       intToFolderId.put(1, FolderName.FOLDER1);
-       intToFolderId.put(2, FolderName.FOLDER2);
-       intToFolderId.put(3, FolderName.FOLDER3);
-       intToFolderId.put(4, FolderName.FOLDER4);
-       intToFolderId.put(5, FolderName.FOLDER5);
-       
-       defaultFolder = folderIdHeader.get(folderIdRef.get(FolderName.DEFAULT));
-       
-   }
+    private static final String DELIMITER_PARAMETER = ",";
+    private static final String FILENAME_USER_CONFIG_FILE = "Config.cfg";
+    private static final String MESSAGE_GENERATING_CONFIG_FILE = "Config.cfg file not found. Generating Default Configurations";
+    private static final String FILENAME_DEFAULT_CONFIG_FILE = "Default_Config.cfg";
+    private static final String MESSAGE_SERIOUS_ERROR_CONFIG_FILE = "Serious error: Default config file not found";
+    
+    private static final int INT_FOLDER5 = 5;
+    private static final int INT_FOLDER4 = 4;
+    private static final int INT_FOLDER3 = 3;
+    private static final int INT_FOLDER2 = 2;
+    private static final int INT_FOLDER1 = 1;
+    private static final int INT_DEFAULT = 0;
+    
+    private static final String DEFAULT_ID_STRING = "default";
+    private static final String FOLDER5_ID_STRING = "folder5";
+    private static final String FOLDER4_ID_STRING = "folder4";
+    private static final String FOLDER3_ID_STRING = "folder3";
+    private static final String FOLDER2_ID_STRING = "folder2";
+    private static final String FOLDER1_ID_STRING = "folder1";
+    
+    Properties configFile;
+    
+    private static Map<String, FolderName> folderNameRef = new HashMap<String, FolderName>();
+    private static Map<FolderName, String> folderIdRef = new HashMap<FolderName, String>();
+    private static Map<String, FolderName> folderIdHeader = new HashMap<String, FolderName>();
+    private static Map<Integer, FolderName> intToFolderId = new HashMap<Integer, FolderName>();
+    
+    private static FolderName defaultFolder = FolderName.FOLDER1;   
 
-   public void loadDefaultConfig() {
-       try {
-	   configFile.load(Config.class.getResourceAsStream("Default_Config.cfg"));
-       }catch(Exception eta){
-	   eta.printStackTrace();
-	 //TODO: Assert fail
-	   System.out.println("Serious error: Default config file not found");
-       }
-       
-       saveDefaultConfig();
-   }
-   
-   public void saveDefaultConfig() {
+    public Config()
+    {
+	clearAllMaps();
+	loadConfigFile();
+
+	buildFolderNameRef();
+	buildFolderIdHeader();
+	buildFolderIdRef();
+	buildIntToFolderId();
+    }
+
+    public void buildIntToFolderId() {
+	// To be used to decode logic's 'int' method of specifying folders:
+	
+	intToFolderId.put(INT_DEFAULT, FolderName.DEFAULT);
+	intToFolderId.put(INT_FOLDER1, FolderName.FOLDER1);
+	intToFolderId.put(INT_FOLDER2, FolderName.FOLDER2);
+	intToFolderId.put(INT_FOLDER3, FolderName.FOLDER3);
+	intToFolderId.put(INT_FOLDER4, FolderName.FOLDER4);
+	intToFolderId.put(INT_FOLDER5, FolderName.FOLDER5);
+
+	defaultFolder = folderIdHeader.get(folderIdRef.get(FolderName.DEFAULT));
+    }
+
+    public void buildFolderIdRef() {
+	folderIdRef.put(FolderName.FOLDER1, getProperty(FOLDER1_ID_STRING).trim());
+	folderIdRef.put(FolderName.FOLDER2, getProperty(FOLDER2_ID_STRING).trim());
+	folderIdRef.put(FolderName.FOLDER3, getProperty(FOLDER3_ID_STRING).trim());
+	folderIdRef.put(FolderName.FOLDER4, getProperty(FOLDER4_ID_STRING).trim());
+	folderIdRef.put(FolderName.FOLDER5, getProperty(FOLDER5_ID_STRING).trim());
+	folderIdRef.put(FolderName.DEFAULT, getProperty(DEFAULT_ID_STRING).trim());
+    }
+
+    public void buildFolderIdHeader() {
+	folderIdHeader.put(FOLDER1_ID_STRING, FolderName.FOLDER1);
+	folderIdHeader.put(FOLDER2_ID_STRING, FolderName.FOLDER2);
+	folderIdHeader.put(FOLDER3_ID_STRING, FolderName.FOLDER3);
+	folderIdHeader.put(FOLDER4_ID_STRING, FolderName.FOLDER4);
+	folderIdHeader.put(FOLDER5_ID_STRING, FolderName.FOLDER5);
+	folderIdHeader.put(DEFAULT_ID_STRING, FolderName.DEFAULT);
+    }
+
+    private void clearAllMaps() {
+	folderNameRef.clear();
+	folderIdRef.clear();
+	folderIdHeader.clear();
+	intToFolderId.clear();
+    }
+
+    public void buildFolderNameRef() {
+	folderNameRef.put(getProperty(FOLDER1_ID_STRING).trim().toLowerCase(), FolderName.FOLDER1);
+	folderNameRef.put(getProperty(FOLDER2_ID_STRING).trim().toLowerCase(), FolderName.FOLDER2);
+	folderNameRef.put(getProperty(FOLDER3_ID_STRING).trim().toLowerCase(), FolderName.FOLDER3);
+	folderNameRef.put(getProperty(FOLDER4_ID_STRING).trim().toLowerCase(), FolderName.FOLDER4);
+	folderNameRef.put(getProperty(FOLDER5_ID_STRING).trim().toLowerCase(), FolderName.FOLDER5);
+	folderNameRef.put(DEFAULT_ID_STRING, FolderName.DEFAULT);
+    }
+
+    public void loadConfigFile() {
+	configFile = new java.util.Properties();
 	try {
-	    configFile.store(new FileOutputStream("Config.cfg"), null);
+	    configFile.load(new FileInputStream(FILENAME_USER_CONFIG_FILE));
+
+	}catch(Exception eta){
+	    System.out.println(MESSAGE_GENERATING_CONFIG_FILE);
+	    loadDefaultConfig();
+	}
+    }
+
+    public void loadDefaultConfig() {
+	try {
+	    configFile.load(Config.class.getResourceAsStream(FILENAME_DEFAULT_CONFIG_FILE));
+	}catch(Exception eta){
+	    eta.printStackTrace();
+	    Assert.fail(MESSAGE_SERIOUS_ERROR_CONFIG_FILE);
+	}
+
+	saveDefaultConfig();
+    }
+
+    public void saveDefaultConfig() {
+	try {
+	    configFile.store(new FileOutputStream(FILENAME_USER_CONFIG_FILE), null);
 	} catch (FileNotFoundException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	} catch (IOException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
-   }
-   
-   public String getProperty(String key)
-   {
-    return this.configFile.getProperty(key);
-   }
-   
-   public String[] getSynonyms(String commandType) {
-       return getProperty(commandType).trim().toLowerCase().split(",");  // TODO: Remove spaces inbetween
-   }
-   
-   public FolderName getFolderId(String folderName) {
-       return folderNameRef.get(folderName);
-   }
-   
-   public String getFolderName(FolderName folderId) {
-       return folderIdRef.get(folderId);
-   }
-   
-   public FolderName getDefaultFolder() {
-       return defaultFolder;
-   }
-   
-   // Must be between 0 and 5 ASSERT
-   public FolderName getFolderId (int folderInt) {
-       return intToFolderId.get(folderInt);
-   }
-   
-   public Properties getConfigFile() {
-       return configFile;
-   }
+    }
+
+    public String getProperty(String key)
+    {
+	return this.configFile.getProperty(key);
+    }
+
+    public String[] getSynonyms(String commandType) {
+	return getProperty(commandType).trim().toLowerCase().split(DELIMITER_PARAMETER); 
+    }
+
+    public FolderName getFolderId(String folderName) {
+	return folderNameRef.get(folderName);
+    }
+
+    public String getFolderName(FolderName folderId) {
+	return folderIdRef.get(folderId);
+    }
+
+    public FolderName getDefaultFolder() {
+	return defaultFolder;
+    }
+
+    public FolderName getFolderId (int folderInt) {
+	assert (folderInt >= INT_DEFAULT && folderInt <= INT_FOLDER5);
+	return intToFolderId.get(folderInt);
+    }
+
+    public Properties getConfigFile() {
+	return configFile;
+    }
 }

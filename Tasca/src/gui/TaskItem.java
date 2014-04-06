@@ -4,654 +4,754 @@ import interpreter.CommandType;
 import interpreter.Interpreter;
 import interpreter.ParameterType;
 
-import java.io.IOException;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import javax.swing.border.Border;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
-import controller.Controller;
-
-import storage.AllTasks;
 import storage.FloatingTask;
 import storage.Task;
-
-import java.awt.AWTException;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Color;
-import java.awt.Robot;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-
-import logic.Logic;
-import javax.swing.SwingConstants;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import java.text.SimpleDateFormat;
+import controller.Controller;
 
 
 public class TaskItem extends JLayeredPane {
+
+    private static final int MAX_DISPLAY_TEXT_LENGTH = 600;
+    private static final int INT_PRIORITY_LOW = 3;
+    private static final int INT_PRIORITY_MEDIUM = 2;
+    private static final int INT_PRIORITY_HIGH = 1;
+    private static final int INT_PRIORITY_NONE = 0;
     
+    private static final String DATE_FORMAT_ENDED = "ended ";
+    private static final String DATE_FORMAT_ENDS = "ends ";
+    private static final String DATE_FORMAT_STARTS = "starts ";
+    
+    private static final String PRI_STRING_MEDIUM = "med";
+    private static final String PRI_STRING_HIGH = "high";
+    private static final String PRI_STRING_LOW = "low";
+    
+    private static final String EMPTY_LOCATION = "NIL";
+
+    private static final String HTML_END_TAG_WITH_STRIKE = "</strike></html>";
+    private static final String HTML_START_TAG_WITH_STRIKE = "<html><strike>";
+    private static final String HTML_END_TAG = "</html>";
+    private static final String HTML_START_TAG = "<html>";
+
+    private static final String DEFAULT_DISPLAY_TEXT = "<html> Description – <font color='9a9695'>Time @ Location</font></html>";
+    
+    private static final String HTML_FLOATING_TASK = "<html><nobr><font color='f7bbbb'> %1$s</font>&nbsp; <font color='9a9695'>%2$s</font></nobr></html>";
+    private static final String HTML_TIME_DISPLAY_WITH_REMINDER = "<html><nobr> Start: <font color='9a9695'>%1$s</font>End: <font color='9a9695'>%2$s</font>Reminder: <font color='9a9695'>%3$s</font></nobr></html>";
+    private static final String HTML_TIME_DISPLAY = "<html><nobr> Start: <font color='9a9695'>%1$s</font>End: <font color='9a9695'>%2$s</font></nobr></html>";
+    private static final String HTML_INFO_DISPLAY = "<html><nobr> %1$s – <font color='9a9695'>%2$s%3$s</font></nobr></html>";
+    
+    private static final String MESSAGE_OVERFLOW_ELLIPSIS = " ...";
+    private static final String SINGLE_SPACE = " ";
+    private static final String INPUT_DELIMITER = " -";
+    private static final String DESCRIPTION_SEPERATION_HYPHEN = " – ";
+
+    private static final Border SETTINGS_EMPTY_BORDER = BorderFactory.createEmptyBorder(0, 0, 0, 0);
+
+    private static final long serialVersionUID = 1L;
+
     private static final String HTML_SPACING = "&nbsp;&nbsp;&nbsp;";
+    private static final String PREFIX_AT_LOCATION = " @ ";
+    
     private static final int DISPLAY_TIME_UPDATE_PERIOD = 60000; //milliseconds
-    private static final String LOCATION_AT_PREFIX = " @ ";
-    private static final int HTML_CODE_LENGTH = 20;
-    private static final int MAX_DISPLAY_TEXT_LENGTH = 90;
-    private static final int INITIAL_SPACE_OFFSET = 82;
-    private static final int FINAL_SPACE_OFFSET = 31;
+
+    private static final int LEADING_XPOS_OFFSET = 82;
+    private static final int TRAILING_SPACE_OFFSET = 31;
     private static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy HH:mm");
-    
-    public static PrettyTime p = new PrettyTime();
-    public static BufferedGraphics graphics = new BufferedGraphics();
-    
+
+    public static PrettyTime prettyTimeParser = new PrettyTime();
+    public static BufferedGraphics bufferedGraphics = new BufferedGraphics();
+
     private JLabel background;
     private JLabel checkMark;
-    private JLabel reminder;
-    private JLabel priority;
+    private JLabel reminderIcon;
+    private JLabel priorityIcon;
     private JLabel text;
     private JLabel dateIcon;
     private JLabel infoIcon;
-    private JLabel unchecked;
-    private Task timedTask;
-    private FloatingTask floatingTask;
+    private JLabel uncheckedMark;
     private JLabel ellipsis;
     private JLabel apparentId;
     private JLabel deleteIcon;
-    
-    int delay = DISPLAY_TIME_UPDATE_PERIOD; 
-    ActionListener taskPerformer = new ActionListener() {
-        public void actionPerformed(ActionEvent evt) {
-            if (!inDateDisplayState && !isFloatingTask) {
-            	setTimedDisplayText(description, location, updateInfoTimings());
-            }
-        }
-    };
+
     private String description;
     private String location;
     private String infoDisplayTime, dateDisplayTime;
-    private int realTaskId, guiId;
+    private int guiId;
     private static Controller controller;
     private Calendar reminderTime;
-    
-    private static JTextPane textPane;
-    
+
     private boolean isFloatingTask = false;
     private boolean inDateDisplayState = false;
-    
-    private int withoutReminderOffset;
-    
+
+    private Task timedTask;
+    private FloatingTask floatingTask;
+
+    private int withoutReminderXPosOffset;
+
     private static Interpreter interpreter;
+    private static JTextPane textPane;
+
+    private ActionListener updateTime = new ActionListener() {
+	public void actionPerformed(ActionEvent evt) {
+	    if (!inDateDisplayState && !isFloatingTask) {
+		setTimedDisplayText(description, location, formatInfoTimings());
+	    }
+	}
+    };
 
     public TaskItem(JTextPane textPane, Controller controller, final int guiId, Interpreter interpreter) {
-	
+
 	super();
-	TaskItem.textPane = textPane;
-	this.controller = controller;
-	this.interpreter = interpreter;
-	this.guiId = guiId;
-	
-	new Timer(delay, taskPerformer).start(); // Update timings every minute 
+	linkMainInterfaceComponents(textPane, controller, guiId, interpreter);
+	loadItemSettings(); 
 
-	
-	this.setSize(888, 40);
-	this.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-	
-	checkMark = new JLabel();
-	checkMark.addMouseListener(new MouseAdapter() {
-		@Override
-		public void mouseClicked(MouseEvent e) {
-		    setCheckMark(false);
-		    TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.UNMARK) + " -" + TaskItem.interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId);
-		    MainInterface.systemStatusMessage.setText(TaskItem.controller.getSystemMessageString());
-		}
-		@Override
-		public void mouseEntered(MouseEvent e) {
-		    showDateInfoIcon();
-		}
+	loadGuiComponents(guiId);
+	addTaskItemBackground();
+	addToggleIconMouseListener();
+    }
 
-		@Override
-		public void mouseExited(MouseEvent e) {
-		    hideDateInfoIcon();
-		}
-	});
-	checkMark.setLocation(8 + INITIAL_SPACE_OFFSET, 9);
-	checkMark.setSize(23, 23);
-	checkMark.setIcon(graphics.checkMark);
-	checkMark.setVisible(false);
-	this.add(checkMark);
-	
-	unchecked = new JLabel();
-	unchecked.addMouseListener(new MouseAdapter() {
-		@Override
-		public void mouseClicked(MouseEvent e) {
-		    setCheckMark(true);
-		    TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.MARK) + " -" + TaskItem.interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId);
-		    MainInterface.systemStatusMessage.setText(TaskItem.controller.getSystemMessageString());
-		}
-		@Override
-		public void mouseEntered(MouseEvent e) {
-		    showDateInfoIcon();
-		}
+    private void loadGuiComponents(final int guiId) {
 
-		@Override
-		public void mouseExited(MouseEvent e) {
-		    hideDateInfoIcon();
-		}
-	});
-	unchecked.setLocation(8 + INITIAL_SPACE_OFFSET, 9);
-	unchecked.setSize(23, 23);
-	unchecked.setIcon(graphics.unchecked);
-	unchecked.setVisible(true);
-	this.add(unchecked);
-	
-	dateIcon = new JLabel();
-	dateIcon.addMouseListener(new MouseAdapter() {
-		@Override
-		public void mouseClicked(MouseEvent e) {
-		    activateDateState();
-		}
-		@Override
-		public void mouseEntered(MouseEvent e) {
-		    showDateInfoIcon();
-		}
+	addCheckMark(guiId);
+	addUncheckedMark(guiId);
 
-		@Override
-		public void mouseExited(MouseEvent e) {
-		    hideDateInfoIcon();
-		}
-	});
-	dateIcon.setSize(25, 25);
-	dateIcon.setIcon(graphics.date);
-	dateIcon.setVisible(false);
-	this.add(dateIcon);
-	
-	infoIcon = new JLabel();
-	infoIcon.addMouseListener(new MouseAdapter() {
-		@Override
-		public void mouseClicked(MouseEvent e) {
-		    activateInfoState();
-		}
-		
-		@Override
-		public void mouseEntered(MouseEvent e) {
-		    showDateInfoIcon();
-		}
+	addDateIcon();
+	addInfoIcon();
 
-		@Override
-		public void mouseExited(MouseEvent e) {
-		    hideDateInfoIcon();
-		}
-	});
-	infoIcon.setSize(25, 25);
-	infoIcon.setIcon(graphics.info);
-	infoIcon.setVisible(false);
-	this.add(infoIcon);
-	
-	reminder = new JLabel();
-	reminder.addMouseListener(new MouseAdapter() {
-		@Override
-		public void mouseClicked(MouseEvent e) {
-		    reminderShortcut();
-		}
-	});
-	reminder.setLocation(689 + 10 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET, 7);
-	reminder.setSize(25, 26);
-	reminder.setIcon(graphics.reminderIcon);
-	reminder.setVisible(false);
-	this.add(reminder);
-	
-	priority = new JLabel();
-	priority.addMouseListener(new MouseAdapter() {
-		@Override
-		public void mouseClicked(MouseEvent e) {
-		    if (isFloatingTask) {
-			cyclePriorities(floatingTask.getPriority());
-		    } else {
-			cyclePriorities(timedTask.getPriority());
-		    }
-		    
-		}
-	});
-	priority.setLocation(666 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET, 7);
-	// Must set icon, icon size, and location during use
-	priority.setVisible(false);
-	this.add(priority);
-	
-	ellipsis = new JLabel(" ...");
-	ellipsis.setForeground(Color.WHITE);
-	ellipsis.setFont(new Font("Menlo", Font.PLAIN, 14));
-	ellipsis.setBounds(612 + INITIAL_SPACE_OFFSET, 9, 40, 24);
-	ellipsis.setVisible(false);
-	add(ellipsis);
-	
-	text = new JLabel("New Task");
-	text.setToolTipText("");
-	text.addMouseListener(new MouseAdapter() {
-		@Override
-		public void mouseClicked(MouseEvent e) {
-		    modifyDescriptionShortcut();
-		}
-		@Override
-		public void mouseEntered(MouseEvent e) {
-		    showDateInfoIcon();
-		}
+	addReminderIcon();
+	addPriorityIcon();
 
-		@Override
-		public void mouseExited(MouseEvent e) {
-		    hideDateInfoIcon();
-		}
-	});
-	text.setForeground(Color.WHITE);
-	text.setFont(MainInterface.latoReg14); // new Font("Lato", Font.PLAIN, 14))
-	text.setLocation(44 + INITIAL_SPACE_OFFSET, 7);
-	text.setSize(600, 24);
-	text.setText("<html> Description – <font color='9a9695'>Time @ Location</font></html>");
-	this.add(text);
-	
-	deleteIcon = new JLabel();
-	deleteIcon.setIcon(graphics.delete);
-	deleteIcon.setBounds(35, 3, 34, 34);
-	deleteIcon.setVisible(false);
-	this.add(deleteIcon);
-	
-	
-	apparentId = new JLabel("1");
-	apparentId.addMouseListener(new MouseAdapter() {
-		@Override
-		public void mouseClicked(MouseEvent e) {
-		    deleteTaskShortcut();
-		}
-		@Override
-		public void mouseEntered(MouseEvent e) {
-		    deleteIcon.setVisible(true);		    
-		}
-		@Override
-		public void mouseExited(MouseEvent e) {
-		    deleteIcon.setVisible(false);
-		}
-	});
-	apparentId.setHorizontalAlignment(SwingConstants.CENTER);
-	apparentId.setFont(MainInterface.latoReg12); //new Font("Lato", Font.PLAIN, 12)
-	apparentId.setForeground(Color.WHITE);
-	apparentId.setBounds(34, 2, 34, 34);
-	this.add(apparentId);
-	
+	addOverflowEllipsis();
+	addTextLabel();
+
+	addDeleteIcon();
+	addApparentTaskId();
+
+    }
+
+    private void addTaskItemBackground() {
 	background = new JLabel();
 	background.setSize(888, 40);
-	background.setIcon(graphics.background);
+	background.setIcon(bufferedGraphics.getBackground());
 	this.add(background);
-	
-	//this.setVisible(true);
-	
+    }
+
+    private void addToggleIconMouseListener() {
 	this.addMouseListener(new MouseAdapter() {
 	    @Override
 	    public void mouseEntered(MouseEvent e) {
 		showDateInfoIcon();
 	    }
-	    
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		hideDateInfoIcon();
+	    }
+
+	});
+    }
+
+    private void addApparentTaskId() {
+	apparentId = new JLabel("");
+	apparentId.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		deleteTaskShortcut();
+	    }
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		deleteIcon.setVisible(true);		    
+	    }
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		deleteIcon.setVisible(false);
+	    }
+	});
+	apparentId.setHorizontalAlignment(SwingConstants.CENTER);
+	apparentId.setFont(MainInterface.latoReg12); 
+	apparentId.setForeground(Color.WHITE);
+	apparentId.setBounds(34, 2, 34, 34);
+	this.add(apparentId);
+    }
+
+    private void addDeleteIcon() {
+	deleteIcon = new JLabel();
+	deleteIcon.setIcon(bufferedGraphics.getDelete());
+	deleteIcon.setBounds(35, 3, 34, 34);
+	deleteIcon.setVisible(false);
+	this.add(deleteIcon);
+    }
+
+    private void addTextLabel() {
+	text = new JLabel("");
+	text.setToolTipText("");
+	text.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		modifyDescriptionShortcut();
+	    }
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		showDateInfoIcon();
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		hideDateInfoIcon();
+	    }
+
+	});
+	text.setForeground(Color.WHITE);
+	text.setFont(MainInterface.latoReg14);
+	text.setLocation(126, -2);
+	text.setSize(600, 42);
+	text.setText(DEFAULT_DISPLAY_TEXT);
+	this.add(text);
+    }
+
+    private void addOverflowEllipsis() {
+	ellipsis = new JLabel(MESSAGE_OVERFLOW_ELLIPSIS);
+	ellipsis.setForeground(Color.WHITE);
+	ellipsis.setFont(MainInterface.mesloReg16);
+	ellipsis.setBounds(635 + LEADING_XPOS_OFFSET, 9, 40, 24);
+	ellipsis.setVisible(false);
+	add(ellipsis);
+    }
+
+    private void addPriorityIcon() {
+	priorityIcon = new JLabel();
+	priorityIcon.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		if (isFloatingTask) {
+		    cyclePriorities(floatingTask.getPriority());
+		} else {
+		    cyclePriorities(timedTask.getPriority());
+		}
+	    }
+	});
+	priorityIcon.setLocation(666 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET, 7);
+	priorityIcon.setVisible(false);
+	this.add(priorityIcon);
+    }
+
+    private void addReminderIcon() {
+	reminderIcon = new JLabel();
+	reminderIcon.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		reminderShortcut();
+	    }
+	});
+	reminderIcon.setLocation(689 + 10 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET, 7);
+	reminderIcon.setSize(25, 26);
+	reminderIcon.setIcon(bufferedGraphics.getReminderIcon());
+	reminderIcon.setVisible(false);
+	this.add(reminderIcon);
+    }
+
+    private void addInfoIcon() {
+	infoIcon = new JLabel();
+	infoIcon.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		activateInfoState();
+	    }
+
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		showDateInfoIcon();
+	    }
+
 	    @Override
 	    public void mouseExited(MouseEvent e) {
 		hideDateInfoIcon();
 	    }
 	});
+	infoIcon.setSize(25, 25);
+	infoIcon.setIcon(bufferedGraphics.getInfo());
+	infoIcon.setVisible(false);
+	this.add(infoIcon);
     }
-    
+
+    private void addDateIcon() {
+	dateIcon = new JLabel();
+	dateIcon.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		activateDateState();
+	    }
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		showDateInfoIcon();
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		hideDateInfoIcon();
+	    }
+	});
+	dateIcon.setSize(25, 25);
+	dateIcon.setIcon(bufferedGraphics.getDate());
+	dateIcon.setVisible(false);
+	this.add(dateIcon);
+    }
+
+    private void addUncheckedMark(final int guiId) {
+	uncheckedMark = new JLabel();
+	uncheckedMark.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		executeCheck(guiId);
+	    }
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		showDateInfoIcon();
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		hideDateInfoIcon();
+	    }
+	});
+	uncheckedMark.setLocation(8 + LEADING_XPOS_OFFSET, 9);
+	uncheckedMark.setSize(23, 23);
+	uncheckedMark.setIcon(bufferedGraphics.getUnchecked());
+	uncheckedMark.setVisible(true);
+	this.add(uncheckedMark);
+    }
+
+    private void addCheckMark(final int guiId) {
+	checkMark = new JLabel();
+	checkMark.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		executeUncheck(guiId);
+	    }
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		showDateInfoIcon();
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		hideDateInfoIcon();
+	    }
+	});
+	checkMark.setLocation(8 + LEADING_XPOS_OFFSET, 9);
+	checkMark.setSize(23, 23);
+	checkMark.setIcon(bufferedGraphics.getCheckMark());
+	checkMark.setVisible(false);
+	this.add(checkMark);
+    }
+
+    private void loadItemSettings() {
+	this.setSize(888, 40);
+	this.setBorder(SETTINGS_EMPTY_BORDER);
+
+	new Timer(DISPLAY_TIME_UPDATE_PERIOD, updateTime).start();
+    }
+
+    private void linkMainInterfaceComponents(JTextPane textPane,
+	    Controller controller, final int guiId, Interpreter interpreter) {
+	TaskItem.textPane = textPane;
+	TaskItem.controller = controller;
+	TaskItem.interpreter = interpreter;
+	this.guiId = guiId;
+    }
+
+    private void addStrikeThrough() {
+	String currentHtmlString = text.getText();
+
+	String stringWithStartTag = currentHtmlString.replace(HTML_START_TAG, HTML_START_TAG_WITH_STRIKE);
+	String stringWithStartAndEndTag = stringWithStartTag.replace(HTML_END_TAG, HTML_END_TAG_WITH_STRIKE);
+
+	text.setText(stringWithStartAndEndTag);
+    }
+
+    private void removeStrikeThrough() {
+	String currentHtmlString = text.getText();
+
+	String stringWithStartTag = currentHtmlString.replace(HTML_START_TAG_WITH_STRIKE, HTML_START_TAG);
+	String stringWithStartAndEndTag = stringWithStartTag.replace(HTML_END_TAG_WITH_STRIKE, HTML_END_TAG);
+
+	text.setText(stringWithStartAndEndTag);
+    }
+
     private void activateInfoState() {
+
 	inDateDisplayState = false;
 	infoIcon.setVisible(false);
 	dateIcon.setVisible(true);
-	
+
 	setTimedDisplayText(description, location, infoDisplayTime);
 	placeEllipsis(description, location, infoDisplayTime);
     }
-    
+
     private void activateDateState() {
+
 	inDateDisplayState = true;
 	dateIcon.setVisible(false);
 	infoIcon.setVisible(true);
-	
+
 	text.setText(dateDisplayTime);
 	ellipsis.setVisible(false);
     }
-    
+
     private void reminderShortcut() {
+
 	MainInterface.clearTextPane();
-	
 	String reminderTime = dateFormatter.format(this.reminderTime.getTime());
-	
-	textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME) + " " + reminderTime);
+
+	textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME) + SINGLE_SPACE + reminderTime);
     }
-      
-    private void deleteTaskShortcut() {
-	controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.DELETE) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId); 
-	
+
+    private void deleteTaskShortcut() {	
+
+	controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.DELETE) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId); 
 	refreshDisplay();
+
     }
 
     public void refreshDisplay() {
 	MainInterface.updateTaskDisplay();
     }
-    
+
     private void modifyDescriptionShortcut() {
-	
+
 	MainInterface.clearTextPane();
-	
+
 	if (isFloatingTask) {
-	    String location = "";
-	    
-	    if (!floatingTask.getLocation().equals("NIL")) {
-		location = " -" + interpreter.getDefaultParaSyn(ParameterType.LOCATION) + " " + floatingTask.getLocation();
-	    }
-	    
-	    textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " " + floatingTask.getTaskTitle() + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + location + " "); 
-	    
+	    generateFloatingTaskDetails(); 
 	    return;
 	}
- 	
-	if (!inDateDisplayState) {
-	    String location = "";
-	    if (!timedTask.getLocation().equals("NIL")) {
-		location = " -" + interpreter.getDefaultParaSyn(ParameterType.LOCATION) + " " + timedTask.getLocation();
-	    }
 
-	    textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " " + timedTask.getTaskTitle() + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + location + " ");
-	    
-	    
+	if (!inDateDisplayState) {
+	    generateInfoDetails();
 	} else {
-	    if (timedTask.getIsThereReminder()) {
-		textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + " " + dateFormatter.format(timedTask.getStartTime().getTime()) + " -" + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + " "
-			+ dateFormatter.format(timedTask.getEndTime().getTime()) + " -" + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME) + " " + dateFormatter.format(this.reminderTime.getTime()));
-	    } else {
-		textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + " " + dateFormatter.format(timedTask.getStartTime().getTime()) + " -" + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + " " 
-			+ dateFormatter.format(timedTask.getEndTime().getTime())); // TODO: Implement remind time
-	    }
+	    generateTimeDetails();
 	}
     }
-    
+
+    private void generateTimeDetails() {
+	if (timedTask.getIsThereReminder()) {
+	    textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + SINGLE_SPACE + dateFormatter.format(timedTask.getStartTime().getTime()) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + SINGLE_SPACE
+		    + dateFormatter.format(timedTask.getEndTime().getTime()) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME) + SINGLE_SPACE + dateFormatter.format(this.reminderTime.getTime()));
+	} else {
+	    textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + SINGLE_SPACE + dateFormatter.format(timedTask.getStartTime().getTime()) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + SINGLE_SPACE 
+		    + dateFormatter.format(timedTask.getEndTime().getTime()));
+	}
+    }
+
+    private void generateInfoDetails() {
+	String location = "";
+	if (!timedTask.getLocation().equals(EMPTY_LOCATION)) {
+	    location = INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.LOCATION) + SINGLE_SPACE + timedTask.getLocation();
+	}
+
+	textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + SINGLE_SPACE + timedTask.getTaskTitle() + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + location + SINGLE_SPACE);
+    }
+
+    private void generateFloatingTaskDetails() {
+	String location = "";
+
+	if (!floatingTask.getLocation().equals(EMPTY_LOCATION)) {
+	    location = INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.LOCATION) + SINGLE_SPACE + floatingTask.getLocation();
+	}
+
+	textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + SINGLE_SPACE + floatingTask.getTaskTitle() + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + location + SINGLE_SPACE);
+    }
+
     private void cyclePriorities(int currentPriority) {
 
-	
-	// TODO: Less coupling
-	
 	switch(currentPriority) {
 	case 0:
 	    return;
-	
 	case 1:
-	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + " " + "low");
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_LOW);
 	    break;
-
 	case 2:
-	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + " " + "high");
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_HIGH);
 	    break;
 	case 3:
-	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + " -" + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + " " + guiId + " -" + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + " " + "med");
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_MEDIUM);
 	    break;
 	}
-	
+
 	refreshDisplay();
 
     }
 
     public void loadTimedTaskDetails(Task item, int guiId, Calendar reminderTime) {
-	
+
 	timedTask = item;
+
+	assert (timedTask != null);
+
+	loadTimedTaskGuiSettings(reminderTime);
+	initializeTimedDisplayTexts();
+	loadDisplayTime();
+
+	setTimedDisplayText(description, location, infoDisplayTime);
+	setCheckMark(timedTask.getIsTaskDone());
+
+	setReminderIcon(timedTask.getIsThereReminder());
+	setPriorityIcon(timedTask.getPriority(), timedTask.getIsThereReminder());
+
+	setTaskStrikethrough(timedTask);
+	setToggleButtonPos();
 	
-	if (timedTask != null) {
-	    
-	    this.reminderTime = reminderTime;
-	    
-	    isFloatingTask = false;
-	    
-	    reminder.setEnabled(true);
-	    infoIcon.setEnabled(true);
-	    dateIcon.setEnabled(true);
-	    
-	    description = timedTask.getTaskTitle();
-	    location = timedTask.getLocation();
-	    infoDisplayTime = "";
-	    
-	    
-	    this.realTaskId = timedTask.getTaskID();
-	    
-	    if (location.equals("NIL")) {
-		location = "";
-	    } else {
-		location = LOCATION_AT_PREFIX + location;
-	    }
+    }
 
-	    /** NEED TO REPLACE ACCORDING TO NARIN's DISPLAY METHOD FOR FLOATING TASKS **/
+    private void setToggleButtonPos() {
+	int xPosOfToggleBtn = calculateToggleBtnXPos();
+	dateIcon.setLocation(xPosOfToggleBtn, 7);
+	infoIcon.setLocation(xPosOfToggleBtn, 7);
+    }
 
-	    infoDisplayTime = updateInfoTimings();
-	    
-	    if (timedTask.getIsThereReminder()) {
-	    	dateDisplayTime = updateDateTimings(timedTask.getStartTime(), timedTask.getEndTime(), this.reminderTime); // TODO: Replace last with remind time
-	    } else {
-		dateDisplayTime = updateDateTimings(timedTask.getStartTime(), timedTask.getEndTime());
-	    }
-	    
-	    setTimedDisplayText(description, location, infoDisplayTime);
-	    setCheckMark(timedTask.getIsTaskDone());
-	    setReminderIcon(timedTask.getIsThereReminder());
-	    setPriorityIcon(timedTask.getPriority(), timedTask.getIsThereReminder());
-	    apparentId.setText(guiId + "");
-	    
-	    // Set info/date icon toggle button:
-	    
-	    int xPosOfToggle = calculateXPos();
-	    dateIcon.setLocation(xPosOfToggle, 7);
-	    infoIcon.setLocation(xPosOfToggle, 7);
+    private void setTaskStrikethrough(Task timedTask) {
+	if (timedTask.getIsTaskDone()) {
+	    addStrikeThrough();
+	} else {
+	    removeStrikeThrough();
 	}
     }
-    
+
+    private void setTaskStrikethrough(FloatingTask floatingTask) {
+	if (floatingTask.getIsTaskDone()) {
+	    addStrikeThrough();
+	} else {
+	    removeStrikeThrough();
+	}
+    }
+
+    private void loadDisplayTime() {
+	infoDisplayTime = formatInfoTimings();
+
+	if (timedTask.getIsThereReminder()) {
+	    dateDisplayTime = updateDateTimings(timedTask.getStartTime(), timedTask.getEndTime(), this.reminderTime); 
+	} else {
+	    dateDisplayTime = updateDateTimings(timedTask.getStartTime(), timedTask.getEndTime());
+	}
+    }
+
+    private void initializeTimedDisplayTexts() {
+
+	description = timedTask.getTaskTitle();
+	location = timedTask.getLocation();
+	infoDisplayTime = "";
+
+	if (location.equals(EMPTY_LOCATION)) {
+	    location = "";
+	} else {
+	    location = PREFIX_AT_LOCATION + location;
+	}
+
+	apparentId.setText(guiId + "");
+    }
+
+    private void loadTimedTaskGuiSettings(Calendar reminderTime) {
+	this.reminderTime = reminderTime;
+	isFloatingTask = false;
+
+	reminderIcon.setEnabled(true);
+	infoIcon.setEnabled(true);
+	dateIcon.setEnabled(true);
+    }
+
     public void loadFloatingTaskDetails(FloatingTask item, int guiId) {
-	
+
 	floatingTask = item;
+
+	assert(floatingTask != null);
+
+	loadFloatingTaskGuiSettings();
+	loadFloatingTaskDisplayText();
+
+	setCheckMark(floatingTask.getIsTaskDone());
+	setPriorityIcon(floatingTask.getPriority(), false);
 	
-	if (floatingTask != null) { // TODO: Assert
-	    isFloatingTask = true;
-	    
-//	    reminder.setEnabled(false);
-//	    infoIcon.setEnabled(false);
-//	    dateIcon.setEnabled(false);
-	    
-	    this.remove(reminder);
-	    this.remove(infoIcon);
-	    this.remove(dateIcon);
-	    
-	    String description = floatingTask.getTaskTitle();
-	    String location = "";
-	    
-	    if (floatingTask.getLocation().equals("NIL")) {
-		location = "";
-	    } else {
-		location = LOCATION_AT_PREFIX + floatingTask.getLocation();
-	    }
-	    
-	    String displayText = "<html><nobr><font color='f7bbbb'> " + description + "</font>&nbsp; <font color='9a9695'>" + location + "</font></nobr></html>";
-	    
-	    text.setText(displayText);
-	    setCheckMark(floatingTask.getIsTaskDone());
-	    setPriorityIcon(floatingTask.getPriority(), false);
-	    apparentId.setText(guiId + "");
+	// Note: floating task currently doesn't support reminders
+    }	
+
+    private void loadFloatingTaskDisplayText() {
+	String description = floatingTask.getTaskTitle();
+	String location = "";
+
+	if (floatingTask.getLocation().equals(EMPTY_LOCATION)) {
+	    location = "";
+	} else {
+	    location = PREFIX_AT_LOCATION + floatingTask.getLocation();
 	}
-	
+
+	String displayText = String.format(HTML_FLOATING_TASK, description, location);
+	text.setText(displayText);
+
+	setTaskStrikethrough(floatingTask);
     }
-    
+
+    private void loadFloatingTaskGuiSettings() {
+	isFloatingTask = true;
+
+	this.remove(reminderIcon);
+	this.remove(infoIcon);
+	this.remove(dateIcon);
+
+	apparentId.setText(guiId + "");
+    }
+
     private String updateDateTimings(Calendar startTime, Calendar endTime, Calendar remindTime) {
-	
+
 	String displayText = "";
-	
+
 	String startTimeString = dateFormatter.format(startTime.getTime()) + HTML_SPACING;
 	String endTimeString = dateFormatter.format(endTime.getTime()) + HTML_SPACING;
 	String remindTimeString = dateFormatter.format(remindTime.getTime());
-	
-	displayText = "<html><nobr> Start: <font color='9a9695'>" + startTimeString + "</font>End: <font color='9a9695'>" + endTimeString + "</font>" 
-		+ "Reminder: <font color='9a9695'>" + remindTimeString + "</font>";
-	
-	return displayText + "</nobr></html>";
+
+	displayText = String.format(HTML_TIME_DISPLAY_WITH_REMINDER, startTimeString, endTimeString, remindTimeString);
+
+	return displayText;
     }
-    
+
     private String updateDateTimings(Calendar startTime, Calendar endTime) {
 	String displayText = "";
-	
+
 	String startTimeString = dateFormatter.format(startTime.getTime()) + HTML_SPACING;
 	String endTimeString = dateFormatter.format(endTime.getTime());
 	
-	displayText = "<html><nobr> Start: <font color='9a9695'>" + startTimeString + "</font>End: <font color='9a9695'>" + endTimeString + "</font>";
+	displayText = String.format(HTML_TIME_DISPLAY, startTimeString, endTimeString);
 	
-	return displayText + "</nobr></html>";	
+	return displayText;	
     }
-    
-    private int calculateXPos() {
-	if (timedTask.getPriority() == 0 && !timedTask.getIsThereReminder()) {
-	    return 689 + 10 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET;
-	} else if (timedTask.getPriority() == 0 && timedTask.getIsThereReminder()) {
-	    return 689 + 10 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET - 25 - 10;
+
+    private int calculateToggleBtnXPos() {
+	if (timedTask.getPriority() == INT_PRIORITY_NONE && !timedTask.getIsThereReminder()) {
+	    return 689 + 10 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET;
+	} else if (timedTask.getPriority() == INT_PRIORITY_NONE && timedTask.getIsThereReminder()) {
+	    return 689 + 10 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET - 25 - 10;
 	}
-	
-	return priority.getLocation().x - 13 - 25; // priority.getIcon().getIconWidth()
+
+	return priorityIcon.getLocation().x - 13 - 25; // priority.getIcon().getIconWidth()
     }
-    
-    public String updateInfoTimings() {
+
+    private String formatInfoTimings() {
 	String displayTime;
 	if (timedTask.getStartTime().after(Calendar.getInstance())) {
-	displayTime = "starts " + p.format(timedTask.getStartTime());
+	    displayTime = DATE_FORMAT_STARTS + prettyTimeParser.format(timedTask.getStartTime());
 	} else if (timedTask.getEndTime().after(Calendar.getInstance())) {
-	displayTime = "ends " + p.format(timedTask.getEndTime());
+	    displayTime = DATE_FORMAT_ENDS + prettyTimeParser.format(timedTask.getEndTime());
 	} else {
-	displayTime = "ended " + p.format(timedTask.getEndTime());
+	    displayTime = DATE_FORMAT_ENDED + prettyTimeParser.format(timedTask.getEndTime());
 	}
 	return displayTime;
     }
-    
-    public void setPriorityIcon(int priorityRef, boolean isThereReminder) {
-	
-	withoutReminderOffset = 35 + 10;
-	
+
+    private void setPriorityIcon(int priorityRef, boolean isThereReminder) {
+
+	withoutReminderXPosOffset = 45;
+
 	if (!isFloatingTask && isThereReminder) {
-	    withoutReminderOffset = 10;
+	    withoutReminderXPosOffset = 10;
 	}
-	
-	if (priorityRef == 1) {
-	    setHighPri(withoutReminderOffset);
-	} else if (priorityRef == 2) {
-	    setMedPri(withoutReminderOffset);
 
-	} else if (priorityRef == 3) {
-	    setLowPri(withoutReminderOffset);
-
+	if (priorityRef == INT_PRIORITY_HIGH) {
+	    setPriHigh(withoutReminderXPosOffset);
+	} else if (priorityRef == INT_PRIORITY_MEDIUM) {
+	    setPriMed(withoutReminderXPosOffset);
+	} else if (priorityRef == INT_PRIORITY_LOW) {
+	    setPriLow(withoutReminderXPosOffset);
 	} else {
-	    priority.setVisible(false);
+	    priorityIcon.setVisible(false);
 	}
 
-
-    }
-    
-    public void setLowPri(int withoutReminderOffset) {
-	priority.setIcon(graphics.lowPri);
-	priority.setSize(23, 20);
-	priority.setLocation(655 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset,  10);
-	priority.setVisible(true);
     }
 
-    public void setMedPri(int withoutReminderOffset) {
-	priority.setIcon(graphics.medPri);
-	priority.setSize(23, 20);
-	priority.setLocation(655 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset,  10);
-	priority.setVisible(true);
+    private void setPriLow(int withoutReminderOffset) {
+	priorityIcon.setIcon(bufferedGraphics.getLowPri());
+	priorityIcon.setSize(23, 20);
+	priorityIcon.setLocation(655 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET + withoutReminderOffset,  10);
+	priorityIcon.setVisible(true);
     }
 
-    public void setHighPri(int withoutReminderOffset) {
-	priority.setIcon(graphics.highPri);
-	priority.setSize(23, 20);
-	priority.setLocation(655 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset, 10);
-	priority.setVisible(true);
+    private void setPriMed(int withoutReminderOffset) {
+	priorityIcon.setIcon(bufferedGraphics.getMedPri());
+	priorityIcon.setSize(23, 20);
+	priorityIcon.setLocation(655 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET + withoutReminderOffset,  10);
+	priorityIcon.setVisible(true);
     }
 
-//    public void setLowPri(int withoutReminderOffset) {
-//	priority.setIcon(graphics.lowPri);
-//	priority.setSize(6, 20);
-//	priority.setLocation(672 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset,  10);
-//	priority.setVisible(true);
-//    }s
-//
-//    public void setMedPri(int withoutReminderOffset) {
-//	priority.setIcon(graphics.medPri);
-//	priority.setSize(15, 20);
-//	priority.setLocation(663 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset,  10);
-//	priority.setVisible(true);
-//    }
-//
-//    public void setHighPri(int withoutReminderOffset) {
-//	priority.setIcon(graphics.highPri);
-//	priority.setSize(23, 20);
-//	priority.setLocation(655 + INITIAL_SPACE_OFFSET + FINAL_SPACE_OFFSET + withoutReminderOffset, 10);
-//	priority.setVisible(true);
-//    }
-    
-    public void setReminderIcon (boolean show) {
+    private void setPriHigh(int withoutReminderOffset) {
+	priorityIcon.setIcon(bufferedGraphics.getHighPri());
+	priorityIcon.setSize(23, 20);
+	priorityIcon.setLocation(655 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET + withoutReminderOffset, 10);
+	priorityIcon.setVisible(true);
+    }
+
+    private void setReminderIcon (boolean show) {
 	if (show) {
-	    reminder.setVisible(true);
+	    reminderIcon.setVisible(true);
 	} else {
-	    reminder.setVisible(false);
+	    reminderIcon.setVisible(false);
 	}
     }
 
-    public void setTimedDisplayText(String description, String location, String infoDisplayTime) {
+    private void setTimedDisplayText(String description, String location, String infoDisplayTime) {
 	
-	String displayText = "<html><nobr> " + description + " – <font color='9a9695'>" + infoDisplayTime + location + "</font></nobr></html>";
-	
+	String displayText = String.format(HTML_INFO_DISPLAY, description, infoDisplayTime, location);
 	text.setText(displayText);
 
-	
 	placeEllipsis(description, location, infoDisplayTime);
     }
 
-    public void placeEllipsis(String description, String location,
+    private void placeEllipsis(String description, String location,
 	    String displayTime) {
 	Dimension dimensions = text.getPreferredSize();
-	if (dimensions.getWidth() > 600) {
-	    text.setSize(575, 24);
-	    
+	if (dimensions.getWidth() > MAX_DISPLAY_TEXT_LENGTH) {
+	    text.setSize(MAX_DISPLAY_TEXT_LENGTH, 42);
+
 	    ellipsis.setVisible(true);
-	    text.setToolTipText(description + " – " + displayTime + location);
+	    text.setToolTipText(description + DESCRIPTION_SEPERATION_HYPHEN + displayTime + location);
 	} else {
 	    ellipsis.setVisible(false);
 	    text.setToolTipText("");
 	}
     }
-    
-    
-    public void setCheckMark(boolean check) {
-	
+
+
+    private void setCheckMark(boolean check) {
+
 	if (check) {
-	    unchecked.setVisible(false);
+	    uncheckedMark.setVisible(false);
 	    checkMark.setVisible(true);
-	    
-	    
+
+
 	} else {
-	    unchecked.setVisible(true);
+	    uncheckedMark.setVisible(true);
 	    checkMark.setVisible(false);
-	    
+
 	}
-	
+
     }
 
-    public void showDateInfoIcon() {
+    private void showDateInfoIcon() {
 	if (inDateDisplayState) {
 	    infoIcon.setVisible(true);
 	    dateIcon.setVisible(false);
@@ -661,8 +761,24 @@ public class TaskItem extends JLayeredPane {
 	}
     }
 
-    public void hideDateInfoIcon() {
+    private void hideDateInfoIcon() {
 	dateIcon.setVisible(false);
 	infoIcon.setVisible(false);
     }
+
+    private void executeUncheck(final int guiId) {
+	setCheckMark(false);
+	TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.UNMARK) + INPUT_DELIMITER + TaskItem.interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId);
+	MainInterface.getSystemStatusMessage().setText(TaskItem.controller.getSystemMessageString());
+	removeStrikeThrough();
+    }
+
+    private void executeCheck(final int guiId) {
+	setCheckMark(true);
+	TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.MARK) + INPUT_DELIMITER + TaskItem.interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId);
+	MainInterface.getSystemStatusMessage().setText(TaskItem.controller.getSystemMessageString());
+	addStrikeThrough();
+    }
+
 }
+

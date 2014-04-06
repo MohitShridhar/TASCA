@@ -19,7 +19,12 @@ import com.joestelmach.natty.Parser;
 
 public class Parameters {
     
-    private static final int FIRST_DATE = 0;
+    private static final int SMALLEST_ID_REFERENCE = 0;
+    private static final int EXCEPTION_INVALID_ID = -1;
+    private static final int FIRST_DATE_PARSED = 0;
+    
+    private static final String STRING_DEFAULT = "default";
+    private static final String STRING_NULL = "null";
     
     private static final int PRIORITY_NONE = 0;
     private static final int PRIORITY_HIGH = 1;
@@ -36,8 +41,6 @@ public class Parameters {
     Parser parser;    
 
     public Parameters() {
-        // Initialize all parameters to null
-	
 	parser = new Parser(); 
     }
     
@@ -52,7 +55,6 @@ public class Parameters {
 	  return cal;
     }
   
-    //Mutators:
     public CommandFeedback setStartTime (String rawInput) {
 	List<DateGroup> groups = parser.parse(rawInput);
 	
@@ -60,7 +62,7 @@ public class Parameters {
 	    return CommandFeedback.INVALID_START_TIME;
 	} 
 	
-	startTime = dateToCal(groups.get(FIRST_DATE).getDates().get(FIRST_DATE));
+	startTime = dateToCal(groups.get(FIRST_DATE_PARSED).getDates().get(FIRST_DATE_PARSED));
         
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
@@ -72,7 +74,7 @@ public class Parameters {
 	    return CommandFeedback.INVALID_END_TIME;
 	} 
 	
-	endTime = dateToCal(groups.get(FIRST_DATE).getDates().get(FIRST_DATE));
+	endTime = dateToCal(groups.get(FIRST_DATE_PARSED).getDates().get(FIRST_DATE_PARSED));
 	
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
@@ -84,10 +86,10 @@ public class Parameters {
 	    return CommandFeedback.INVALID_REMIND_TIME;
 	} 
 	
-	remindTime = dateToCal(groups.get(FIRST_DATE).getDates().get(FIRST_DATE));
+	remindTime = dateToCal(groups.get(FIRST_DATE_PARSED).getDates().get(FIRST_DATE_PARSED));
 
-	if (groups.get(FIRST_DATE).isRecurring()) {
-	    recurEndTime = dateToCal(groups.get(FIRST_DATE).getRecursUntil());
+	if (groups.get(FIRST_DATE_PARSED).isRecurring()) { // Note: Recurring reminders are not supported by Logic (yet)
+	    recurEndTime = dateToCal(groups.get(FIRST_DATE_PARSED).getRecursUntil());
 	}
         
         return CommandFeedback.SUCCESSFUL_OPERATION;
@@ -147,8 +149,6 @@ public class Parameters {
     }
     
     
-    // Accessors:
-    
     public Calendar getStartTime() {
         return startTime;
     }
@@ -161,7 +161,6 @@ public class Parameters {
         return remindTime;
     }
     
-    // only for reminders:
     public Calendar getRecurEndTime() {
 	return recurEndTime;
     }
@@ -180,7 +179,7 @@ public class Parameters {
     
     public String getPriority() {
         if (priority == null) {
-            return "null";
+            return STRING_NULL;
         }
         
         return Integer.toString(priority);
@@ -188,7 +187,7 @@ public class Parameters {
     
     public String getTaskId() {
         if (taskId == null) {
-            return "null";
+            return STRING_NULL;
         }
         
         return Integer.toString(taskId);
@@ -196,7 +195,7 @@ public class Parameters {
     
     
     private boolean isValidFolder(String folderName) {
-	if (folderName.toLowerCase().equalsIgnoreCase("default")) {
+	if (folderName.toLowerCase().equalsIgnoreCase(STRING_DEFAULT)) {
 	    return true;
 	} else if (cfg.getFolderId(folderName.toLowerCase()) != null) {
 	    return true;
@@ -207,9 +206,9 @@ public class Parameters {
     
     private boolean isValidId(int id) {
 	
-	if (Interpreter.checkIsGuiIdEnabled() && Interpreter.getRealId(id) != -1) {
+	if (Interpreter.checkIsGuiIdEnabled() && Interpreter.getRealId(id) != EXCEPTION_INVALID_ID) {
 	    return true;
-	} else if (!Interpreter.checkIsGuiIdEnabled() && id >= 0) {
+	} else if (!Interpreter.checkIsGuiIdEnabled() && id >= SMALLEST_ID_REFERENCE) {
 	    return true;
 	}
 	
@@ -217,19 +216,33 @@ public class Parameters {
     }
     
     private int stringToIntPriority(String priorityString) {
-        if (priorityString.equalsIgnoreCase("HIGH") || priorityString.equalsIgnoreCase("H") || priorityString.equalsIgnoreCase("imp") || priorityString.equalsIgnoreCase("important") || priorityString.equalsIgnoreCase("1")) {
+        if (isHigh(priorityString)) {
             return PRIORITY_HIGH;
-        } else if (priorityString.equalsIgnoreCase("MEDIUM") || priorityString.equalsIgnoreCase("MED") || priorityString.equalsIgnoreCase("M") || priorityString.equalsIgnoreCase("2") ) {
+        } else if (isMed(priorityString) ) {
             return PRIORITY_MEDIUM;
-        } else if (priorityString.equalsIgnoreCase("LOW") || priorityString.equalsIgnoreCase("not imp") || priorityString.equalsIgnoreCase("L") || priorityString.equalsIgnoreCase("3")) {
+        } else if (isLow(priorityString)) {
             return PRIORITY_LOW;
-        } else if (priorityString.equalsIgnoreCase("none") || priorityString.equalsIgnoreCase("remove") || priorityString.equalsIgnoreCase("nothing") || priorityString.equalsIgnoreCase("0")) {
+        } else if (isNoneAssigned(priorityString)) {
             return PRIORITY_NONE;
         }
         
-        
         return PRIORITY_INVALID_REF;
-                
+    }
+
+    public boolean isNoneAssigned(String priorityString) {
+	return priorityString.equalsIgnoreCase("none") || priorityString.equalsIgnoreCase("remove") || priorityString.equalsIgnoreCase("nothing") || priorityString.equalsIgnoreCase("0");
+    }
+
+    public boolean isLow(String priorityString) {
+	return priorityString.equalsIgnoreCase("LOW") || priorityString.equalsIgnoreCase("not imp") || priorityString.equalsIgnoreCase("L") || priorityString.equalsIgnoreCase("3");
+    }
+
+    public boolean isMed(String priorityString) {
+	return priorityString.equalsIgnoreCase("MEDIUM") || priorityString.equalsIgnoreCase("MED") || priorityString.equalsIgnoreCase("M") || priorityString.equalsIgnoreCase("2");
+    }
+
+    public boolean isHigh(String priorityString) {
+	return priorityString.equalsIgnoreCase("HIGH") || priorityString.equalsIgnoreCase("H") || priorityString.equalsIgnoreCase("imp") || priorityString.equalsIgnoreCase("important") || priorityString.equalsIgnoreCase("1");
     }
     
 }
