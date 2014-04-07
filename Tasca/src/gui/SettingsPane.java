@@ -33,7 +33,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
 
-
+//@author A0105912N
 public class SettingsPane extends JFrame {
     
     private static final String FILENAME_CONFIG_FILE = "Config.cfg";

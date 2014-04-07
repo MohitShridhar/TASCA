@@ -6,10 +6,12 @@ package interpreter;
  *
  */
 
+//@author A0105912N
+
 public class Command {
     private CommandType command;
     private Parameters parameters;
-    
+
     public Command() {
         command = null;
         parameters = new Parameters();

@@ -26,6 +26,7 @@ import javax.swing.text.StyleConstants;
 
 import org.antlr.runtime.tree.RewriteEmptyStreamException;
 
+//@author A0105912N
 public class InputColorFilter extends DocumentFilter {
 
     private static final char SINGLE_SPACE = ' ';

@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
+//@author A0105912N
 public class BufferedGraphics {
     
     private static final String FILEPATH_KEYWORD_ITEM_BACKGROUND = "/GUI Graphics/Keyword Item Background.png";

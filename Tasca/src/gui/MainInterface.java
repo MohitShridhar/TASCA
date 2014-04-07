@@ -53,6 +53,7 @@ import controller.Controller;
 
 // TODO: Add more help error messages. Implement all user exceptions
 
+//@author A0105912N
 public class MainInterface {
 
     private static final Dimension DIMENSIONS_TASK_ITEM = new Dimension(888, 40);

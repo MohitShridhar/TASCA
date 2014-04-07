@@ -1,5 +1,6 @@
 package interpreter;
 
+//@author A0105912N
 public enum CommandType {
     
     ADD, MODIFY,

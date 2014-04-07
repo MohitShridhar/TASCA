@@ -9,7 +9,7 @@ import java.util.Properties;
 
 import junit.framework.Assert;
 
-
+//@author A0105912N
 public class Config
 {
     private static final String DELIMITER_PARAMETER = ",";
@@ -40,7 +40,7 @@ public class Config
     private static Map<Integer, FolderName> intToFolderId = new HashMap<Integer, FolderName>();
     
     private static FolderName defaultFolder = FolderName.FOLDER1;   
-
+    
     public Config()
     {
 	clearAllMaps();

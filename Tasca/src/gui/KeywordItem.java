@@ -9,6 +9,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
+//@author A0105912N
 public class KeywordItem extends JLayeredPane {
     
 

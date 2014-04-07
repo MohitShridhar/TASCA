@@ -6,6 +6,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+//@author A0105912N
 class UserInputTextPane extends JTextPane {
 
     private static final long serialVersionUID = 1L;

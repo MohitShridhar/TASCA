@@ -8,15 +8,13 @@ import com.joestelmach.natty.DateGroup;
 import com.joestelmach.natty.Parser;
 
 
-// OLD Time NLP
-// import com.clutch.dates.* //<<If needed>> 
-
 
 /**
  * Class for storing/accessing different parameters of a command (like add, modify, due)
  * 
  */
 
+//@author A0105912N
 public class Parameters {
     
     private static final int SMALLEST_ID_REFERENCE = 0;

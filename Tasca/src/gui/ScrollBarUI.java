@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.plaf.metal.MetalScrollBarUI;
 
+//@author A0105912N
 class ScrollBarUI extends MetalScrollBarUI {
     
     private static final Color COLOR_UI_BACKGROUND = Color.decode("#272822");

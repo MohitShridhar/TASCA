@@ -12,10 +12,11 @@ import java.util.Properties;
  * 
  * @author Mohit Shridhar
  * @Matric A0105912N
- * @date 27/2/2014
+ * 
  */
 
 
+//@author A0105912N
 
 public class Interpreter {
     
@@ -76,7 +77,7 @@ public class Interpreter {
     // Other exceptions:
     private static final int EXCEPTION_NON_EXISTENT_ID = -1;
     
-    
+    // Hash maps:
     private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
     private static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
     
@@ -94,6 +95,7 @@ public class Interpreter {
     private static boolean isGuiIdEnabled = false;
     
     /* Keyword Headers: Mapping Config file elements to Command & Parameter types */
+    
     private static final Map<String, CommandType> commandHeaders;
     private static final Map<String, ParameterType> parameterHeaders;
     static
@@ -140,7 +142,6 @@ public class Interpreter {
 	readCommandDatabase();
 	readParameterDatabase();
     }
-    
     
     public Interpreter() {
 	// Do nothing

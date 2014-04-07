@@ -27,7 +27,7 @@ import storage.FloatingTask;
 import storage.Task;
 import controller.Controller;
 
-
+//@author A0105912N
 public class TaskItem extends JLayeredPane {
 
     private static final int MAX_DISPLAY_TEXT_LENGTH = 600;

@@ -1,0 +1,4837 @@
+//@author: a0105912n
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\Command.java
+	 */
+
+
+public class Command {
+    private CommandType command;
+    private Parameters parameters;
+
+    public Command() {
+        command = null;
+        parameters = new Parameters();
+    }
+    
+    
+    public Command(CommandType command) {
+        this.command = command;
+        parameters = null;
+    }
+    
+    public Command(CommandType command, Parameters parameters) {
+        this.command = command;
+        parameters = this.parameters;
+    }
+    
+
+    
+    public void setCommandType(CommandType command) {
+        this.command = command;
+    }
+    
+    public CommandFeedback setDescription(String description) {
+        return parameters.setDescription(description);
+    }
+    
+    public void setLocation(String location) {
+        parameters.setLocation(location);
+    }
+    
+    public CommandFeedback setFolder(String folder) {
+        return parameters.setFolder(folder);
+    }
+    
+    public CommandFeedback setPriority(String priority){
+        return parameters.setPriority(priority);
+    }
+    
+    public CommandFeedback setTaskId(String id) {
+        return parameters.setTaskId(Integer.parseInt(id));
+    }
+    
+    public CommandFeedback setStartTime(String time) {
+        return parameters.setStartTime(time);
+    }
+    
+    public CommandFeedback setEndTime(String time) {
+        return parameters.setEndTime(time);
+    }
+    
+    public CommandFeedback setRemindTime(String time) {
+        return parameters.setRemindTime(time);
+    }
+    
+    
+
+    public CommandType getCommandType() {
+        return command;
+    }
+    
+    public Parameters getParameters() {
+        return parameters;
+    }
+    
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\Command.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\CommandFeedback.java
+	 */
+
+public enum CommandFeedback {
+    
+    INVALID_START_TIME, INVALID_END_TIME, INVALID_REMIND_TIME, 
+    INVALID_PRIORITY, INVALID_FOLDER_REF, INVALID_TASK_ID,
+    
+    EMPTY_DESCRIPTION, EMPTY_LOCATION,
+    
+    INVALID_DATABASE_DUPLICATES, EMPTY_KEYWORD, MULTIPLE_WORD_KEYWORD,
+    
+    SUCCESSFUL_OPERATION;
+}
+
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\CommandFeedback.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\CommandType.java
+	 */
+
+public enum CommandType {
+    
+    ADD, MODIFY,
+    DISPLAY_NOW, DISPLAY_TODAY, DISPLAY_TOMORROW, DISPLAY_WEEK, DISPLAY_MONTH, DISPLAY_ALL, DISPLAY_IN_TIME, DISPLAY_ALL_FLOAT,
+    
+    DELETE, DELETE_ALL_COMPLETED,  
+    SEARCH, MARK, UNMARK, 
+    
+    QUIT, CLEAR, UNDO, REDO,
+    
+    EXPORT, IMPORT,
+    
+    INVALID
+    
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\CommandType.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\Config.java
+	 */
+
+public class Config
+{
+    private static final String DELIMITER_PARAMETER = ",";
+    private static final String FILENAME_USER_CONFIG_FILE = "Config.cfg";
+    private static final String MESSAGE_GENERATING_CONFIG_FILE = "Config.cfg file not found. Generating Default Configurations";
+    private static final String FILENAME_DEFAULT_CONFIG_FILE = "Default_Config.cfg";
+    private static final String MESSAGE_SERIOUS_ERROR_CONFIG_FILE = "Serious error: Default config file not found";
+    
+    private static final int INT_FOLDER5 = 5;
+    private static final int INT_FOLDER4 = 4;
+    private static final int INT_FOLDER3 = 3;
+    private static final int INT_FOLDER2 = 2;
+    private static final int INT_FOLDER1 = 1;
+    private static final int INT_DEFAULT = 0;
+    
+    private static final String DEFAULT_ID_STRING = "default";
+    private static final String FOLDER5_ID_STRING = "folder5";
+    private static final String FOLDER4_ID_STRING = "folder4";
+    private static final String FOLDER3_ID_STRING = "folder3";
+    private static final String FOLDER2_ID_STRING = "folder2";
+    private static final String FOLDER1_ID_STRING = "folder1";
+    
+    Properties configFile;
+    
+    private static Map<String, FolderName> folderNameRef = new HashMap<String, FolderName>();
+    private static Map<FolderName, String> folderIdRef = new HashMap<FolderName, String>();
+    private static Map<String, FolderName> folderIdHeader = new HashMap<String, FolderName>();
+    private static Map<Integer, FolderName> intToFolderId = new HashMap<Integer, FolderName>();
+    
+    private static FolderName defaultFolder = FolderName.FOLDER1;   
+    
+    public Config()
+    {
+	clearAllMaps();
+	loadConfigFile();
+
+	buildFolderNameRef();
+	buildFolderIdHeader();
+	buildFolderIdRef();
+	buildIntToFolderId();
+    }
+
+    public void buildIntToFolderId() {
+	// To be used to decode logic's 'int' method of specifying folders:
+	
+	intToFolderId.put(INT_DEFAULT, FolderName.DEFAULT);
+	intToFolderId.put(INT_FOLDER1, FolderName.FOLDER1);
+	intToFolderId.put(INT_FOLDER2, FolderName.FOLDER2);
+	intToFolderId.put(INT_FOLDER3, FolderName.FOLDER3);
+	intToFolderId.put(INT_FOLDER4, FolderName.FOLDER4);
+	intToFolderId.put(INT_FOLDER5, FolderName.FOLDER5);
+
+	defaultFolder = folderIdHeader.get(folderIdRef.get(FolderName.DEFAULT));
+    }
+
+    public void buildFolderIdRef() {
+	folderIdRef.put(FolderName.FOLDER1, getProperty(FOLDER1_ID_STRING).trim());
+	folderIdRef.put(FolderName.FOLDER2, getProperty(FOLDER2_ID_STRING).trim());
+	folderIdRef.put(FolderName.FOLDER3, getProperty(FOLDER3_ID_STRING).trim());
+	folderIdRef.put(FolderName.FOLDER4, getProperty(FOLDER4_ID_STRING).trim());
+	folderIdRef.put(FolderName.FOLDER5, getProperty(FOLDER5_ID_STRING).trim());
+	folderIdRef.put(FolderName.DEFAULT, getProperty(DEFAULT_ID_STRING).trim());
+    }
+
+    public void buildFolderIdHeader() {
+	folderIdHeader.put(FOLDER1_ID_STRING, FolderName.FOLDER1);
+	folderIdHeader.put(FOLDER2_ID_STRING, FolderName.FOLDER2);
+	folderIdHeader.put(FOLDER3_ID_STRING, FolderName.FOLDER3);
+	folderIdHeader.put(FOLDER4_ID_STRING, FolderName.FOLDER4);
+	folderIdHeader.put(FOLDER5_ID_STRING, FolderName.FOLDER5);
+	folderIdHeader.put(DEFAULT_ID_STRING, FolderName.DEFAULT);
+    }
+
+    private void clearAllMaps() {
+	folderNameRef.clear();
+	folderIdRef.clear();
+	folderIdHeader.clear();
+	intToFolderId.clear();
+    }
+
+    public void buildFolderNameRef() {
+	folderNameRef.put(getProperty(FOLDER1_ID_STRING).trim().toLowerCase(), FolderName.FOLDER1);
+	folderNameRef.put(getProperty(FOLDER2_ID_STRING).trim().toLowerCase(), FolderName.FOLDER2);
+	folderNameRef.put(getProperty(FOLDER3_ID_STRING).trim().toLowerCase(), FolderName.FOLDER3);
+	folderNameRef.put(getProperty(FOLDER4_ID_STRING).trim().toLowerCase(), FolderName.FOLDER4);
+	folderNameRef.put(getProperty(FOLDER5_ID_STRING).trim().toLowerCase(), FolderName.FOLDER5);
+	folderNameRef.put(DEFAULT_ID_STRING, FolderName.DEFAULT);
+    }
+
+    public void loadConfigFile() {
+	configFile = new java.util.Properties();
+	try {
+	    configFile.load(new FileInputStream(FILENAME_USER_CONFIG_FILE));
+
+	}catch(Exception eta){
+	    System.out.println(MESSAGE_GENERATING_CONFIG_FILE);
+	    loadDefaultConfig();
+	}
+    }
+
+    public void loadDefaultConfig() {
+	try {
+	    configFile.load(Config.class.getResourceAsStream(FILENAME_DEFAULT_CONFIG_FILE));
+	}catch(Exception eta){
+	    eta.printStackTrace();
+	    Assert.fail(MESSAGE_SERIOUS_ERROR_CONFIG_FILE);
+	}
+
+	saveDefaultConfig();
+    }
+
+    public void saveDefaultConfig() {
+	try {
+	    configFile.store(new FileOutputStream(FILENAME_USER_CONFIG_FILE), null);
+	} catch (FileNotFoundException e) {
+	    e.printStackTrace();
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+    }
+
+    public String getProperty(String key)
+    {
+	return this.configFile.getProperty(key);
+    }
+
+    public String[] getSynonyms(String commandType) {
+	return getProperty(commandType).trim().toLowerCase().split(DELIMITER_PARAMETER); 
+    }
+
+    public FolderName getFolderId(String folderName) {
+	return folderNameRef.get(folderName);
+    }
+
+    public String getFolderName(FolderName folderId) {
+	return folderIdRef.get(folderId);
+    }
+
+    public FolderName getDefaultFolder() {
+	return defaultFolder;
+    }
+
+    public FolderName getFolderId (int folderInt) {
+	assert (folderInt >= INT_DEFAULT && folderInt <= INT_FOLDER5);
+	return intToFolderId.get(folderInt);
+    }
+
+    public Properties getConfigFile() {
+	return configFile;
+    }
+}
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\Config.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\FolderName.java
+	 */
+
+public enum FolderName {
+    FOLDER1, FOLDER2, FOLDER3, FOLDER4, FOLDER5, DEFAULT
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\FolderName.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\Interpreter.java
+	 */
+
+
+public class Interpreter {
+    
+    // Config keys:
+    private static final String KEY_QUIT = "quit";
+    private static final String KEY_IMPORT = "import";
+    private static final String KEY_EXPORT = "export";
+    private static final String KEY_DISPLAY_IN_TIME = "display";
+    private static final String KEY_DISPLAY_FLOAT = "displayFloat";
+    private static final String KEY_DISPLAY_ALL = "displayAll";
+    private static final String KEY_REDO = "redo";
+    private static final String KEY_UNDO = "undo";
+    private static final String KEY_MONTH = "month";
+    private static final String KEY_WEEK = "week";
+    private static final String KEY_TOMORROW = "tomorrow";
+    private static final String KEY_TODAY = "today";
+    private static final String KEY_NOW = "now";
+    private static final String KEY_SEARACH = "search";
+    private static final String KEY_UNMARK = "unmark";
+    private static final String KEY_MARK = "mark";
+    private static final String KEY_MODIFY = "modify";
+    private static final String KEY_CLEAR = "clear";
+    private static final String KEY_CLEAR_COMPLETED = "clearCompleted";
+    private static final String KEY_DELETE = "delete";
+    private static final String KEY_ADD = "add";
+    private static final String STRING_DEFAULT = "default";
+    private static final String DELIMETER = "-";
+    
+    private static final String KEY_TASK_ID = "taskID";
+    private static final String KEY_FOLDER = "folder";
+    private static final String KEY_LOCATION = "location";
+    private static final String KEY_PRIORITY = "priority";
+    private static final String KEY_REMIND_TIME = "reminderTime";
+    private static final String KEY_END_TIME = "endTime";
+    private static final String KEY_START_TIME = "startTime";
+    
+    // Exception Messages:
+    private static final String INVALID_COMMAND_TYPE = "Invalid command type";
+    private static final String EXCEPTION_EMPTY_ARGUMENT = "Cannot accept empty parameter argument";
+    private static final String EXCEPTION_DUPLICATE_PARAMETERS = "Duplicate parameters found";
+    private static final String INVALID_START_TIME = "Invalid start time";
+    private static final String INVALID_END_TIME = "Invalid end time";
+    private static final String INVALID_REMINDER_TIME = "Invalid remind time";
+    private static final String INVALID_PRIORITY_REF = "Invalid priority reference";
+    private static final String INVALID_FOLDER_REF = "Invalid folder reference";
+    private static final String INVALID_TASK_ID = "Invalid task id reference";
+    private static final String INVALID_PARAMETER_TYPE = "Invalid parameter type";
+    private static final String INVALID_COMMAND_ARGUMENT = "The description for this command cannot be empty";
+    private static final String ERROR_DATABASE_DUPLICATE_PARA = "Duplicate keywords were found in the 'parameter' database for \"%1$s\"";
+    private static final String ERROR_DATABASE_DUPLICATE_COMMAND = "Duplicate keywords were found in the 'command' database for \"%1$s\"";
+    private static final String EXCEPTION_EMPTY_LOCATION = "Initiated location parameter cannot have a empty argument";
+    private static final String EXCEPTION_EMPTY_DESCRIPTION = "Description cannot be empty";
+    private static final String EXCEPTION_EMPTY_KEYWORD_IN_DATABASE = "The database contains empty synonym(s) in \"%1$s\"";
+    private static final String EXCEPTION_KEYWORD_MULTIPLE_WORDS = "The synonym(s) for \"%1$s\" have to be single words";
+    private static final String EXCEPTION_NO_END_TIME_SPECIFIED = "You must specify 'end time' since you have specified 'start time' OR just specify 'end time'";
+    private static final String EXCEPTION_END_TIME_BEFORE_START_TIME = "Please check that 'start time' occurs chronologically before 'end time'";
+    
+    // Other exceptions:
+    private static final int EXCEPTION_NON_EXISTENT_ID = -1;
+    
+    // Hash maps:
+    private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
+    private static Map<String, ParameterType> parameterKeywords = new HashMap<String, ParameterType>();
+    
+    private static Map<CommandType, String> defaultCommandSynonym = new HashMap<CommandType, String>();
+    private static Map<ParameterType, String> defaultParameterSynonym = new HashMap<ParameterType, String>();
+    
+    private static Map<Integer, Integer> guiIdRef = new HashMap<Integer, Integer>();
+    private static Config cfg = new Config();
+    
+    private ArrayList<ParameterType> currentParameters = new ArrayList<ParameterType>(); // For duplicates
+    private Command command = new Command();
+    
+    private String currentFolder = STRING_DEFAULT;
+    
+    private static boolean isGuiIdEnabled = false;
+    
+    /* Keyword Headers: Mapping Config file elements to Command & Parameter types */
+    
+    private static final Map<String, CommandType> commandHeaders;
+    private static final Map<String, ParameterType> parameterHeaders;
+    static
+    {
+        // Main Commands:  
+        
+        commandHeaders = new HashMap<String, CommandType>();
+        
+        commandHeaders.put(KEY_ADD, CommandType.ADD);
+        commandHeaders.put(KEY_DELETE, CommandType.DELETE);
+        commandHeaders.put(KEY_CLEAR_COMPLETED, CommandType.DELETE_ALL_COMPLETED);
+        commandHeaders.put(KEY_CLEAR, CommandType.CLEAR);
+        commandHeaders.put(KEY_MODIFY, CommandType.MODIFY);
+        commandHeaders.put(KEY_MARK, CommandType.MARK);
+        commandHeaders.put(KEY_UNMARK, CommandType.UNMARK);
+        commandHeaders.put(KEY_SEARACH, CommandType.SEARCH);
+        commandHeaders.put(KEY_NOW, CommandType.DISPLAY_NOW);
+        commandHeaders.put(KEY_TODAY, CommandType.DISPLAY_TODAY);
+        commandHeaders.put(KEY_TOMORROW, CommandType.DISPLAY_TOMORROW);
+        commandHeaders.put(KEY_WEEK, CommandType.DISPLAY_WEEK);
+        commandHeaders.put(KEY_MONTH, CommandType.DISPLAY_MONTH);
+        commandHeaders.put(KEY_UNDO, CommandType.UNDO);
+        commandHeaders.put(KEY_REDO, CommandType.REDO);
+        commandHeaders.put(KEY_DISPLAY_ALL, CommandType.DISPLAY_ALL);
+        commandHeaders.put(KEY_DISPLAY_FLOAT, CommandType.DISPLAY_ALL_FLOAT);
+        commandHeaders.put(KEY_DISPLAY_IN_TIME, CommandType.DISPLAY_IN_TIME);
+        commandHeaders.put(KEY_EXPORT, CommandType.EXPORT);
+        commandHeaders.put(KEY_IMPORT, CommandType.IMPORT);
+        commandHeaders.put(KEY_QUIT, CommandType.QUIT);
+        
+        // Parameter Commands:
+        
+        parameterHeaders = new HashMap<String, ParameterType>();
+        
+        parameterHeaders.put(KEY_START_TIME, ParameterType.START_TIME);
+        parameterHeaders.put(KEY_END_TIME, ParameterType.END_TIME);
+        parameterHeaders.put(KEY_REMIND_TIME, ParameterType.REMINDER_TIME);
+        parameterHeaders.put(KEY_PRIORITY,ParameterType.PRIORITY);
+        parameterHeaders.put(KEY_LOCATION, ParameterType.LOCATION);
+        parameterHeaders.put(KEY_FOLDER, ParameterType.FOLDER);
+        parameterHeaders.put(KEY_TASK_ID, ParameterType.TASK_ID);
+        
+        
+	readCommandDatabase();
+	readParameterDatabase();
+    }
+    
+    public Interpreter() {
+	// Do nothing
+    }
+  
+    
+    /*
+     * To be used by settings pane for checking validity of keywords:
+     */
+   
+    public Interpreter(Properties props) {
+	commandKeywords.clear();
+	parameterKeywords.clear();
+	
+	readCommandDatabase(props);
+	readParameterDatabase(props);
+    }
+    
+    /*
+     * Used when Config file has to be re-read:
+     */
+    
+    public Interpreter(boolean rebuild) {
+	if (rebuild) {
+	    cfg = new Config();
+	    
+	    commandKeywords.clear();
+	    parameterKeywords.clear();
+	    
+	    readCommandDatabase();
+	    readParameterDatabase();
+	}
+    }
+    
+    
+    /**
+     * Reads keywords from txtfile and saves them in the local memory (hash table)
+     * 
+     */
+    
+    private static void readCommandDatabase() throws IllegalArgumentException {
+        
+	defaultCommandSynonym.clear();
+	
+        String[] headerKeySet = (String[])( commandHeaders.keySet().toArray( new String[commandHeaders.size()] ) );
+        
+        for (int i = 0; i < commandHeaders.size(); i++) {
+
+            CommandFeedback feedback = addCommandSynonyms(cfg, headerKeySet[i], commandHeaders.get(headerKeySet[i]));
+
+            checkCommandDatabaseExceptions(headerKeySet, i, feedback);
+        }
+    }
+    
+    /*
+     * Function to be used by settings pane:
+     */
+    
+    private static void readCommandDatabase(Properties props) throws IllegalArgumentException {
+        
+	defaultCommandSynonym.clear();
+	
+	String[] headerKeySet = (String[])( commandHeaders.keySet().toArray( new String[commandHeaders.size()] ) );
+        
+        for (int i = 0; i < commandHeaders.size(); i++) {
+
+            CommandFeedback feedback = addCommandSynonyms(props, headerKeySet[i], commandHeaders.get(headerKeySet[i]));
+
+            checkCommandDatabaseExceptions(headerKeySet, i, feedback);
+        }
+    }
+
+    public static void checkCommandDatabaseExceptions(String[] headerKeySet, int i,
+	    CommandFeedback feedback) {
+	if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
+	    throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_COMMAND, headerKeySet[i].toString()));
+	}
+
+	if (feedback == CommandFeedback.EMPTY_KEYWORD) {
+	    throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
+	}
+
+	if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
+	    throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
+	}
+    }
+
+    private static CommandFeedback addCommandSynonyms(Config cfg, String type, CommandType commandType) 
+    {
+        String[] keys = cfg.getSynonyms(type);
+        
+        for (int i=0; i<keys.length; i++) {
+            String key = keys[i].trim();
+            
+            if (hasMultipleWords(key)) {
+        	return CommandFeedback.MULTIPLE_WORD_KEYWORD;
+            } else if (key.isEmpty()) {
+        	return CommandFeedback.EMPTY_KEYWORD;
+            } else if (!commandKeywords.containsKey(key)) {
+                commandKeywords.put(key, commandType);
+            } else {
+                return CommandFeedback.INVALID_DATABASE_DUPLICATES;
+            }
+        }
+        
+        defaultCommandSynonym.put(commandType, keys[0]);
+        
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    /*
+     * Function to be used by settings pane:
+     */
+    
+    private static CommandFeedback addCommandSynonyms(Properties props, String type, CommandType commandType) 
+    {
+        String[] keys = parseProperties(props, type);
+        
+        for (int i=0; i<keys.length; i++) {
+            String key = keys[i].trim();
+            
+            if (hasMultipleWords(key)) {
+        	return CommandFeedback.MULTIPLE_WORD_KEYWORD;
+            } else if (key.isEmpty()) {
+        	return CommandFeedback.EMPTY_KEYWORD;
+            } else if (!commandKeywords.containsKey(key)) {
+                commandKeywords.put(key, commandType);
+            } else {
+                return CommandFeedback.INVALID_DATABASE_DUPLICATES;
+            }
+        }
+        
+        defaultCommandSynonym.put(commandType, keys[0]);
+        
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    
+    
+    private static void readParameterDatabase() throws IllegalArgumentException {
+	
+	defaultParameterSynonym.clear();
+        
+        String[] headerKeySet = (String[])( parameterHeaders.keySet().toArray( new String[parameterHeaders.size()] ) );
+        
+        for (int i = 0; i < parameterHeaders.size(); i++) {
+
+            CommandFeedback feedback = addParameterSynonyms(cfg, headerKeySet[i], parameterHeaders.get(headerKeySet[i]));
+
+            checkParameterDatabaseExceptions(headerKeySet, i, feedback);
+        }
+    }
+    
+    /*
+     * Function to be used by settings pane:
+     */
+    
+    private static void readParameterDatabase(Properties props) throws IllegalArgumentException {
+	
+	defaultParameterSynonym.clear();
+        
+        String[] headerKeySet = (String[])( parameterHeaders.keySet().toArray( new String[parameterHeaders.size()] ) );
+        
+        for (int i = 0; i < parameterHeaders.size(); i++) {
+
+            CommandFeedback feedback = addParameterSynonyms(props, headerKeySet[i], parameterHeaders.get(headerKeySet[i]));
+
+            checkParameterDatabaseExceptions(headerKeySet, i, feedback);
+        }
+    }
+
+
+    public static void checkParameterDatabaseExceptions(String[] headerKeySet,
+	    int i, CommandFeedback feedback) {
+	if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
+	    throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_PARA, headerKeySet[i].toString()));
+	}
+
+	if (feedback == CommandFeedback.EMPTY_KEYWORD) {
+	    throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
+	}
+
+	if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
+	    throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
+	}
+    }
+
+
+    private static CommandFeedback addParameterSynonyms(Config cfg, String type, ParameterType parameterType) 
+    {
+	String[] keys = cfg.getSynonyms(type);
+
+	for (int i=0; i<keys.length; i++) {
+	    String key = keys[i].trim();
+
+	    if (hasMultipleWords(key)) {
+		return CommandFeedback.MULTIPLE_WORD_KEYWORD;
+	    } else if (key.isEmpty()) {
+		return CommandFeedback.EMPTY_KEYWORD;
+            } else if (!parameterKeywords.containsKey(key)) {
+                parameterKeywords.put(key, parameterType);
+            } else {
+                return CommandFeedback.INVALID_DATABASE_DUPLICATES;
+            }
+        }
+        
+        defaultParameterSynonym.put(parameterType, keys[0]);
+        
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    /*
+     * Function to be used by settings pane:
+     */
+    
+    private static CommandFeedback addParameterSynonyms(Properties props, String type, ParameterType parameterType) 
+    {
+	String[] keys = parseProperties(props, type);
+        
+        for (int i=0; i<keys.length; i++) {
+            String key = keys[i].trim();
+            
+            if (hasMultipleWords(key)) {
+        	return CommandFeedback.MULTIPLE_WORD_KEYWORD;
+            } else if (key.isEmpty()) {
+        	return CommandFeedback.EMPTY_KEYWORD;
+            } else if (!parameterKeywords.containsKey(key)) {
+                parameterKeywords.put(key, parameterType);
+            } else {
+                return CommandFeedback.INVALID_DATABASE_DUPLICATES;
+            }
+        }
+        
+        defaultParameterSynonym.put(parameterType, keys[0]);
+        
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+
+
+    public static String[] parseProperties(Properties props, String type) {
+	return ((String) props.get((String) type)).trim().toLowerCase().split(",");
+    }
+    
+    private static boolean hasMultipleWords(String input) {
+	return input.indexOf(' ') >= 0;
+    }
+    
+    public void processUserInput(String input) {
+        CommandType mainCommand = extractMainCommand(input);
+        
+        checkCommandValidity(mainCommand);
+        processCommandArgument(input);
+        
+        if (hasParameters(mainCommand)) {
+            parseAndProcessParameters(input);
+        }
+        
+        checkForOtherExceptions();
+        command.setCommandType(mainCommand); 
+        
+        updateCurrFolderReference();
+    }
+
+
+    public CommandType extractMainCommand(String input) {
+	String commandString = getFirstWord(input);
+        CommandType mainCommand = interpretCommand(commandString);
+	return mainCommand;
+    }
+    
+    private void checkForOtherExceptions() throws IllegalArgumentException {
+	
+	if (!currentParameters.contains(ParameterType.END_TIME) && currentParameters.contains(ParameterType.START_TIME)) {
+	    throw new IllegalArgumentException(EXCEPTION_NO_END_TIME_SPECIFIED);
+	}
+	
+	if ((currentParameters.contains(ParameterType.END_TIME) && currentParameters.contains(ParameterType.START_TIME)) && command.getParameters().getStartTime().after(command.getParameters().getEndTime())) {
+	    throw new IllegalArgumentException(EXCEPTION_END_TIME_BEFORE_START_TIME);
+	}
+    }
+    
+    private void updateCurrFolderReference() {
+	if (command.getParameters().getFolder() == null) {
+	    command.getParameters().setFolder(currentFolder);
+	}
+    }
+    
+    public boolean isFloatingTask() {
+	if (currentParameters.contains(ParameterType.START_TIME) || currentParameters.contains(ParameterType.END_TIME) || currentParameters.contains(ParameterType.REMINDER_TIME)) {
+	    return false;
+	}
+	
+	return true;
+    }
+    
+    private void processCommandArgument (String input) throws IllegalArgumentException {
+	
+	String commandArgument = null;
+	
+	try {
+		commandArgument = (input.replaceFirst(getFirstWord(input), "").trim()).split(DELIMETER)[0].trim();
+	} catch (ArrayIndexOutOfBoundsException aE) {
+	    return;
+	}
+		
+        CommandFeedback feedback = command.setDescription(commandArgument);
+        
+        if (needsDescription(interpretCommand(getFirstWord(input))) && feedback == CommandFeedback.EMPTY_DESCRIPTION) {
+            throw new IllegalArgumentException(INVALID_COMMAND_ARGUMENT);
+        }
+                
+    }
+    
+    private boolean needsDescription(CommandType userCommand) {
+        
+        if (userCommand == CommandType.ADD || userCommand == CommandType.SEARCH) {
+            return true;
+        }
+        
+        return false;
+    }
+
+
+    private void checkCommandValidity(CommandType mainCommand) throws InvalidParameterException {
+        if (mainCommand == CommandType.INVALID) {
+            throw new InvalidParameterException(INVALID_COMMAND_TYPE);
+        }
+    }
+    
+    
+    private void parseAndProcessParameters(String input) throws IllegalArgumentException {
+        String[] inputParameters = input.split(DELIMETER);
+        
+        currentParameters.clear();
+        
+        for (int i=1; i<inputParameters.length; i++) { // Ignore the command, focus on the parameter arguments
+            String paraTypeString = getFirstWord(inputParameters[i]);
+            String paraArgument = isolateArgument(inputParameters, i, paraTypeString);
+            
+            
+            ParameterType parameterType = interpretParameter(paraTypeString);
+            checkForParameterExceptions(paraArgument, parameterType);
+            
+            CommandFeedback feedback = processParameter(parameterType, paraArgument);
+            isParameterArgumentValid(feedback);
+            
+            checkIfParameterExists(parameterType); 
+        }
+        
+    }
+
+
+    public String isolateArgument(String[] inputParameters, int i,
+	    String paraTypeString) {
+	return inputParameters[i].substring(paraTypeString.length()).trim();
+    }
+
+
+    public void checkForParameterExceptions(String paraArgument,
+	    ParameterType parameterType) {
+	if (parameterType == ParameterType.INVALID) {
+	    throw new IllegalArgumentException(INVALID_PARAMETER_TYPE);
+	}
+	
+	if (paraArgument.isEmpty()) {
+	    throw new IllegalArgumentException(EXCEPTION_EMPTY_ARGUMENT);
+	}
+    }
+
+
+    public void checkIfParameterExists(ParameterType parameterType) throws IllegalArgumentException {
+	if (currentParameters.contains(parameterType)) {
+            throw new IllegalArgumentException(EXCEPTION_DUPLICATE_PARAMETERS);
+        }
+	
+        currentParameters.add(parameterType);
+    }
+    
+    private void isParameterArgumentValid (CommandFeedback feedback) throws InvalidParameterException {
+        switch (feedback) {
+        case EMPTY_DESCRIPTION:
+            throw new InvalidParameterException(EXCEPTION_EMPTY_DESCRIPTION);   
+        case EMPTY_LOCATION:
+            throw new InvalidParameterException(EXCEPTION_EMPTY_LOCATION);          
+        case INVALID_START_TIME:
+            throw new InvalidParameterException(INVALID_START_TIME);
+        case INVALID_END_TIME:
+            throw new InvalidParameterException(INVALID_END_TIME);
+        case INVALID_REMIND_TIME:
+            throw new InvalidParameterException(INVALID_REMINDER_TIME);
+        case INVALID_PRIORITY:
+            throw new InvalidParameterException(INVALID_PRIORITY_REF);
+        case INVALID_FOLDER_REF:
+            throw new InvalidParameterException(INVALID_FOLDER_REF);
+        case INVALID_TASK_ID:
+            throw new InvalidParameterException(INVALID_TASK_ID);           
+        default:
+            return;        
+        }
+        
+    }
+    
+    public String getFirstWord(String input) {
+        return input.trim().split("\\s+")[0].toLowerCase();
+    }
+ 
+    
+    public boolean hasParameters(CommandType command) {
+        if (command == CommandType.ADD || command == CommandType.DELETE || command == CommandType.MARK || command == CommandType.UNMARK || command == CommandType.MODIFY || command == CommandType.SEARCH || command == CommandType.DISPLAY_IN_TIME || command == CommandType.CLEAR || command == CommandType.DELETE_ALL_COMPLETED) {
+            return true;
+        }
+            
+        return false;
+    }
+    
+    private CommandFeedback processParameter(ParameterType parameterType, String argument) throws InvalidParameterException
+    {   
+        switch(parameterType) {
+        
+        case START_TIME:
+            return command.setStartTime(argument);
+        case END_TIME:
+            return command.setEndTime(argument);
+        case REMINDER_TIME:
+            return command.setRemindTime(argument);
+        case PRIORITY:
+            return command.setPriority(argument);
+        case TASK_ID:
+            return command.setTaskId(argument);
+        case FOLDER:
+            return command.setFolder(argument);
+        case LOCATION:
+            command.setLocation(argument);
+            return CommandFeedback.SUCCESSFUL_OPERATION;            
+            
+        default:
+            throw new InvalidParameterException(INVALID_PARAMETER_TYPE); 
+        
+        }
+        
+    }
+    
+    public String getDefaultCommandSyn(CommandType commandType) {
+	return defaultCommandSynonym.get(commandType);
+    }
+    
+    public String getDefaultParaSyn(ParameterType parameterType) {
+	return defaultParameterSynonym.get(parameterType);
+    }
+    
+    /*
+     * For interfacing with GUI:
+     */
+    
+    public static void setIsGuiIdEnabled(boolean isGuiIdEnabled) {
+	Interpreter.isGuiIdEnabled = isGuiIdEnabled;
+    }
+    
+    public static boolean checkIsGuiIdEnabled() {
+	return isGuiIdEnabled;
+    }
+
+    public static void addGuiId(int guiId, int realTaskId){
+	if (isGuiIdEnabled) {
+	    guiIdRef.put(guiId, realTaskId);
+	}
+
+	return;
+    }
+
+    public static int getRealId(int guiId) {
+	if (isGuiIdEnabled) {
+
+	    if (guiIdRef.get(guiId) == null) {
+		return EXCEPTION_NON_EXISTENT_ID;
+	    }
+
+	    return guiIdRef.get(guiId);
+	}
+
+	return EXCEPTION_NON_EXISTENT_ID;
+    }
+
+    public static void clearGuiIdMap() {
+	guiIdRef.clear();
+    }
+    
+    
+    public ParameterType interpretParameter(String parameterString) {
+        if (!parameterKeywords.containsKey(parameterString)) {
+            return ParameterType.INVALID;
+        }
+        
+        return parameterKeywords.get(parameterString);
+    }
+    
+    public CommandType interpretCommand(String commandString) {
+        if (!commandKeywords.containsKey(commandString)) {
+            return CommandType.INVALID;
+        }
+        
+        return commandKeywords.get(commandString);
+    }
+      
+    
+    public Command getCommandAndPara() {
+        return command;
+    }
+    
+    public String getCurrentFolder() {
+	return currentFolder;
+    }
+    
+    public void setCurrentFolder(String currFolderName) {
+	currentFolder = currFolderName;
+    }
+}
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\Interpreter.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\Parameters.java
+	 */
+
+public class Parameters {
+    
+    private static final int SMALLEST_ID_REFERENCE = 0;
+    private static final int EXCEPTION_INVALID_ID = -1;
+    private static final int FIRST_DATE_PARSED = 0;
+    
+    private static final String STRING_DEFAULT = "default";
+    private static final String STRING_NULL = "null";
+    
+    private static final int PRIORITY_NONE = 0;
+    private static final int PRIORITY_HIGH = 1;
+    private static final int PRIORITY_MEDIUM = 2;
+    private static final int PRIORITY_LOW = 3;
+    private static final int PRIORITY_INVALID_REF = -1;
+    
+    private static Config cfg = new Config(); 
+    
+    private String description, location, folder;
+    private Integer priority, taskId;
+    private Calendar startTime, endTime, remindTime, recurEndTime;
+    
+    Parser parser;    
+
+    public Parameters() {
+	parser = new Parser(); 
+    }
+    
+    public static Calendar dateToCal(Date date){ 
+	  Calendar cal = Calendar.getInstance();
+	  
+	  if (date == null) {
+	      return null;
+	  }
+	  
+	  cal.setTime(date);
+	  return cal;
+    }
+  
+    public CommandFeedback setStartTime (String rawInput) {
+	List<DateGroup> groups = parser.parse(rawInput);
+	
+	if (groups.isEmpty()) {
+	    return CommandFeedback.INVALID_START_TIME;
+	} 
+	
+	startTime = dateToCal(groups.get(FIRST_DATE_PARSED).getDates().get(FIRST_DATE_PARSED));
+        
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    public CommandFeedback setEndTime (String rawInput) {
+	List<DateGroup> groups = parser.parse(rawInput);
+	
+	if (groups.isEmpty()) {
+	    return CommandFeedback.INVALID_END_TIME;
+	} 
+	
+	endTime = dateToCal(groups.get(FIRST_DATE_PARSED).getDates().get(FIRST_DATE_PARSED));
+	
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    public CommandFeedback setRemindTime (String rawInput) {
+	List<DateGroup> groups = parser.parse(rawInput);
+	
+	if (groups.isEmpty()) {
+	    return CommandFeedback.INVALID_REMIND_TIME;
+	} 
+	
+	remindTime = dateToCal(groups.get(FIRST_DATE_PARSED).getDates().get(FIRST_DATE_PARSED));
+
+	if (groups.get(FIRST_DATE_PARSED).isRecurring()) { // Note: Recurring reminders are not supported by Logic (yet)
+	    recurEndTime = dateToCal(groups.get(FIRST_DATE_PARSED).getRecursUntil());
+	}
+        
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    public CommandFeedback setDescription(String description) { 
+        if (description.isEmpty() || description == null) {
+            return CommandFeedback.EMPTY_DESCRIPTION;
+        }
+        
+        this.description = description;
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    public CommandFeedback setLocation(String location) {
+        if (location.isEmpty() || location == null) {
+            return CommandFeedback.EMPTY_LOCATION;
+        }
+        
+        this.location = location;
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    public CommandFeedback setPriority(String priority) {
+        int intPriority = stringToIntPriority(priority);
+        
+        if (intPriority == PRIORITY_INVALID_REF) {
+            return CommandFeedback.INVALID_PRIORITY;
+        }
+        
+        this.priority = intPriority;
+        return CommandFeedback.SUCCESSFUL_OPERATION;    
+    }
+    
+    public CommandFeedback setFolder(String folder) {
+        if (!isValidFolder(folder)) {
+            return CommandFeedback.INVALID_FOLDER_REF;
+        }
+        
+        this.folder = folder.toLowerCase();
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    public CommandFeedback setTaskId(int id) {
+	
+        if (!isValidId(id)) {
+            return CommandFeedback.INVALID_TASK_ID;
+        }
+	
+        if (Interpreter.checkIsGuiIdEnabled()) {
+            this.taskId = Interpreter.getRealId(id);
+        } else {
+            this.taskId = id;
+        }
+        
+        return CommandFeedback.SUCCESSFUL_OPERATION;
+    }
+    
+    
+    public Calendar getStartTime() {
+        return startTime;
+    }
+    
+    public Calendar getEndTime() {
+        return endTime;
+    }
+    
+    public Calendar getRemindTime() {
+        return remindTime;
+    }
+    
+    public Calendar getRecurEndTime() {
+	return recurEndTime;
+    }
+    
+    public String getDescription() {
+        return description;
+    }
+    
+    public String getLocation() {
+        return location;
+    }
+    
+    public String getFolder() {
+        return folder;
+    }
+    
+    public String getPriority() {
+        if (priority == null) {
+            return STRING_NULL;
+        }
+        
+        return Integer.toString(priority);
+    }
+    
+    public String getTaskId() {
+        if (taskId == null) {
+            return STRING_NULL;
+        }
+        
+        return Integer.toString(taskId);
+    }
+    
+    
+    private boolean isValidFolder(String folderName) {
+	if (folderName.toLowerCase().equalsIgnoreCase(STRING_DEFAULT)) {
+	    return true;
+	} else if (cfg.getFolderId(folderName.toLowerCase()) != null) {
+	    return true;
+	}
+	
+        return false;
+    }
+    
+    private boolean isValidId(int id) {
+	
+	if (Interpreter.checkIsGuiIdEnabled() && Interpreter.getRealId(id) != EXCEPTION_INVALID_ID) {
+	    return true;
+	} else if (!Interpreter.checkIsGuiIdEnabled() && id >= SMALLEST_ID_REFERENCE) {
+	    return true;
+	}
+	
+	return false;
+    }
+    
+    private int stringToIntPriority(String priorityString) {
+        if (isHigh(priorityString)) {
+            return PRIORITY_HIGH;
+        } else if (isMed(priorityString) ) {
+            return PRIORITY_MEDIUM;
+        } else if (isLow(priorityString)) {
+            return PRIORITY_LOW;
+        } else if (isNoneAssigned(priorityString)) {
+            return PRIORITY_NONE;
+        }
+        
+        return PRIORITY_INVALID_REF;
+    }
+
+    public boolean isNoneAssigned(String priorityString) {
+	return priorityString.equalsIgnoreCase("none") || priorityString.equalsIgnoreCase("remove") || priorityString.equalsIgnoreCase("nothing") || priorityString.equalsIgnoreCase("0");
+    }
+
+    public boolean isLow(String priorityString) {
+	return priorityString.equalsIgnoreCase("LOW") || priorityString.equalsIgnoreCase("not imp") || priorityString.equalsIgnoreCase("L") || priorityString.equalsIgnoreCase("3");
+    }
+
+    public boolean isMed(String priorityString) {
+	return priorityString.equalsIgnoreCase("MEDIUM") || priorityString.equalsIgnoreCase("MED") || priorityString.equalsIgnoreCase("M") || priorityString.equalsIgnoreCase("2");
+    }
+
+    public boolean isHigh(String priorityString) {
+	return priorityString.equalsIgnoreCase("HIGH") || priorityString.equalsIgnoreCase("H") || priorityString.equalsIgnoreCase("imp") || priorityString.equalsIgnoreCase("important") || priorityString.equalsIgnoreCase("1");
+    }
+    
+}
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\Parameters.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\ParameterType.java
+	 */
+
+public enum ParameterType {
+    START_TIME, END_TIME, REMINDER_TIME, PRIORITY, LOCATION, FOLDER, TASK_ID,
+    
+    INVALID
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\interpreter\ParameterType.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\BufferedGraphics.java
+	 */
+
+public class BufferedGraphics {
+    
+    private static final String FILEPATH_KEYWORD_ITEM_BACKGROUND = "/GUI Graphics/Keyword Item Background.png";
+    private static final String FILEPATH_SCROLL_THUMB = "/GUI Graphics/Scroll Thumb.png";
+    private static final String FILEPATH_SCROLL_TRACK = "/GUI Graphics/Scroll Track.png";
+    private static final String FILEPATH_UI_BACKGROUND = "/GUI Graphics/Task Item Background.gif";
+    private static final String FILEPATH_INFO_ICON = "/GUI Graphics/Info Icon.png";
+    private static final String FILEPATH_DATE_TOGGLE_ICON = "/GUI Graphics/Time Display Icon.png";
+    private static final String FILEPATH_LOW_PRIORITY_ICON = "/GUI Graphics/Task Item Low Pri.png";
+    private static final String FILEPATH_MEDIUM_PRIORITY_ICON = "/GUI Graphics/Task Item Med Pri.png";
+    private static final String FILEPATH_HIGH_PRIORITY_ICON = "/GUI Graphics/Task Item High Pri.png";
+    private static final String FILEPATH_DELETE_ICON = "/GUI Graphics/Delete Icon.png";
+    private static final String FILEPATH_REMINDER_ICON = "/GUI Graphics/Task Item Reminder Icon.png";
+    private static final String FILEPATH_UNCHECKED = "/GUI Graphics/Unchecked Icon.png";
+    private static final String FILEPATH_CHECK_MARK = "/GUI Graphics/Task Item Check Mark.gif";
+    
+    private ImageIcon checkMark;
+    private ImageIcon reminderIcon;
+    private ImageIcon highPri;
+    private ImageIcon medPri;
+    private ImageIcon lowPri;
+    private ImageIcon background;
+    private ImageIcon unchecked;
+    private ImageIcon delete;
+    private ImageIcon date;
+    private ImageIcon info;
+    private ImageIcon keywordItem;
+    private Image track;
+    private Image thumb;
+    
+    public BufferedGraphics() {
+	
+	try {
+	    bufferTaskItemUi();
+	    loadMainInterfaceUi();
+	    
+	    bufferPriorityIcons();
+	    bufferTimePropertyIcons();
+	    
+	    bufferScrollBarUi();
+	    bufferSettingsPaneUi();
+	   
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	
+    }
+
+    public void loadMainInterfaceUi() throws IOException {
+	setBackground(new ImageIcon(ImageIO.read(MainInterface.class.getResource(FILEPATH_UI_BACKGROUND))));
+    }
+
+    public void bufferTaskItemUi() throws IOException {
+	setCheckMark(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_CHECK_MARK)))));
+	setUnchecked(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_UNCHECKED)))));
+	setReminderIcon(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_REMINDER_ICON)))));
+	setDelete(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_DELETE_ICON)))));
+    }
+
+    public void bufferSettingsPaneUi() throws IOException {
+	setKeywordItem(new ImageIcon(ImageIO.read(MainInterface.class.getResource(FILEPATH_KEYWORD_ITEM_BACKGROUND))));
+    }
+
+    public void bufferTimePropertyIcons() throws IOException {
+	setDate(new ImageIcon(ImageIO.read(MainInterface.class.getResource(FILEPATH_DATE_TOGGLE_ICON))));
+	setInfo(new ImageIcon(ImageIO.read(MainInterface.class.getResource(FILEPATH_INFO_ICON))));
+    }
+
+    public void bufferScrollBarUi() throws IOException {
+	setTrack(ImageIO.read(MainInterface.class.getResource(FILEPATH_SCROLL_TRACK)));
+	setThumb(ImageIO.read(MainInterface.class.getResource(FILEPATH_SCROLL_THUMB)));
+    }
+
+    public void bufferPriorityIcons() throws IOException {
+	setHighPri(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_HIGH_PRIORITY_ICON)))));
+	setMedPri(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_MEDIUM_PRIORITY_ICON)))));
+	setLowPri(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_LOW_PRIORITY_ICON)))));
+    }
+
+    public ImageIcon getCheckMark() {
+	return checkMark;
+    }
+
+    private void setCheckMark(ImageIcon checkMark) {
+	this.checkMark = checkMark;
+    }
+
+    public ImageIcon getReminderIcon() {
+	return reminderIcon;
+    }
+
+    private void setReminderIcon(ImageIcon reminderIcon) {
+	this.reminderIcon = reminderIcon;
+    }
+
+    public ImageIcon getHighPri() {
+	return highPri;
+    }
+
+    private void setHighPri(ImageIcon highPri) {
+	this.highPri = highPri;
+    }
+
+    public ImageIcon getMedPri() {
+	return medPri;
+    }
+
+    private void setMedPri(ImageIcon medPri) {
+	this.medPri = medPri;
+    }
+
+    public ImageIcon getLowPri() {
+	return lowPri;
+    }
+
+    private void setLowPri(ImageIcon lowPri) {
+	this.lowPri = lowPri;
+    }
+
+    public ImageIcon getBackground() {
+	return background;
+    }
+
+    private void setBackground(ImageIcon background) {
+	this.background = background;
+    }
+
+    public ImageIcon getUnchecked() {
+	return unchecked;
+    }
+
+    private void setUnchecked(ImageIcon unchecked) {
+	this.unchecked = unchecked;
+    }
+
+    public ImageIcon getDelete() {
+	return delete;
+    }
+
+    private void setDelete(ImageIcon delete) {
+	this.delete = delete;
+    }
+
+    public ImageIcon getDate() {
+	return date;
+    }
+
+    private void setDate(ImageIcon date) {
+	this.date = date;
+    }
+
+    public ImageIcon getInfo() {
+	return info;
+    }
+
+    private void setInfo(ImageIcon info) {
+	this.info = info;
+    }
+
+    public ImageIcon getKeywordItem() {
+	return keywordItem;
+    }
+
+    private void setKeywordItem(ImageIcon keywordItem) {
+	this.keywordItem = keywordItem;
+    }
+
+    public Image getTrack() {
+	return track;
+    }
+
+    private void setTrack(Image track) {
+	this.track = track;
+    }
+
+    public Image getThumb() {
+	return thumb;
+    }
+
+    private void setThumb(Image thumb) {
+	this.thumb = thumb;
+    }
+    
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\BufferedGraphics.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\FolderNameField.java
+	 */
+
+public class FolderNameField extends JTextField {
+    
+
+    private static final int MAX_COLUMNS = 10;
+    private static final Color COLOR_UI_BACKGROUND = Color.decode("#443e3e");
+    private static final long serialVersionUID = 1L;
+
+    public FolderNameField(Rectangle bounds, String name, JFrame mainInterfaceFrame) {
+	super();
+	
+	loadSettings(bounds, name);
+	
+	mainInterfaceFrame.getContentPane().add(this);
+    }
+
+    public void loadSettings(Rectangle bounds, String name) {
+	
+	setFont(MainInterface.latoReg15); 
+	setForeground(Color.WHITE);
+	setBackground(COLOR_UI_BACKGROUND);
+	setHorizontalAlignment(SwingConstants.CENTER);
+	setBounds(bounds);
+	
+	setText(name);
+	setCaretColor(Color.WHITE);
+	
+	setColumns(MAX_COLUMNS);
+    }
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\FolderNameField.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\FolderTab.java
+	 */
+
+public class FolderTab extends JLayeredPane {
+    
+    private static final int INVALID_FOLDER_REF = -1;
+    private static final int NUM_FOLDERS = 5;
+    
+    private static final String FILEPATH_IMAGE_CLICKED = "/GUI Graphics/Tab Clicked.gif";
+    private static final String FILEPATH_IMAGE_NOT_CLICKED = "/GUI Graphics/Tab NotClicked.gif";
+    
+    private static final Dimension DIMENSIONS_FOLDER_TAB = new Dimension(177, 28);
+    
+    private static final Border SETTINGS_EMPTY_BORDER = BorderFactory.createEmptyBorder(0,0,0,0);
+    private static final long serialVersionUID = 1L;
+
+    private static ImageIcon tabNotClickedIcon, tabClickedIcon;
+    private JButton folderBtn;
+    	
+    private FolderName folderName = FolderName.DEFAULT;
+    
+    private static Map<FolderName, FolderTab> folderNameMap = new HashMap<FolderName, FolderTab>();
+    private JLabel folderLabel;
+    
+    static {
+	
+	try {
+	    tabNotClickedIcon = new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_IMAGE_NOT_CLICKED))));
+	    tabClickedIcon = new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_IMAGE_CLICKED))));
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+    }
+    
+    
+    public FolderTab(FolderName folderName, Point location, String folderLabelText) {
+	
+	loadTabSettings(location);
+	linkMainInterfaceComponents(folderName);
+	
+	addFolderLabel(folderLabelText);
+	addFolderButton(folderName);
+	
+    }
+
+    private void addFolderButton(FolderName folderName) {
+	
+	folderBtn = new JButton("");
+	folderBtn.setSize(DIMENSIONS_FOLDER_TAB);
+	folderBtn.setOpaque(false);
+	folderBtn.setFocusPainted(false);
+	folderBtn.setBorderPainted(false);
+	folderBtn.setContentAreaFilled(false);
+	folderBtn.setBorder(SETTINGS_EMPTY_BORDER);
+	
+	attachMouseListener();
+	initTabState(folderName);
+	
+	add(folderBtn);
+    }
+
+    private void attachMouseListener() {
+	folderBtn.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		folderActivate();
+	    }
+	});
+    }
+
+    private void initTabState(FolderName folderName) {
+	if (MainInterface.getDefaultFolder() == folderName) {
+	    folderBtn.setIcon(tabClickedIcon);
+	} else {
+	    folderBtn.setIcon(tabNotClickedIcon);
+	}
+    }
+
+    private void addFolderLabel(String folderLabelText) {
+	folderLabel = new JLabel();
+	folderLabel.setHorizontalAlignment(SwingConstants.CENTER);
+	folderLabel.setFont(MainInterface.latoReg14); 
+	folderLabel.setForeground(Color.WHITE);
+	folderLabel.setSize(DIMENSIONS_FOLDER_TAB);
+	folderLabel.setText(folderLabelText);
+	add(folderLabel);
+    }
+
+    private void linkMainInterfaceComponents(FolderName folderName) {
+	this.folderName = folderName;
+	folderNameMap.put(folderName, this);
+    }
+
+    private void loadTabSettings(Point location) {
+	this.setBorder(SETTINGS_EMPTY_BORDER);
+	this.setLocation(location);
+	this.setSize(DIMENSIONS_FOLDER_TAB);
+    }
+
+    public void folderActivate() {
+	
+	updateFolderReferences();
+	
+	if (MainInterface.getCurrFolder() != MainInterface.getPrevFolder()) {
+	    executeTabSwitch();
+	    MainInterface.updateTaskDisplay();
+	}
+
+    }
+
+    private void executeTabSwitch() {
+	
+	folderBtn.setIcon(tabClickedIcon);
+	folderNameMap.get(MainInterface.getPrevFolder()).clearTab();
+	
+    }
+    
+    private void updateFolderReferences() {
+	
+	MainInterface.setCycleRef(searchFolderRef(MainInterface.getFolderCycle(), folderName));
+	MainInterface.setPrevFolder(MainInterface.getCurrFolder());
+	MainInterface.setCurrFolder(folderName);
+	
+    }
+    
+    private static int searchFolderRef(FolderName[] folderCycle, FolderName currFolder) {
+	
+	int cycleRef = INVALID_FOLDER_REF;
+	
+	for (cycleRef=0; cycleRef<NUM_FOLDERS; cycleRef++) {
+	    if (folderCycle[cycleRef] == currFolder) {
+		return cycleRef;
+	    }
+	}
+	
+	assert(cycleRef != INVALID_FOLDER_REF);
+	
+	return cycleRef;
+    }
+    
+    private void clearTab() {
+	folderBtn.setIcon(tabNotClickedIcon);
+    }
+    
+    public void setLabelText(String labelText) {
+	folderLabel.setText(labelText);
+    }
+    
+    public static void gotoFolder(FolderName nextFolder) {
+	folderNameMap.get(nextFolder).folderActivate();
+    }
+    
+ }
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\FolderTab.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\InputColorFilter.java
+	 */
+
+public class InputColorFilter extends DocumentFilter {
+
+    private static final char SINGLE_SPACE = ' ';
+    private static final char DELIMETER_CHAR_FORM = '-';
+    private static final String DELIMITER_STRING_FORM = "-";
+    private static final String EXPRESSION_NEW_LINE = "\\n";
+    private static final int FONT_SIZE_COMMAND = 16;
+    private static final String FONT_TYPE_COMMAND = "Meslo LG S";
+    
+    private static final ImageIcon GRAPHIC_FAILED_INPUT_BAR = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Failed Input Bar.gif"));
+    private static final ImageIcon GRAPHIC_SUCCESS_INPUT_BAR = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Success Input Bar.gif"));
+    private static final ImageIcon GRAPHIC_EMPTY_INPUT_BAR = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Empty Input Bar.gif"));
+    
+    private static final int VISIBLE_INPUT_RECT_HEIGHT = 23;
+    private static final int INDICATOR_UPDATE_PERIOD = 100; // in milliseconds
+    
+    private static JTextPane textPane;
+    private JFrame mainFrame;
+    private AttributeSet normalSetting, parameterSetting, commandSetting;
+    private static Interpreter interpreter;
+    private JLabel background, feedbackBackground, feedbackText;
+    
+    private static Map<CommandType, Color> commandColors = new HashMap<CommandType, Color>();
+    private static Map<ParameterType, Color> parameterColors = new HashMap<ParameterType, Color>();
+    private String userInputString = null;
+   
+    
+    static {
+	
+	// Command Colors:
+	
+	commandColors.put(CommandType.ADD, Color.green.brighter());
+	commandColors.put(CommandType.MODIFY, Color.yellow.darker());
+	commandColors.put(CommandType.DISPLAY_NOW, Color.cyan.darker());
+	commandColors.put(CommandType.DISPLAY_TODAY, Color.cyan.darker());
+	commandColors.put(CommandType.DISPLAY_TOMORROW, Color.cyan.darker());
+	commandColors.put(CommandType.DISPLAY_WEEK, Color.cyan.darker());
+	commandColors.put(CommandType.DISPLAY_MONTH, Color.cyan.darker());
+	commandColors.put(CommandType.DISPLAY_ALL, Color.cyan);
+	commandColors.put(CommandType.DISPLAY_IN_TIME, Color.cyan.darker());
+	commandColors.put(CommandType.DISPLAY_ALL_FLOAT, Color.MAGENTA.brighter());
+	commandColors.put(CommandType.DELETE, Color.getHSBColor(0.97f, 0.66f, 0.94f));
+	commandColors.put(CommandType.DELETE_ALL_COMPLETED, Color.getHSBColor(0.97f, 0.66f, 0.94f));
+	commandColors.put(CommandType.SEARCH, Color.getHSBColor(0.52f, 0.9f, 0.92f));
+	commandColors.put(CommandType.MARK, Color.YELLOW.brighter());
+	commandColors.put(CommandType.UNMARK, Color.getHSBColor(0.97f, 0.66f, 0.94f));
+	commandColors.put(CommandType.QUIT, Color.getHSBColor(0.97f, 0.66f, 0.94f));
+	commandColors.put(CommandType.CLEAR, Color.getHSBColor(0.97f, 0.66f, 0.94f));
+	commandColors.put(CommandType.UNDO, Color.orange);
+	commandColors.put(CommandType.REDO, Color.PINK);
+	commandColors.put(CommandType.EXPORT, Color.yellow.brighter());
+	commandColors.put(CommandType.IMPORT, Color.getHSBColor(0.5f, 0.85f, 0.94f));
+	commandColors.put(CommandType.INVALID, Color.white);
+	
+	
+	// Parameter Colors:
+	
+	parameterColors.put(ParameterType.START_TIME, Color.getHSBColor(0.675f, 0.44f, 0.98f));
+	parameterColors.put(ParameterType.END_TIME, Color.getHSBColor(0.97f, 0.66f, 0.94f));
+	parameterColors.put(ParameterType.REMINDER_TIME, Color.getHSBColor(0.06f, 0.71f, 0.87f));
+	parameterColors.put(ParameterType.PRIORITY, Color.getHSBColor(0.95f, 0.67f, 0.98f));
+	parameterColors.put(ParameterType.LOCATION, Color.CYAN.brighter());
+	parameterColors.put(ParameterType.FOLDER, Color.PINK);
+	parameterColors.put(ParameterType.TASK_ID, Color.YELLOW.brighter());
+	parameterColors.put(ParameterType.INVALID, Color.white);
+    }
+    
+    ActionListener taskUpdateIndicator = new ActionListener() {
+        public void actionPerformed(ActionEvent evt) {
+            setIndicators();
+        }
+    };
+    
+    public InputColorFilter(JFrame frame, final JTextPane textPane, Interpreter interpreter, JLabel background, JLabel feedbackText, JLabel feedbackBackground) {
+	
+        linkMainInterfaceComponents(frame, textPane, interpreter, background,feedbackText, feedbackBackground);      
+        buildAllAttributeSets();
+
+        addListenerForInputExecution(textPane);
+        startIndicatorTimer();
+    }
+    
+    private void linkMainInterfaceComponents(JFrame frame,
+	    final JTextPane textPane, Interpreter interpreter,
+	    JLabel background, JLabel feedbackText, JLabel feedbackBackground) {
+	
+	InputColorFilter.textPane = textPane;
+        InputColorFilter.interpreter = interpreter;
+        
+        this.mainFrame = frame;
+        this.background = background;
+        this.feedbackBackground = feedbackBackground;
+        this.feedbackText = feedbackText;
+    }
+
+    private void startIndicatorTimer() {
+	new Timer(INDICATOR_UPDATE_PERIOD, taskUpdateIndicator).start();
+    }
+
+    private void addListenerForInputExecution(final JTextPane textPane) {
+	textPane.addKeyListener(new KeyAdapter() {
+        	@Override
+        	public void keyPressed(KeyEvent e) {
+        	    if (e.getKeyCode() == KeyEvent.VK_ENTER)
+        	    {
+        		processUserAction();
+        	    }
+        	}
+	});
+    }
+
+    private void processUserAction() {
+	userInputString = getUserInput();
+
+	if (userInputString != null) {
+	    boolean quit = false;
+	    quit = executeCommand();
+	    processNextAction(quit);
+	}
+    }
+
+    private void buildAllAttributeSets() {
+	normalSetting = new SimpleAttributeSet();
+        StyleConstants.setBold((MutableAttributeSet) normalSetting, false);
+        StyleConstants.setForeground((MutableAttributeSet) normalSetting, Color.WHITE);
+        
+        parameterSetting = new SimpleAttributeSet();
+        StyleConstants.setBold((MutableAttributeSet) parameterSetting, false);
+        
+        commandSetting = new SimpleAttributeSet();
+        StyleConstants.setFontFamily((MutableAttributeSet) commandSetting, FONT_TYPE_COMMAND);
+        StyleConstants.setFontSize((MutableAttributeSet) commandSetting, FONT_SIZE_COMMAND);
+        StyleConstants.setBold((MutableAttributeSet) commandSetting, true);
+    }
+    
+    @Override
+    public void insertString(FilterBypass fb, int offset, String text, AttributeSet attr) throws BadLocationException {
+        super.insertString(fb, offset, text.replaceAll(EXPRESSION_NEW_LINE, ""), attr);
+    }
+
+    @Override
+    public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+        super.remove(fb, offset, length);   
+        updateSuccessBar(fb);
+    }
+    
+    /*
+     * The color coding system is activated every time the text field is update/changed
+     */
+    
+    @Override
+    public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+	
+        super.replace(fb, offset, length, text.replaceAll(EXPRESSION_NEW_LINE, ""), attrs);
+	
+        String allInputText = getAllTextFromDocument(fb).toLowerCase();
+	String commandMatch = getCurrentCommand(allInputText);
+
+        addCommandColor(commandMatch, allInputText);
+        
+        String allParameterMatches[] =  allInputText.split(DELIMITER_STRING_FORM);
+        
+        for (int i=1; i<allParameterMatches.length; i++) { // Iteration starts from i=1 as the first element in the array contains the command; not the first parameter 
+            String parameterMatch = allParameterMatches[i].toLowerCase();
+            addParameterColor(parameterMatch, allInputText);
+        }
+     
+        updateSuccessBar(fb);
+    }
+
+    private String getAllTextFromDocument(FilterBypass fb)
+	    throws BadLocationException {
+	return fb.getDocument().getText(0, fb.getDocument().getLength());
+    }
+
+    private String getCurrentCommand(String allInputText) {
+	return interpreter.getFirstWord(allInputText).toLowerCase();
+    }
+
+    private void setIndicators() {
+	
+//	For debugging:
+//	System.out.println("Preferred size: " + textPane.getPreferredSize() + " Visible rect: " + textPane.getVisibleRect());
+	
+	int preferredHeight = textPane.getPreferredSize().height;
+	int visibleYPos = textPane.getVisibleRect().y;
+
+	if (isSingleLine(preferredHeight)) {
+	    setIndicators(false, false);
+	} else if (isMultipleLinesAtTop(preferredHeight, visibleYPos)) {
+	    setIndicators(false, true);
+	} else if (isMultipleLinesInMiddle(preferredHeight, visibleYPos)) {
+	    setIndicators(true, true);
+	} else if (isMultipleLinesAtBottom(preferredHeight, visibleYPos)) {
+	    setIndicators(true, false);
+	}
+
+    }
+
+    private boolean isMultipleLinesAtBottom(int preferredHeight, int visibleYPos) {
+	return preferredHeight > VISIBLE_INPUT_RECT_HEIGHT && visibleYPos > 0 && preferredHeight - visibleYPos == VISIBLE_INPUT_RECT_HEIGHT;
+    }
+
+    private boolean isMultipleLinesInMiddle(int preferredHeight, int visibleYPos) {
+	return preferredHeight > VISIBLE_INPUT_RECT_HEIGHT && visibleYPos > 0 && preferredHeight - visibleYPos != VISIBLE_INPUT_RECT_HEIGHT;
+    }
+
+    private boolean isMultipleLinesAtTop(int preferredHeight, int visibleYPos) {
+	return preferredHeight > VISIBLE_INPUT_RECT_HEIGHT && visibleYPos == 0 && preferredHeight - visibleYPos != VISIBLE_INPUT_RECT_HEIGHT;
+    }
+
+    private boolean isSingleLine(int preferredHeight) {
+	return preferredHeight == VISIBLE_INPUT_RECT_HEIGHT;
+    }
+
+    private void setIndicators(boolean up, boolean down) {
+	MainInterface.setUpIndicator(up);
+	MainInterface.setDownIndicator(down);
+    }
+
+    private void updateSuccessBar(FilterBypass fb) throws BadLocationException {
+	String allInputText = getAllTextFromDocument(fb);
+	Boolean isParseSuccessful = false;
+	Boolean isInputEmpty = checkEmptyInput(allInputText);
+	
+	userInputString = null;
+
+	isParseSuccessful = checkForInterpreterExceptions(allInputText);
+        setInputBarBackground(isParseSuccessful, isInputEmpty);
+    }
+
+    private void setInputBarBackground(Boolean isParseSuccessful, Boolean isInputEmpty) {
+	if (isInputEmpty) {
+            background.setIcon(GRAPHIC_EMPTY_INPUT_BAR);
+	    feedbackText.setVisible(false);
+	    feedbackBackground.setVisible(false);
+        } else if (isParseSuccessful) {
+            background.setIcon(GRAPHIC_SUCCESS_INPUT_BAR);
+        } else {
+            background.setIcon(GRAPHIC_FAILED_INPUT_BAR);
+        }
+    }
+
+    private Boolean checkForInterpreterExceptions(String allText) {
+	Boolean isParseSuccessful;
+	try {
+	    interpreter.processUserInput(allText);
+	    
+	    isParseSuccessful = true;
+	    deactiveExceptionFeedbackBar();
+	    userInputString = allText;
+	    
+	} catch(IllegalArgumentException | RewriteEmptyStreamException e) {
+	    isParseSuccessful = false;
+	    activateExceptionFeedbackBar(e);
+	}
+	
+	return isParseSuccessful;
+    }
+
+    private void activateExceptionFeedbackBar(RuntimeException e) {
+	if (MainInterface.isActiveFeedbackEnabled()) {
+	    feedbackBackground.setVisible(true);
+	    feedbackText.setVisible(true);
+	    feedbackText.setText(e.getMessage());
+	}
+    }
+
+    private void deactiveExceptionFeedbackBar() {
+	if (MainInterface.isActiveFeedbackEnabled()) {
+	    feedbackText.setVisible(false);
+	    feedbackBackground.setVisible(false);
+	}
+    }
+
+    public String getUserInput(){
+	return userInputString;
+    }
+
+    private boolean checkEmptyInput(String allText) {
+	return allText.trim().isEmpty() || allText == null;
+    }
+    
+    
+    private void addParameterColor(String paraMatch, String allInput) {
+	
+	int startIndex = allInput.indexOf(paraMatch) - 1; // startIndex is offset by -1 so the delimiter '-' behind the parameter is also colored
+	
+	int paraLength = interpreter.getFirstWord(paraMatch).length();
+	
+	if (readyColorCoding(paraMatch, allInput)) {
+	    
+	    findParameterColorProperties(paraMatch);
+	    
+	    colorParameter(startIndex, paraLength);
+	    unformatSpaceAfterParameter(startIndex, paraLength); 
+	}
+		
+    }
+
+    private void unformatSpaceAfterParameter(int startIndex,
+	    int paraLength) {
+	textPane.getStyledDocument().setCharacterAttributes(startIndex + paraLength + 1, startIndex + paraLength + 1, normalSetting, true);
+    }
+
+    private void colorParameter(int startIndex, int paraLength) {
+	textPane.getStyledDocument().setCharacterAttributes(startIndex, startIndex + paraLength, parameterSetting, true);
+    }
+
+    private void findParameterColorProperties(String paraMatch) {
+	StyleConstants.setForeground((MutableAttributeSet) parameterSetting, parameterColors.get(interpreter.interpretParameter(interpreter.getFirstWord(paraMatch))));
+    }
+
+    private boolean readyColorCoding(String paraMatch, String allInput) {
+	return hasTrailingSpace(interpreter.getFirstWord(DELIMITER_STRING_FORM + paraMatch), allInput) && allInput.charAt(allInput.indexOf(paraMatch)-1) == DELIMETER_CHAR_FORM;
+    }
+    
+    private void addCommandColor (String commMatch, String allInput) {
+	int startIndex = allInput.indexOf(commMatch);
+	CommandType commandType = interpreter.interpretCommand(commMatch);
+	
+	if (commandType == CommandType.INVALID) {
+	    textPane.getStyledDocument().setCharacterAttributes(startIndex, startIndex + commMatch.length(), normalSetting, true);
+	}
+	
+	else if (hasTrailingSpace(commMatch, allInput)) {
+	    StyleConstants.setForeground((MutableAttributeSet) commandSetting, commandColors.get(commandType));
+	    textPane.getStyledDocument().setCharacterAttributes(startIndex, startIndex + commMatch.length(), commandSetting, true);
+	    textPane.getStyledDocument().setCharacterAttributes(startIndex + commMatch.length() + 1, startIndex + commMatch.length() + 1, normalSetting, true);
+	}
+	
+    }
+    
+    private static boolean hasTrailingSpace(String sub, String main) {
+	
+	int startIndex = main.indexOf(sub);
+	int endIndex = startIndex + sub.length();
+	
+	if (endIndex > main.length() - 1) {
+	    return false;
+	} 
+	
+	if (main.charAt(endIndex) != SINGLE_SPACE) {
+	    return false;
+	}
+	
+	return true;
+    }
+    
+    private boolean executeCommand() {
+	boolean quit;
+	
+	InputColorFilter.interpreter.setCurrentFolder(MainInterface.getCurrentFolderName());        		
+	quit = MainInterface.getController().executeCommands(userInputString, MainInterface.getCurrentFolderName());
+	return quit;
+    }
+
+    private void processNextAction(boolean quit) {
+	if (!quit) {
+	    MainInterface.updateTaskDisplay();
+	    MainInterface.clearTextPane();
+	    MainInterface.setCurrentHistoryState(MainInterface.getInputHistorySize());
+	} else {
+	    mainFrame.dispose();
+	    System.exit(0);        			
+	}
+    }
+
+    public static Color getParameterColor(ParameterType parameterType) {
+	return parameterColors.get(parameterType);
+    }
+    
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\InputColorFilter.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\IOPane.java
+	 */
+
+public class IOPane extends JFrame {
+    
+    private static final String INVALID_FILENAME_REGEX = 
+	    
+    "# Match a valid Windows filename (unspecified file system).          \n" +
+    "^                                # Anchor to start of string.        \n" +
+    "(?!                              # Assert filename is not: CON, PRN, \n" +
+    "  (?:                            # AUX, NUL, COM1, COM2, COM3, COM4, \n" +
+    "    CON|PRN|AUX|NUL|             # COM5, COM6, COM7, COM8, COM9,     \n" +
+    "    COM[1-9]|LPT[1-9]            # LPT1, LPT2, LPT3, LPT4, LPT5,     \n" +
+    "  )                              # LPT6, LPT7, LPT8, and LPT9...     \n" +
+    "  (?:\\.[^.]*)?                  # followed by optional extension    \n" +
+    "  $                              # and end of string                 \n" +
+    ")                                # End negative lookahead assertion. \n" +
+    "[^<>:\"/\\\\|?*\\x00-\\x1F]*     # Zero or more valid filename chars.\n" +
+    "[^<>:\"/\\\\|?*\\x00-\\x1F\\ .]  # Last char is not a space or dot.  \n" +
+    "$                                # Anchor to end of string.            ";
+    
+    
+    private static final String MESSAGE_EXPORT_FAILED = "Export Failed: Invalid filename";
+    private static final String MESSAGE_EXPORT_SUCCESSFUL = "Exported \"%1$s\" sucessfully";
+    private static final String MESSAGE_SUCCESSFUL_IMPORT = " was successfully imported into TASCA";
+    
+    private static final Border SETTINGS_EMPTY_BORDER = BorderFactory.createEmptyBorder(0,0,0,0);
+
+    private static final String CHAR_QUOTATION_MARKS = "\"";
+    
+    private static final String FILETYPE_NAME_ICS = "iCal ICS File";
+    private static final String FILETYPE_ICS = "ics";
+    private static final String UI_BACKGROUND_COLOR_HEX = "#272822";
+    
+    private static final ImageIcon ICON_CLOSE = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Close button.png"));
+    private static final ImageIcon ICON_EXPORT = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Export Pane Button.png"));
+    private static final ImageIcon ICON_PANE_GRAPHIC = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Export Pane Graphics.png"));
+    private static final ImageIcon ICON_IMPORT = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Import Pane Button.png"));
+    
+    private static final long serialVersionUID = 1L;
+
+    private static final String TITLELESS_JFRAME = "TitleLessJFrame";
+    private int dragPosX = 0, dragPosY = 0;
+    JLabel systemStatusMessage;
+    
+    private Controller controller;
+    
+    public IOPane(JFrame mainFrame, JLabel systemStatusMessage, Controller controller) {
+	super(TITLELESS_JFRAME);
+	linkMainInterfaceComponents(systemStatusMessage, controller);
+	
+	loadGuiComponents(mainFrame);
+	activateWindowDrag();
+	setVisible(true);
+    }
+
+    private void linkMainInterfaceComponents(JLabel systemStatusMessage,
+	    Controller controller) {
+	this.systemStatusMessage = systemStatusMessage;
+	this.controller = controller;
+    }
+
+    private void loadGuiComponents(final JFrame mainInterfaceFrame) {
+	MainInterface.getExportBtn().setEnabled(false);
+	
+	loadFrameSettings(mainInterfaceFrame); 
+	
+	addCloseButton();
+	addExportPaneGraphic();
+	
+	addImportButton(mainInterfaceFrame);
+	addExportButton(mainInterfaceFrame);
+    }
+
+    private void addImportButton(final JFrame mainInterfaceFrame) {
+	JButton btnImport = new JButton(ICON_IMPORT);
+	btnImport.setBounds(264, 83, 81, 34); // Coordinates and Size in pixels
+	btnImport.setContentAreaFilled(false);
+	btnImport.setBorder(BorderFactory.createEmptyBorder());
+	btnImport.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		setAlwaysOnTop( false );
+		activateImportFileFinder(mainInterfaceFrame);
+	    }
+	});  
+	
+	getContentPane().add(btnImport);
+    }
+
+    private void addExportPaneGraphic() {
+	JLabel icon = new JLabel(ICON_PANE_GRAPHIC);
+	icon.setBounds(160, 50, 80, 100); // Coordinates and Size in pixels
+	
+	getContentPane().add(icon);
+    }
+
+    private void loadFrameSettings(final JFrame mainInterfaceFrame) {
+	setSize(400, 200); // Size in pixels
+	setBackground(Color.decode(UI_BACKGROUND_COLOR_HEX));
+	
+	getContentPane().setBackground(Color.decode(UI_BACKGROUND_COLOR_HEX));
+	getContentPane().setLayout(null);
+
+	setUndecorated(true); 
+	setAlwaysOnTop( true );
+	setLocationByPlatform( true );
+	
+	setResizable(false); 
+	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	setLocationRelativeTo(mainInterfaceFrame);
+    }
+
+    private void addExportButton(final JFrame mainFrame) {
+	JButton btnExport = new JButton(ICON_EXPORT);
+	
+	btnExport.setBounds(55, 83, 81, 34); // Coordinates and Size in pixels
+	btnExport.setContentAreaFilled(false);
+	btnExport.setBorder(BorderFactory.createEmptyBorder());
+	btnExport.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		setAlwaysOnTop( false );
+		activateExportFileFinder(mainFrame);
+	    }
+	});  
+	
+	getContentPane().add(btnExport);
+    }
+
+    private void addCloseButton() {
+	JButton btnClose = new JButton(ICON_CLOSE);
+
+	btnClose.setBackground(Color.BLACK);
+	btnClose.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		executeQuit();
+	    }
+	});
+	
+	btnClose.setBorderPainted(false);
+	btnClose.setContentAreaFilled(false);
+	btnClose.setBorder(SETTINGS_EMPTY_BORDER);
+	
+	btnClose.setBounds(373, 10, 17, 17); // Coordinates and Size in pixels
+	
+	getContentPane().add(btnClose);
+    }
+    
+    private void activateImportFileFinder(JFrame mainFrame) {
+	JFileChooser chooser = new JFileChooser();
+	FileNameExtensionFilter filter = new FileNameExtensionFilter(FILETYPE_NAME_ICS, FILETYPE_ICS);
+	
+	int userSelection = createOpenDialog(mainFrame, chooser, filter);
+	
+	if(userSelection == JFileChooser.APPROVE_OPTION) {
+	   new Importer(chooser.getSelectedFile().getAbsolutePath(), controller);
+	   systemStatusMessage.setText(CHAR_QUOTATION_MARKS + chooser.getSelectedFile().getName() + CHAR_QUOTATION_MARKS + MESSAGE_SUCCESSFUL_IMPORT);
+	}
+	
+	MainInterface.updateTaskDisplay();
+	executeQuit();
+    }
+
+    private int createOpenDialog(JFrame mainFrame, JFileChooser chooser,
+	    FileNameExtensionFilter filter) {
+	chooser.setFileFilter(filter);
+	int returnVal = chooser.showOpenDialog(mainFrame);
+	return returnVal;
+    }
+    
+    private void activateWindowDrag() {
+	addMouseListener(new MouseAdapter()
+	{
+	    public void mousePressed(MouseEvent e)
+	    {
+		dragPosX=e.getX();
+		dragPosY=e.getY();
+	    }
+	});
+
+	addMouseMotionListener(new MouseAdapter()
+	{
+	    public void mouseDragged(MouseEvent evt)
+	    {			
+		setLocation (evt.getXOnScreen()-dragPosX,evt.getYOnScreen()-dragPosY);
+	    }
+	});
+    }
+
+    private void executeQuit() {
+	MainInterface.getExportBtn().setEnabled(true);
+	dispose();
+    }
+
+    private void activateExportFileFinder(final JFrame frame) {
+	JFileChooser chooser = new JFileChooser();
+	FileNameExtensionFilter filter = new FileNameExtensionFilter(FILETYPE_NAME_ICS, FILETYPE_ICS);
+
+	int userSelection = createSaveDialog(frame, chooser, filter);
+
+	if(userSelection == JFileChooser.APPROVE_OPTION) {
+	    String fileName = chooser.getSelectedFile().getName();
+
+	    if (!isFilenameValid(fileName) ) {
+		systemStatusMessage.setText(MESSAGE_EXPORT_FAILED);
+		executeQuit();
+	    }
+
+	    saveToDestination(chooser, fileName);
+	}
+
+	executeQuit();
+    }
+
+    private void saveToDestination(JFileChooser chooser, String fileName) {
+	String filePath = chooser.getSelectedFile().getAbsolutePath().replaceAll("/" + fileName, "");
+	fileName = cleanFileName(fileName);
+	
+	new Exporter(filePath, fileName, controller);
+	systemStatusMessage.setText(String.format(MESSAGE_EXPORT_SUCCESSFUL, fileName));
+    }
+
+    private int createSaveDialog(final JFrame frame, JFileChooser chooser,
+	    FileNameExtensionFilter filter) {
+	chooser.setFileFilter(filter);
+	
+	int returnVal = chooser.showSaveDialog(frame);
+	return returnVal;
+    }
+
+    private String cleanFileName(String fileName) {
+	fileName = fileName.replace(".", ""); 
+	fileName = fileName.replace(".ics", ""); // .ics will be generated by iCal4j 
+	fileName = fileName.replace(",", "");
+	return fileName;
+    }
+
+    private static boolean isFilenameValid(String text)
+    {
+        Pattern pattern = Pattern.compile(INVALID_FILENAME_REGEX, 
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.COMMENTS);
+        
+        Matcher matcher = pattern.matcher(text);
+        boolean isMatch = matcher.matches();
+        return isMatch;
+    }
+}
+
+
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\IOPane.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\KeywordItem.java
+	 */
+
+public class KeywordItem extends JLayeredPane {
+    
+
+    private static final int MAX_COLUMNS = 10;
+    private static final Color COLOR_UI_BACKGROUND = Color.decode("#443e3e");
+    private static final String TEXT_DEFAULT_KEYWORD_LABEL = "Keyword";
+    private static final Border SETTINGS_EMPTY_BORDER = BorderFactory.createEmptyBorder(0, 0, 0, 0);
+    private static final long serialVersionUID = 1L;
+    private static BufferedGraphics graphics = new BufferedGraphics();
+    private JTextField synonymsField;
+    
+    public KeywordItem(String keyword, String synonyms) {
+	super();
+	
+	loadFrameSettings();
+	
+	addSynonymsTextField(synonyms);
+	addKeywordLabel(keyword);
+	
+	addItemBackground();
+    }
+
+    private void addItemBackground() {
+	JLabel background = new JLabel();
+	background.setSize(396, 41); // Size in pixels
+	background.setIcon(graphics.getKeywordItem());
+	this.add(background);
+    }
+
+    private void addKeywordLabel(String keyword) {
+	JLabel keywordLabel = new JLabel(TEXT_DEFAULT_KEYWORD_LABEL);
+	keywordLabel.setHorizontalAlignment(SwingConstants.CENTER);
+	keywordLabel.setForeground(Color.WHITE);
+	keywordLabel.setFont(MainInterface.latoBold13);
+	keywordLabel.setBounds(0, 0, 123, 41); // Coordinates and size in pixels
+	keywordLabel.setText(keyword);
+	add(keywordLabel);
+    }
+
+    private void addSynonymsTextField(String synonyms) {
+	synonymsField = new JTextField();
+	synonymsField.setBounds(135, 8, 227, 24); // Coordinates and size in pixels
+	synonymsField.setFont(MainInterface.latoReg13);
+	synonymsField.setForeground(Color.WHITE);
+	synonymsField.setBackground(COLOR_UI_BACKGROUND);
+	synonymsField.setBorder(SETTINGS_EMPTY_BORDER);
+	synonymsField.setText(synonyms);
+	synonymsField.setCaretColor(Color.WHITE);
+	synonymsField.setColumns(MAX_COLUMNS);
+	add(synonymsField);
+    }
+
+    private void loadFrameSettings() {
+	this.setSize(396, 41); // Size in pixels
+	this.setBorder(SETTINGS_EMPTY_BORDER);
+    }
+    
+    public String getInputText() {
+	return synonymsField.getText();
+    }
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\KeywordItem.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\MainInterface.java
+	 */
+
+public class MainInterface {
+
+    private static final Dimension DIMENSIONS_TASK_ITEM = new Dimension(888, 40);
+    private static final int INVALID_INPUT_HISTORY_REF = -1;
+    private static final int VERTICAL_GAP_BETWEEN_ITEMS = 13;
+    private static final Color COLOR_UI_BACKGROUND = Color.decode("#272822");
+    private static final Rectangle DISPLAY_PANE_BOUNDS = new Rectangle(0, 80, 888, 262);
+    private static final int DISPLAY_PANE_MAX_HEIGHT = 262;
+
+    private static final String FONT_NAME_LUCIDA_GRANDE = "Lucida Grande";
+    private static final String FONT_NAME_LATO = "Lato";
+    private static final String FONT_NAME_MESLO_BOLD = "Meslo LG S";
+    private static final String FONT_NAME_MESLO_PLAIN = "Meslo LG M";
+
+    private static final String FILEPATH_FONT_MESLO_BOLD = "/GUI Graphics/Fonts/MesloLGS-Bold.ttf";
+    private static final String FILEPATH_FONT_MESLO_REG = "/GUI Graphics/Fonts/MesloLGM-Regular.ttf";
+    private static final String FILEPATH_FONT_LUCIDA_GRANDE = "/GUI Graphics/Fonts/Lucida Grande.ttf";
+    private static final String FILEPATH_FONT_LATO_REG = "/GUI Graphics/Fonts/Lato-Reg.ttf";
+
+    private static Controller controller = new Controller();
+    private static JFrame mainFrame;
+
+    // Window + components:
+    public static Font mesloReg16, mesloBold16,menloReg, latoReg, latoReg15, latoReg14, latoReg12, latoBold13, latoBold20, latoBold16,latoReg13, lucidaReg22;
+    private static int windowPosX=0,windowPosY=0;
+    private static final String TITLELESS_JFRAME = "TitleLessJFrame";
+    private static final Rectangle BOUNDS_MAIN_FRAME = new Rectangle(0, 0, 888, 500);
+    
+    private static final ImageIcon IMAGE_UI_BACKGROUND = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/UI Background.png"));
+    private static final ImageIcon ICON_EXPORT_BUTTON = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Export Icon.png"));
+    private static final ImageIcon ICON_SETTINGS_BUTTON = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Settings Icon.png"));
+    private static final ImageIcon ICON_INPUT_BACKGROUND = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Empty Input Bar.gif"));
+    private static final ImageIcon ICON_FEEDBACK_BACKGROUND = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Error Feedback Background.png"));
+    private static final ImageIcon ICON_CLOSE_BUTTON = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Close button.png"));
+    private static final ImageIcon ICON_MINIMIZE_BUTTON = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Minimize Button.png"));
+    
+    private static final String FILEPATH_ICON_DOWN_INDICATOR = "/GUI Graphics/Size Arrow Down.png";
+    private static final String FILEPATH_ICON_UP_INDICATOR = "/GUI Graphics/Size Arrow Up.png";
+    
+    private static final String MESSAGE_WELCOME = "memora vivere";
+    private static final Border SETTINGS_EMPTY_BORDER = BorderFactory.createEmptyBorder(0,0,0,0);
+    private static final int VIEWPORT_HEIGHT_DISPLAY_PANE = 262;
+    
+    // Input bar & Input history:
+    private static UserInputTextPane textPane;
+    private static List<InputHistory.StateMemory> savedUserInput = new ArrayList<InputHistory.StateMemory>();
+    private static InputHistory inputHistory = new InputHistory();
+    private static int currentHistoryState = INVALID_INPUT_HISTORY_REF;
+    private static int inputHistorySize = INVALID_INPUT_HISTORY_REF;
+    private static final int MAX_INPUT_HISTORY = 30;
+    
+    private static final String SINGLE_SPACE = " ";
+    private static final String DELIMITER = "-";
+
+    // Folder tab manager:
+    private static final int NUM_FOLDERS = 5;  
+    private static FolderName currFolder, prevFolder, defaultFolder;
+    private static String folder1Name, folder2Name, folder3Name, folder4Name, folder5Name;
+    private static FolderName folderCycle[] = {FolderName.FOLDER1, FolderName.FOLDER2, FolderName.FOLDER3, FolderName.FOLDER4, FolderName.FOLDER5};
+    private static FolderTab folder1, folder2, folder3, folder4, folder5;
+    private static int cycleRef = 1;
+    
+    private static final Point LOCATION_FOLDER5 = new Point(636, 4);
+    private static final Point LOCATION_FOLDER4 = new Point(477, 4);
+    private static final Point LOCATION_FOLDER3 = new Point(318, 4);
+    private static final Point LOCATION_FOLDER2 = new Point(159, 4);
+    private static final Point LOCATION_FOLDER1 = new Point(-2, 4);
+
+    // Display pane:
+    private static JScrollPane taskPane;
+    private static Interpreter interpreter;
+
+    private static JButton btnSettings, btnExport;
+    private static JLabel upIndicator, downIndicator, inputBackground, feedbackText, feedbackBackground, msgEmptyList, systemStatusMessage;
+
+    private static Config cfg;
+    private static boolean activeFeedbackEnabled = true;
+    
+    private static SimpleAttributeSet parameterSetting = new SimpleAttributeSet();
+    private static SimpleAttributeSet normalSetting = new SimpleAttributeSet();
+    
+    private static final int MAX_SCROLL_SPEED_IN_PIXELS = 1;
+    private static final int SCROLL_THUMB_WIDTH = 16;
+    private static final int DELAY_KEY_PRESS = 170;
+
+    // Input color filter:
+    private static InputColorFilter colorFilter;
+    static {
+	StyleConstants.setBold((MutableAttributeSet) parameterSetting, false);
+	StyleConstants.setForeground((MutableAttributeSet) parameterSetting, Color.WHITE);
+
+	StyleConstants.setBold((MutableAttributeSet) normalSetting, false);
+	StyleConstants.setForeground((MutableAttributeSet) normalSetting, Color.WHITE);
+    }
+
+    public MainInterface() {
+
+	readFonts();
+	customizeAndLoadFonts();
+
+	loadFrameSettings();
+	initializeGuiComponents(mainFrame);
+
+	createShutdownHook();
+	updateTaskDisplay();
+
+	showMainFrame();
+    }
+
+    private void customizeAndLoadFonts() {
+
+	mesloReg16 = new Font(FONT_NAME_MESLO_PLAIN, Font.PLAIN, 16);
+	mesloBold16 = new Font(FONT_NAME_MESLO_BOLD, Font.BOLD, 16);
+
+	latoBold20 = new Font(FONT_NAME_LATO, Font.BOLD, 20);
+	latoBold16 = new Font(FONT_NAME_LATO, Font.BOLD, 16);
+
+	latoReg15 = new Font(FONT_NAME_LATO, Font.PLAIN, 15);
+	latoReg14 = new Font(FONT_NAME_LATO, Font.PLAIN, 14);
+	latoReg13 = new Font(FONT_NAME_LATO, Font.PLAIN, 13);
+	latoReg12 = new Font(FONT_NAME_LATO, Font.PLAIN, 12);
+
+	lucidaReg22 = new Font(FONT_NAME_LUCIDA_GRANDE, Font.PLAIN, 22);
+
+    }
+
+    private void readFonts() {
+	try {
+	    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream(FILEPATH_FONT_LATO_REG)));
+	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream(FILEPATH_FONT_LUCIDA_GRANDE)));
+	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream(FILEPATH_FONT_MESLO_REG)));
+	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream(FILEPATH_FONT_MESLO_BOLD)));
+
+	} catch (IOException | FontFormatException e) {
+	    e.printStackTrace();
+	}
+    }
+
+    public static void main(String[] args)  {
+
+	SwingUtilities.invokeLater(new Runnable() {
+	    public void run() {
+
+		new MainInterface();
+
+
+
+	    }
+	});
+
+    }
+
+    public static boolean isActiveFeedbackEnabled() {
+	return activeFeedbackEnabled;
+    }
+
+    public static void setIsActiveFeedbackEnabled(boolean isEnabled) {
+	setActiveFeedbackEnabled(isEnabled);
+    }
+
+    public static void setActiveFeedbackEnabled(boolean activeFeedbackEnabled) {
+	MainInterface.activeFeedbackEnabled = activeFeedbackEnabled;
+    }
+
+    public static String getUserInput() {
+	return colorFilter.getUserInput();
+    }
+
+    public static void loadAllFolderLabels(){
+	cfg = new Config();
+
+	folder1Name = cfg.getFolderName(FolderName.FOLDER1);
+	folder2Name = cfg.getFolderName(FolderName.FOLDER2);
+	folder3Name = cfg.getFolderName(FolderName.FOLDER3);
+	folder4Name = cfg.getFolderName(FolderName.FOLDER4);
+	folder5Name = cfg.getFolderName(FolderName.FOLDER5);
+
+	setDefaultFolder(cfg.getDefaultFolder());
+    }
+
+    public static void updateAllFolderLabels() {
+
+	folder1.setLabelText(folder1Name);
+	folder2.setLabelText(folder2Name);
+	folder3.setLabelText(folder3Name);
+	folder4.setLabelText(folder4Name);
+	folder5.setLabelText(folder5Name);
+
+    }
+
+
+    private static LinkedList<Reminder> folderSortTimedTasks() {
+
+	LinkedList<Reminder> original = getController().getCurrentSystemState().getTimedList();
+	LinkedList<Reminder> folderSortedList = new LinkedList<Reminder>();
+
+	for (int i=0; i<original.size(); i++) {
+	    if (isCurrentFolder(getReminderFolder(original, i))) {
+		folderSortedList.add(original.get(i));
+	    }
+	}
+
+	return folderSortedList;
+    }
+
+    private static FolderName getReminderFolder(LinkedList<Reminder> original, int index) {
+	return cfg.getFolderId(original.get(index).getTask().getFolder());
+    }
+
+    public static boolean isCurrentFolder(FolderName folder) {
+	return folder == getCurrFolder() ||  getCurrFolder() == getDefaultFolder();
+    }
+
+    private static LinkedList<FloatingTask> folderSortFloatingTasks() {
+
+	LinkedList<FloatingTask> original = getController().getCurrentSystemState().getFloatingList();
+	LinkedList<FloatingTask> folderSortedList = new LinkedList<FloatingTask>();
+
+	for (int i=0; i<original.size(); i++) {
+	    if (isCurrentFolder(getTaskFolder(original, i))) {
+		folderSortedList.add(original.get(i));
+	    }
+	}
+
+	return folderSortedList;
+    }
+
+    private static FolderName getTaskFolder(LinkedList<FloatingTask> original, int index) {
+	return cfg.getFolderId(original.get(index).getFolder());
+    }
+
+    public static void updateTaskDisplay() {
+	int currentScrollPos = getVeriticalScrollPos();
+
+	LinkedList<Reminder> folderSortedTimedTasks = folderSortTimedTasks(); 
+	LinkedList<FloatingTask> folderSortedFloatingTasks = folderSortFloatingTasks();
+
+	if (isListEmpty(folderSortedTimedTasks, folderSortedFloatingTasks)) {
+	    taskPane.setVisible(false);
+	    msgEmptyList.setVisible(true);
+	    return;
+	} else {
+	    msgEmptyList.setVisible(false);
+	}
+
+	JPanel displayPanel = initDisplayPanel(folderSortedTimedTasks, folderSortedFloatingTasks); 
+	rebuildItemList(currentScrollPos, folderSortedTimedTasks,folderSortedFloatingTasks, displayPanel);
+
+    }
+
+    private static void rebuildItemList(int scrollPos,
+	    LinkedList<Reminder> folderSortedTimedTasks,
+	    LinkedList<FloatingTask> folderSortedFloatingTasks,
+	    JPanel displayPanel) {
+
+	int numOfTimedTasks = addTimedTasks(folderSortedTimedTasks, displayPanel);
+	addFloatingTasks(folderSortedFloatingTasks, displayPanel, numOfTimedTasks);
+
+	adjustDisplayViewport(displayPanel, scrollPos);
+	updateStatusMessage();
+
+    }
+
+    private static void updateStatusMessage() {
+	getSystemStatusMessage().setText(getController().getSystemMessageString());
+    }
+
+    private static JPanel initDisplayPanel(LinkedList<Reminder> folderSortedTimedTasks, LinkedList<FloatingTask> folderSortedFloatingTasks) {
+
+	JPanel displayPanel = new JPanel(new GridLayout(folderSortedTimedTasks.size() + folderSortedFloatingTasks.size(), 0, 0, VERTICAL_GAP_BETWEEN_ITEMS));
+	displayPanel.setBackground(COLOR_UI_BACKGROUND);
+	Interpreter.clearGuiIdMap();
+
+	return displayPanel;
+    }
+
+    private static void adjustDisplayViewport(JPanel tempPanel, int previousScrollPos) {
+	double preferredHeight = tempPanel.getPreferredSize().getHeight(); 
+
+	if (preferredHeight < DISPLAY_PANE_MAX_HEIGHT) {
+	    taskPane.setSize(tempPanel.getPreferredSize());
+	} else {
+	    taskPane.setBounds(DISPLAY_PANE_BOUNDS);
+	}
+
+	taskPane.setViewportView(tempPanel);
+	taskPane.setVisible(true);
+
+	setVerticalScollPos(previousScrollPos);
+    }
+
+    private static void addFloatingTasks(
+	    LinkedList<FloatingTask> folderSortedFloatingTasks,
+	    JPanel tempPanel, int numOfTimedTasks) {
+
+	for (int i = 0; i < folderSortedFloatingTasks.size(); i++) {
+	    TaskItem taskBar = new TaskItem(textPane, getController(), computeFloatingTaskGuiId(numOfTimedTasks, i), interpreter);
+	    taskBar.loadFloatingTaskDetails(folderSortedFloatingTasks.get(i), computeFloatingTaskGuiId(numOfTimedTasks, i));
+
+	    Interpreter.addGuiId(computeFloatingTaskGuiId(numOfTimedTasks, i), folderSortedFloatingTasks.get(i).getTaskID());
+	    loadTaskItemProperties(tempPanel, taskBar);
+	}
+    }
+
+    private static int computeFloatingTaskGuiId(int numOfTimedTasks, int index) {
+	return index + 1 + numOfTimedTasks;
+    }
+
+    private static void loadTaskItemProperties(JPanel tempPanel,
+	    TaskItem taskBar) {
+	taskBar.setPreferredSize(DIMENSIONS_TASK_ITEM);
+	taskBar.setVisible(true);
+	tempPanel.add(taskBar);
+    }
+
+    private static int addTimedTasks(
+	    LinkedList<Reminder> folderSortedTimedTasks, JPanel tempPanel) {
+	int i;
+	for (i=0; i < folderSortedTimedTasks.size(); i++) {
+	    TaskItem taskBar = new TaskItem(textPane, getController(), computeTimedTaskGuiId(i), interpreter);
+	    taskBar.loadTimedTaskDetails(folderSortedTimedTasks.get(i).getTask(), computeTimedTaskGuiId(i), folderSortedTimedTasks.get(i).getReminderTime());
+
+	    Interpreter.addGuiId(computeTimedTaskGuiId(i), folderSortedTimedTasks.get(i).getTask().getTaskID());
+	    loadTaskItemProperties(tempPanel, taskBar);
+	}
+	return i;
+    }
+
+    private static int computeTimedTaskGuiId(int index) {
+	return index+1;
+    }
+
+    private static boolean isListEmpty(
+	    LinkedList<Reminder> folderSortedTimedTasks,
+	    LinkedList<FloatingTask> folderSortedFloatingTasks) {
+	return folderSortedTimedTasks.size() + folderSortedFloatingTasks.size() == 0;
+    }
+
+    public static void clearTextPane() {
+
+	if (savedUserInput.size() > MAX_INPUT_HISTORY) {
+	    savedUserInput.clear();
+	    setCurrentHistoryState(INVALID_INPUT_HISTORY_REF);
+	}
+
+	if (!textPane.getText().trim().isEmpty()) {
+	    inputHistory.set(textPane.getText());
+	    savedUserInput.add(inputHistory.saveToHistory());
+	    setCurrentHistoryState(getCurrentHistoryState() + 1); // increment current state pointer 
+	    setInputHistorySize(getInputHistorySize() + 1); 
+	}
+
+	textPane.setText("");
+    }
+
+    public static int getVeriticalScrollPos() {
+	return taskPane.getVerticalScrollBar().getValue();
+    }
+
+    public static void setVerticalScollPos(int yPos) {
+	taskPane.getVerticalScrollBar().setValue(yPos);
+    }
+
+
+    public static JButton getSettingsBtn() {
+	return btnSettings;
+    }
+
+    public static JButton getExportBtn() {
+	return btnExport;
+    }
+
+    public static void setUpIndicator(boolean state) {
+	upIndicator.setVisible(state);
+    }
+
+    public static void setDownIndicator(boolean state) {
+	downIndicator.setVisible(state);
+    }
+
+
+    public static void initializeGuiComponents(final JFrame currFrame) {
+
+	loadAllFolderLabels();
+	initDefaultFolderState();
+
+	addCloseButton(currFrame);
+	addMinimizeButton(currFrame);
+
+	createTaskListPane(currFrame);
+
+	initLabels();
+	createInputBar(currFrame, inputBackground, feedbackText, feedbackBackground);   
+
+	createEmptyListMessageLabel();
+	createSystemMessageLabel();
+	createFolderTabs(currFrame);
+	createActiveFeedback(currFrame);
+
+	addSettingsButton(currFrame);
+	addExportButton(currFrame);
+
+	setMainFrameBackground(currFrame);
+	addWindowDragListener(currFrame);
+	addKeyboardShortcutListener();
+	
+    }
+
+    private static void addKeyboardShortcutListener() {
+	KeyboardFocusManager.getCurrentKeyboardFocusManager()
+	.addKeyEventDispatcher(new KeyEventDispatcher() {
+	    private long lastPressTime = 0;
+
+	    @Override
+	    public boolean dispatchKeyEvent(KeyEvent keyEvent) {
+
+		if(System.currentTimeMillis() - lastPressTime > DELAY_KEY_PRESS) {
+		    executeShortcut(keyEvent);
+		    lastPressTime = System.currentTimeMillis();
+		}
+		
+		return false; //continue to monitor other key events
+	    }
+
+	});
+    }
+
+    private static void addWindowDragListener(final JFrame currFrame) {
+	currFrame.addMouseListener(new MouseAdapter()
+	{
+	    public void mousePressed(MouseEvent event)
+	    {
+		windowPosX=event.getX();
+		windowPosY=event.getY();
+	    }
+	});
+
+	currFrame.addMouseMotionListener(new MouseAdapter()
+	{
+	    public void mouseDragged(MouseEvent event)
+	    {
+		//sets frame position when mouse dragged			
+		currFrame.setLocation (event.getXOnScreen()-windowPosX,event.getYOnScreen()-windowPosY);
+
+	    }
+	});
+    }
+
+    private static void setMainFrameBackground(final JFrame frame) {
+	JLabel mainFrameBackground = new JLabel(IMAGE_UI_BACKGROUND);
+	mainFrameBackground.setBackground(Color.BLACK);
+	mainFrameBackground.setBounds(BOUNDS_MAIN_FRAME);
+	frame.getContentPane().add(mainFrameBackground);
+    }
+
+    private static void addExportButton(final JFrame frame) {
+	btnExport = new JButton(ICON_EXPORT_BUTTON);
+	btnExport.setBounds(351, 365, 26, 26);
+	btnExport.setContentAreaFilled(false);
+	btnExport.setBorder(BorderFactory.createEmptyBorder());
+	btnExport.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		new IOPane(frame, getSystemStatusMessage(), getController());
+	    }
+	});   
+
+	frame.getContentPane().add(btnExport);
+    }
+
+    private static void addSettingsButton(final JFrame frame) {
+	btnSettings = new JButton(ICON_SETTINGS_BUTTON);
+	btnSettings.setBounds(505, 365, 27, 27);
+	btnSettings.setContentAreaFilled(false);
+	btnSettings.setBorder(BorderFactory.createEmptyBorder());
+	btnSettings.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		initiateSettingsPane(frame);
+	    }
+	});     
+	frame.getContentPane().add(btnSettings);
+    }
+
+    private static void createActiveFeedback(final JFrame frame) {
+	feedbackText.setHorizontalAlignment(SwingConstants.CENTER);
+	feedbackText.setForeground(Color.WHITE);
+	feedbackText.setFont(latoReg15);
+	feedbackText.setBounds(99, 373, 694, 18);
+	frame.getContentPane().add(feedbackText);
+
+	feedbackBackground.setIcon(ICON_FEEDBACK_BACKGROUND);
+	feedbackBackground.setBounds(77, 361, 750, 52);
+	frame.getContentPane().add(feedbackBackground);
+
+	feedbackText.setVisible(false);
+	feedbackBackground.setVisible(false);
+
+	inputBackground.setIcon(ICON_INPUT_BACKGROUND);
+	inputBackground.setBounds(37, 412, 814, 46);
+	frame.getContentPane().add(inputBackground);
+    }
+
+    private static void createFolderTabs(final JFrame frame) {
+	folder1 = new FolderTab(FolderName.FOLDER1, LOCATION_FOLDER1, folder1Name);
+	frame.getContentPane().add(folder1);
+
+	folder2 = new FolderTab(FolderName.FOLDER2, LOCATION_FOLDER2, folder2Name);
+	frame.getContentPane().add(folder2);
+
+	folder3 = new FolderTab(FolderName.FOLDER3, LOCATION_FOLDER3, folder3Name);
+	frame.getContentPane().add(folder3);
+
+	folder4 = new FolderTab(FolderName.FOLDER4, LOCATION_FOLDER4, folder4Name);
+	frame.getContentPane().add(folder4);
+
+	folder5 = new FolderTab(FolderName.FOLDER5, LOCATION_FOLDER5, folder5Name);
+	frame.getContentPane().add(folder5);
+    }
+
+    private static void initLabels() {
+	inputBackground = new JLabel("");
+	feedbackText = new JLabel("");
+	feedbackBackground = new JLabel("");
+    }
+
+    public static void processCtrlShortcuts(KeyEvent event) {
+	if (isStartTimeShortcut(event)) {
+	    
+	    appendToTextPane(textPane, DELIMITER + interpreter.getDefaultParaSyn(ParameterType.START_TIME), ParameterType.START_TIME);
+	    
+	} else if (isModifyCommandShortcut(event)) {
+	    
+	    clearTextPane();
+	    textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + SINGLE_SPACE + DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE);
+	    
+	} else if (isIdShortcut(event)) {
+
+	    appendToTextPane(textPane, DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID), ParameterType.TASK_ID);
+	    
+	} else if (isEndTimeShortcut(event)) {
+	    
+	    appendToTextPane(textPane, DELIMITER + interpreter.getDefaultParaSyn(ParameterType.END_TIME), ParameterType.END_TIME);
+	    
+	} else if (isPriorityShortcut(event)) {
+	    
+	    appendToTextPane(textPane, DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY), ParameterType.PRIORITY);
+	    
+	} else if (isReminderShortcut(event)) {
+	    
+	    appendToTextPane(textPane, DELIMITER + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME), ParameterType.REMINDER_TIME);
+	    
+	} else if (isLocationShortcut(event)) {
+	    
+	    appendToTextPane(textPane, DELIMITER + interpreter.getDefaultParaSyn(ParameterType.LOCATION), ParameterType.LOCATION);
+	    
+	} else if (isFolderShortcut(event)) {
+	    
+	    appendToTextPane(textPane, DELIMITER + interpreter.getDefaultParaSyn(ParameterType.FOLDER), ParameterType.FOLDER);
+	    
+	} else if (isTextPaneFocusShortcut(event)) {
+	    
+	    textPane.requestFocus();
+	    
+	} else if (isFolderRightSwitchShortcut(event)) {
+	 
+	    executeFolderRightSwitch();
+
+	} else if (isFolderLeftSwitchShortcut(event)) {
+	    
+	    executeFolderLeftSwitch();
+
+	} else if (isPageUpShortcut(event)) {
+	    
+	    taskPane.getVerticalScrollBar().setValue((taskPane.getVerticalScrollBar().getValue()) - VIEWPORT_HEIGHT_DISPLAY_PANE);
+	    
+	} else if (isPageDownShortcut(event)) {
+	    
+	    taskPane.getVerticalScrollBar().setValue((taskPane.getVerticalScrollBar().getValue()) + VIEWPORT_HEIGHT_DISPLAY_PANE);
+	}
+
+    }
+
+    private static void executeFolderLeftSwitch() {
+	setCycleRef((getCycleRef() + NUM_FOLDERS - 1) % NUM_FOLDERS);
+	FolderName nextFolder = getFolderCycle()[getCycleRef()];
+
+	FolderTab.gotoFolder(nextFolder);
+    }
+
+    private static void executeFolderRightSwitch() {
+	setCycleRef((getCycleRef() + NUM_FOLDERS + 1) % NUM_FOLDERS);
+
+	FolderName nextFolder = getFolderCycle()[getCycleRef()];
+
+	FolderTab.gotoFolder(nextFolder);
+    }
+
+    private static boolean isPageDownShortcut(KeyEvent event) {
+	return isInputHistoryForwardShortcut(event);
+    }
+
+    private static boolean isPageUpShortcut(KeyEvent event) {
+	return isInputHistoryBackShortcut(event);
+    }
+
+    private static boolean isFolderLeftSwitchShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_TAB && event.isShiftDown();
+    }
+
+    private static boolean isFolderRightSwitchShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_TAB && !event.isShiftDown();
+    }
+
+    private static boolean isTextPaneFocusShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_T;
+    }
+
+    private static boolean isFolderShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_F;
+    }
+
+    private static boolean isLocationShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_L;
+    }
+
+    private static boolean isReminderShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_R || event.getKeyCode() == KeyEvent.VK_A;
+    }
+
+    private static boolean isPriorityShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_P;
+    }
+
+    private static boolean isEndTimeShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_E || event.getKeyCode() == KeyEvent.VK_D;
+    }
+
+    private static boolean isIdShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_N || event.getKeyCode() == KeyEvent.VK_I;
+    }
+
+    private static boolean isModifyCommandShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_M && event.isShiftDown();
+    }
+
+    private static boolean isStartTimeShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_S || event.getKeyCode() == KeyEvent.VK_O;
+    }
+
+    private static void appendToTextPane(UserInputTextPane textPane, String newString, ParameterType parameterType) {
+	
+	if (textPane.getText().isEmpty()) {
+	    return;
+	}
+
+	if (parameterAlreadyExists(textPane, newString)) {
+	    textPane.setCaretPosition(textPane.getText().indexOf(newString)+newString.length() + 1);
+	    return;
+	}
+
+	if (hasTrailingSpace(textPane)) {
+	    newString = SINGLE_SPACE + newString;
+	}
+
+	StyleConstants.setForeground((MutableAttributeSet) parameterSetting, InputColorFilter.getParameterColor(parameterType));
+
+	try {
+	    textPane.appendParameter(newString, parameterSetting);
+	    textPane.appendParameter(SINGLE_SPACE, normalSetting);
+	    textPane.setCaretPosition(textPane.getText().length());
+	} catch (BadLocationException e) {
+	    e.printStackTrace();
+	}
+
+    }
+
+    private static boolean hasTrailingSpace(UserInputTextPane textPane) {
+	return textPane.getText().charAt(textPane.getText().length() - 1) != ' ';
+    }
+
+    private static boolean parameterAlreadyExists(UserInputTextPane textPane,
+	    String newString) {
+	return textPane.getText().indexOf(newString) >= 0;
+    }
+
+    public static void addMinimizeButton(final JFrame frame) {
+	JButton btnMinimize = new JButton("");
+	btnMinimize.setBackground(Color.BLACK);
+	btnMinimize.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		frame.setState(JFrame.ICONIFIED);
+	    }
+	});
+	btnMinimize.setIcon(ICON_MINIMIZE_BUTTON);
+	btnMinimize.setBounds(836, 7, 18, 18);
+
+	btnMinimize.setBorderPainted(false);
+	btnMinimize.setContentAreaFilled(false);
+	btnMinimize.setBorder(SETTINGS_EMPTY_BORDER);
+
+	frame.getContentPane().add(btnMinimize);
+    }
+
+    public static void createSystemMessageLabel() {
+	setSystemStatusMessage(new JLabel(""));
+	getSystemStatusMessage().setHorizontalAlignment(SwingConstants.CENTER);
+	getSystemStatusMessage().setBounds(0, 484, 888, 16);
+	getSystemStatusMessage().setFont(latoReg12);
+	getSystemStatusMessage().setForeground(Color.WHITE);
+
+	mainFrame.getContentPane().add(getSystemStatusMessage());
+    }
+
+    public static void createEmptyListMessageLabel() {
+	msgEmptyList = new JLabel("Just do it. Later.");
+	msgEmptyList.setForeground(Color.WHITE);
+	msgEmptyList.setHorizontalAlignment(SwingConstants.CENTER);
+	msgEmptyList.setFont(lucidaReg22);
+	msgEmptyList.setBounds(214, 200, 460, 28);
+	msgEmptyList.setVisible(false);
+	mainFrame.getContentPane().add(msgEmptyList);
+    }
+
+    public static void createInputBar(final JFrame frame, JLabel inputBackground,
+	    JLabel feedbackText, JLabel feedbackBackground) {
+	
+	createInputTextPane(); 
+	initIndicators(frame);
+	
+	addInputColorFilter(frame, inputBackground, feedbackText, feedbackBackground);
+	
+	createInputScrollPane(frame);
+    }
+
+    private static void addInputColorFilter(final JFrame frame,
+	    JLabel inputBackground, JLabel feedbackText,
+	    JLabel feedbackBackground) {
+	colorFilter = (new InputColorFilter(frame, textPane, interpreter, inputBackground, feedbackText, feedbackBackground));
+	((AbstractDocument) textPane.getDocument()).setDocumentFilter(colorFilter);
+    }
+
+    private static void createInputScrollPane(final JFrame frame) {
+	JScrollPane scrollPane = new JScrollPane(textPane);
+	scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+	scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	scrollPane.setLocation(50, 423);
+	scrollPane.setSize(745, 23);
+	scrollPane.setOpaque(false);
+	scrollPane.setBorder(SETTINGS_EMPTY_BORDER);
+
+
+	scrollPane.getViewport().setOpaque(false);
+	scrollPane.setViewportView(textPane);
+	frame.getContentPane().add(scrollPane);
+    }
+
+    private static void createInputTextPane() {
+	textPane = new UserInputTextPane(new DefaultStyledDocument());
+	textPane.setOpaque(false);
+	textPane.setText(MESSAGE_WELCOME);
+	textPane.setFont(mesloReg16);
+	textPane.setForeground(Color.WHITE);
+	textPane.setFocusTraversalKeysEnabled(false);
+	textPane.setCaretColor(Color.WHITE);
+
+	interpreter = new Interpreter();
+	Interpreter.setIsGuiIdEnabled(true);
+    }
+
+    public static void initIndicators(final JFrame frame) {
+	try {
+	    upIndicator = new JLabel(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_ICON_UP_INDICATOR)))));
+	} catch (IOException exception) {
+	    exception.printStackTrace();
+	}
+
+	upIndicator.setBounds(861, 412, 18, 18);
+	upIndicator.setVisible(false);
+	frame.getContentPane().add(upIndicator);
+
+	try {
+	    downIndicator = new JLabel(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_ICON_DOWN_INDICATOR)))));
+	} catch (IOException exception) {
+	    exception.printStackTrace();
+	}
+
+	downIndicator.setBounds(861, 440, 18, 18);
+	downIndicator.setVisible(false);
+	frame.getContentPane().add(downIndicator);
+    }
+
+    public static void createShutdownHook() {
+	Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+	    public void run() {
+		getController().executeCommands(interpreter.getDefaultCommandSyn(CommandType.QUIT));
+	    }
+	}));
+    }
+
+    public static void createTaskListPane(final JFrame frame) {
+	JLayeredPane layeredPane = initLayeredPane();
+
+	buildTaskPane(layeredPane);
+
+	frame.getContentPane().add(layeredPane);
+    }
+
+    private static void buildTaskPane(JLayeredPane layeredPane) {
+	taskPane = new JScrollPane();
+	taskPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	taskPane.setBounds(0, 80, 888, 262);
+	taskPane.setOpaque(false);
+	taskPane.setBorder(SETTINGS_EMPTY_BORDER);
+	taskPane.getViewport().setOpaque(false);
+	taskPane.setOpaque(false);
+	taskPane.setVisible(true);
+	taskPane.setDoubleBuffered(true);
+
+	addScrollBar();
+
+	layeredPane.add(taskPane);
+    }
+
+    private static JLayeredPane initLayeredPane() {
+	JLayeredPane layeredPane = new JLayeredPane();
+	layeredPane.setBounds(0, 0, 888, 342);
+	layeredPane.setOpaque(false);
+	layeredPane.setBorder(SETTINGS_EMPTY_BORDER);
+	return layeredPane;
+    }
+
+    private static void addScrollBar() {
+	JScrollBar mainScrollBar = taskPane.getVerticalScrollBar();
+	mainScrollBar.setPreferredSize(new Dimension(SCROLL_THUMB_WIDTH, Integer.MAX_VALUE));
+	mainScrollBar.setUI(new ScrollBarUI());
+
+	taskPane.getVerticalScrollBar().setUnitIncrement(MAX_SCROLL_SPEED_IN_PIXELS);
+    }
+
+    public static void addCloseButton(final JFrame frame) {
+	JButton btnClose = new JButton(ICON_CLOSE_BUTTON);
+
+	btnClose.setBackground(Color.BLACK);
+	btnClose.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		System.exit(0);
+	    }
+	});
+
+	btnClose.setBorderPainted(false);
+	btnClose.setContentAreaFilled(false);
+	btnClose.setBorder(SETTINGS_EMPTY_BORDER);
+
+	btnClose.setBounds(862, 7, 17, 17);
+	frame.getContentPane().add(btnClose);
+    }
+
+    public static void initDefaultFolderState() {
+	setCurrFolder(getDefaultFolder());
+	setPrevFolder(getCurrFolder());
+
+	setCycleRef(Integer.parseInt(getDefaultFolder().toString().charAt(6) + "" ) - 1); // char at index 6 in FolderName contains the folder id number
+    }
+
+    public static void loadFrameSettings() {
+	mainFrame = new JFrame(TITLELESS_JFRAME);
+
+	mainFrame.setBackground(COLOR_UI_BACKGROUND);
+	mainFrame.getContentPane().setLayout(null);
+	mainFrame.setUndecorated(true); 
+	mainFrame.setSize(888, 500);
+	mainFrame.setResizable(false); 
+	mainFrame.setLocationRelativeTo(null); 
+	mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    public static void initiateSettingsPane(final JFrame frame) {
+	new SettingsPane(frame, interpreter, cfg);
+    }
+
+
+    public static String getCurrentFolderName() {
+	return cfg.getFolderName(getCurrFolder());
+    }
+
+    public static JLabel getSystemStatusMessage() {
+	return systemStatusMessage;
+    }
+
+    public static void setSystemStatusMessage(JLabel systemStatusMessage) {
+	MainInterface.systemStatusMessage = systemStatusMessage;
+    }
+
+    private static void showMainFrame() {
+	mainFrame.setVisible(true);
+	textPane.requestFocus();
+    }
+
+    public static int getCycleRef() {
+	return cycleRef;
+    }
+
+    public static void setCycleRef(int cycleRef) {
+	MainInterface.cycleRef = cycleRef;
+    }
+
+    public static FolderName[] getFolderCycle() {
+	return folderCycle;
+    }
+
+    public static void setFolderCycle(FolderName folderCycle[]) {
+	MainInterface.folderCycle = folderCycle;
+    }
+
+    public static FolderName getCurrFolder() {
+	return currFolder;
+    }
+
+    public static void setCurrFolder(FolderName currFolder) {
+	MainInterface.currFolder = currFolder;
+    }
+
+    public static FolderName getPrevFolder() {
+	return prevFolder;
+    }
+
+    public static void setPrevFolder(FolderName prevFolder) {
+	MainInterface.prevFolder = prevFolder;
+    }
+
+    public static FolderName getDefaultFolder() {
+	return defaultFolder;
+    }
+
+    public static void setDefaultFolder(FolderName defaultFolder) {
+	MainInterface.defaultFolder = defaultFolder;
+    }
+
+    public static int getCurrentHistoryState() {
+	return currentHistoryState;
+    }
+
+    public static void setCurrentHistoryState(int inputNumRef) {
+	MainInterface.currentHistoryState = inputNumRef;
+    }
+
+    public static int getInputHistorySize() {
+	return inputHistorySize;
+    }
+
+    public static void setInputHistorySize(int inputHistorySize) {
+	MainInterface.inputHistorySize = inputHistorySize;
+    }
+
+    public static Controller getController() {
+	return controller;
+    }
+
+    public static void setController(Controller controller) {
+	MainInterface.controller = controller;
+    }
+
+    private static void executeShortcut(KeyEvent event) {
+	if (event.isControlDown()){
+	    processCtrlShortcuts(event);
+	}
+	else if (event.isShiftDown()) {
+	    processShiftOnlyShortcuts(event); 
+	}
+    }
+
+    private static void processShiftOnlyShortcuts(KeyEvent event) {
+	if (isInputHistoryBackShortcut(event)) {
+	    executeInputHistoryBackwark();
+	} else if (isInputHistoryForwardShortcut(event)) {
+	    executeInputHistoryForward();
+	}
+    }
+
+    private static void executeInputHistoryBackwark() {
+	if (getCurrentHistoryState() >= 0) {
+	    textPane.setText("");
+	    textPane.replaceSelection(inputHistory.restoreFromHistory(savedUserInput.get(getCurrentHistoryState())));
+	    setCurrentHistoryState(getCurrentHistoryState() - 1);
+	}
+    }
+
+    private static void executeInputHistoryForward() {
+	if (getCurrentHistoryState() + 2 < savedUserInput.size()) { // + 2 checks if there is one more forward state left
+	    setCurrentHistoryState(getCurrentHistoryState() + 1);
+	    textPane.setText("");
+	    textPane.replaceSelection(inputHistory.restoreFromHistory(savedUserInput.get(getCurrentHistoryState()+1)));
+	}
+    }
+
+    private static boolean isInputHistoryForwardShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_DOWN;
+    }
+
+    private static boolean isInputHistoryBackShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_UP;
+    }
+
+}
+
+
+
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\MainInterface.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\ScrollBarUI.java
+	 */
+
+class ScrollBarUI extends MetalScrollBarUI {
+    
+    private static final Color COLOR_UI_BACKGROUND = Color.decode("#272822");
+    private static final int OFFSET_HEIGHT_THUMB = 1;
+    private static final int OFFSET_WIDTH_THUMB = 2;
+    private Image imageThumb, imageTrack;
+
+    ScrollBarUI() {
+	loadUiGraphics();
+    }
+
+    public void loadUiGraphics() {
+	BufferedGraphics graphics = new BufferedGraphics();
+	imageThumb = graphics.getThumb();
+	imageTrack = graphics.getTrack();
+    }
+
+    @Override
+    protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+	g.translate(thumbBounds.x, thumbBounds.y);
+	g.setColor(COLOR_UI_BACKGROUND);
+	
+	g.drawRect(0, 0, thumbBounds.width - OFFSET_WIDTH_THUMB, thumbBounds.height - OFFSET_HEIGHT_THUMB);
+	
+	AffineTransform transform = AffineTransform.getScaleInstance(calculateThumbWidth(thumbBounds),calculateThumbHeight(thumbBounds));
+	((Graphics2D)g).drawImage(imageThumb, transform, null);
+	g.translate( -thumbBounds.x, -thumbBounds.y ); 
+    }
+
+    public double calculateThumbHeight(Rectangle thumbBounds) {
+	return (double)thumbBounds.height/imageThumb.getHeight(null);
+    }
+
+    public double calculateThumbWidth(Rectangle thumbBounds) {
+	return (double)thumbBounds.width/imageThumb.getWidth(null);
+    }
+
+    @Override
+    protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
+	g.translate(trackBounds.x, trackBounds.y);
+	((Graphics2D)g).drawImage(imageTrack,AffineTransform.getScaleInstance(1,(double)trackBounds.height/imageTrack.getHeight(null)),null);
+	g.translate( -trackBounds.x, -trackBounds.y );
+    }
+
+    //Remove ugly arrows buttons:
+    @Override
+    protected JButton createDecreaseButton(int orientation) {
+	return createZeroButton();
+    }
+
+    @Override    
+    protected JButton createIncreaseButton(int orientation) {
+	return createZeroButton();
+    }
+
+    private JButton createZeroButton() {
+	JButton jbutton = new JButton();
+	jbutton.setPreferredSize(new Dimension(0, 0));
+	jbutton.setMinimumSize(new Dimension(0, 0));
+	jbutton.setMaximumSize(new Dimension(0, 0));
+	return jbutton;
+    }
+
+}
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\ScrollBarUI.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\SettingsPane.java
+	 */
+
+public class SettingsPane extends JFrame {
+    
+    private static final String FILENAME_CONFIG_FILE = "Config.cfg";
+    
+    private static final String MESSAGE_INVALID_FOLDER_NAME = "Please specify a shorter name for Folder %1$s or check that it's not empty";
+    private static final String MESSAGE_DUPLICATE_FOLDER_NAME = "Folder %1$s's name is a duplicate";
+    private static final String MESSAGE_SAVE_FAILED = "SAVE FAILED: ";
+    
+    private static final ImageIcon ICON_CANCEL_BUTTON = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Settings Cancel Button.png"));
+    private static final ImageIcon LABEL_FOLDER_SELECTION = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Settings Folder Display.png"));
+    private static final ImageIcon ICON_SAVE_BUTTON = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Settings Save Button.png"));
+    
+    private static final String TITLE_PREFERENCES = "PREFERENCES";
+    private static final String TITLE_ACTIVE_FEEDBACK = "Active Input Feedback";
+    private static final String TITLE_COMMANDS = "COMMANDS";
+    private static final String TITLE_PARAMETERS = "PARAMETERS";
+
+    private static final int MAX_ROW_COUNT = 5;
+    private static final int SCROLL_SPEED_PIXELS = 1;
+    private static final int SCROLL_THUMB_WIDTH = 16;
+    
+    private static final Border SETTINGS_EMPTY_BORDER = BorderFactory.createEmptyBorder(0, 0, 0, 0);
+    
+    private static final Rectangle BOUNDS_FOLDER5_FIELD = new Rectangle(714, 116, 138, 28);
+    private static final Rectangle BOUNDS_FOLDER4_FIELD = new Rectangle(578, 116, 140, 28);
+    private static final Rectangle BOUNDS_FOLDER3_FIELD = new Rectangle(444, 116, 138, 28);
+    private static final Rectangle BOUNDS_FOLDER2_FIELD = new Rectangle(308, 116, 140, 28);
+    private static final Rectangle BOUNDS_FOLDER1_FIELD = new Rectangle(171, 116, 141, 28);
+    
+    private static final int TOOLTIP_REF = 2;
+    private static final int CONFIG_NAME_REF = 1;
+    private static final int DISPLAY_NAME_REF = 0;
+    
+    private static final int VERTICAL_GAP_BETWEEN_KEYWORD_ITEMS = 13;
+    
+    private static final Color COLOR_UI_BACKGROUND = Color.decode("#272822");
+    
+    private static final int ID_INT_FOLDER5 = 5;
+    private static final int ID_INT_FOLDER4 = 4;
+    private static final int ID_INT_FOLDER3 = 3;
+    private static final int ID_INT_FOLDER2 = 2;
+    private static final int ID_INT_FOLDER1 = 1;
+    private static final int MAX_FOLDER_NAME_LENGTH = 16;
+    
+    private static final int ARRAY_ID_FOLDER5 = 4;
+    private static final int ARRAY_ID_FOLDER4 = 3;
+    private static final int ARRAY_ID_FOLDER3 = 2;
+    private static final int ARRAY_ID_FOLDER2 = 1;
+    private static final int ARRAY_ID_FOLDER1 = 0;
+    
+    private static final String DEFAULT_FOLDER_ID_STRING = "default";
+    private static final String FOLDER5_ID_STRING = "folder5";
+    private static final String FOLDER4_ID_STRING = "folder4";
+    private static final String FOLDER3_ID_STRING = "folder3";
+    private static final String FOLDER2_ID_STRING = "folder2";
+    private static final String FOLDER1_ID_STRING = "folder1";
+    
+    private static final String TITLELESS_JFRAME = "TitleLessJFrame";
+    private static final long serialVersionUID = 1L;
+
+    
+    private int dragPosX = 0, dragPosY = 0;
+    private Checkbox activeFeedbackCheckbox;
+    private Config cfg;
+    private String folder1Name, folder2Name, folder3Name, folder4Name, folder5Name, defaultFolder;
+    
+    private JComboBox<Object> defaultFolderSelector;
+    private Properties props;
+    
+    private FolderNameField folder1Field;
+    private FolderNameField folder2Field;
+    private FolderNameField folder3Field;
+    private FolderNameField folder4Field;
+    private FolderNameField folder5Field;
+    
+    @SuppressWarnings("unused") // Compiler problem
+    private Interpreter interpreter;
+    private JLabel warningLabel;
+    private JScrollPane commandKeywordPane, paraKeywordPane;
+    
+    private ArrayList<KeywordItem> commandKeywordItems = new ArrayList<KeywordItem>();
+    private ArrayList<KeywordItem> paraKeywordItems = new ArrayList<KeywordItem>();
+
+    private String[][] commandDatabase = new String[][]{
+	    {"Add","add","How to use <>"},
+	    {"Delete","delete","How to use <>"},
+	    {"Clear Completed","clearCompleted","How to use <>"},
+	    {"Clear", "clear","How to use <>"},
+	    {"Modify", "modify","How to use <>"},
+	    {"Mark", "mark","How to use <>"},
+	    {"Unmark", "unmark","How to use <>"},
+	    {"Search", "search","How to use <>"},
+	    {"Now", "now","How to use <>"},
+	    {"Today", "today","How to use <>"},
+	    {"Tomorrow", "tomorrow","How to use <>"},
+	    {"Week", "week","How to use <>"},
+	    {"Month", "month","How to use <>"},
+	    {"Undo", "undo","How to use <>"},
+	    {"Redo", "redo","How to use <>"},
+	    {"Show All", "displayAll","How to use <>"},
+	    {"Non-Timed Tasks", "displayFloat","How to use <>"},
+	    {"Show in Time", "display","How to use <>"},
+	    {"Export", "export","How to use <>"},
+	    {"Import", "import","How to use <>"},
+	    {"Quit", "quit","How to use <>"}
+    };
+    
+    private String[][] parameterDatabase = new String[][] {
+	    {"Start Time","startTime","How to use <>"},
+	    {"End Time", "endTime","How to use <>"},
+	    {"Reminder Time", "reminderTime","How to use <>"},
+	    {"Priority", "priority","How to use <>"},
+	    {"Location", "location","How to use <>"},
+	    {"Folder", "folder","How to use <>"},
+	    {"Task ID", "taskID","How to use <>"}
+    };
+    
+    public SettingsPane(JFrame mainFrame, Interpreter interpreter, Config cfg) {
+	super(TITLELESS_JFRAME);
+	loadFrameSettings(mainFrame);
+	linkMainInterfaceComponents(interpreter, cfg);
+	
+	activateWindowDrag();
+	
+	loadFolderDatabase();
+	loadGuiComponents();
+	loadKeywordDatabase();
+	setVisible(true);
+    }
+
+    private void linkMainInterfaceComponents(Interpreter interpreter, Config cfg) {
+	MainInterface.getSettingsBtn().setEnabled(false);
+	
+	this.cfg = cfg;
+	this.interpreter = interpreter;
+    }
+    
+    private int getCurrentDefaultFolder(String folderId) {
+	if (folderId.equals(FOLDER1_ID_STRING)) {
+	    return ARRAY_ID_FOLDER1;
+	} else if (folderId.equals(FOLDER2_ID_STRING)) {
+	    return ARRAY_ID_FOLDER2;
+	} else if (folderId.equals(FOLDER3_ID_STRING)) {
+	    return ARRAY_ID_FOLDER3;
+	} else if (folderId.equals(FOLDER4_ID_STRING)) {
+	    return ARRAY_ID_FOLDER4;
+	} else {
+	    return ARRAY_ID_FOLDER5;
+	}
+    }
+    
+    private void loadFolderDatabase() {
+	props = cfg.getConfigFile();
+	
+	defaultFolder = props.getProperty(DEFAULT_FOLDER_ID_STRING);
+	folder1Name = props.getProperty(FOLDER1_ID_STRING);
+	folder2Name = props.getProperty(FOLDER2_ID_STRING);
+	folder3Name = props.getProperty(FOLDER3_ID_STRING);
+	folder4Name = props.getProperty(FOLDER4_ID_STRING);
+	folder5Name = props.getProperty(FOLDER5_ID_STRING);
+    }
+
+
+    private void activateWindowDrag() {
+	addMouseListener(new MouseAdapter()
+	{
+	    public void mousePressed(MouseEvent e)
+	    {
+		dragPosX=e.getX();
+		dragPosY=e.getY();
+	    }
+	});
+
+	addMouseMotionListener(new MouseAdapter()
+	{
+	    public void mouseDragged(MouseEvent evt)
+	    {		
+		setLocation (evt.getXOnScreen()-dragPosX,evt.getYOnScreen()-dragPosY);
+
+	    }
+	});
+    }
+
+    private void loadKeywordDatabase() {
+	
+	loadCommands();
+	loadParameters();
+	
+    }
+
+    private void loadParameters() {
+	
+	paraKeywordItems.clear();
+	
+	JPanel paraPanel = new JPanel(new GridLayout(parameterDatabase.length, 0, 0, VERTICAL_GAP_BETWEEN_KEYWORD_ITEMS));
+	
+	paraPanel.setBackground(COLOR_UI_BACKGROUND);
+	
+	for (int i=0; i<parameterDatabase.length; i++) {
+	    addParameterKeywordItem(paraPanel, i);
+	}
+
+	loadParameterKeywordPaneSettings(paraPanel);
+    }
+
+    private void loadCommands() {
+	
+	commandKeywordItems.clear();
+	
+	JPanel commandPanel = new JPanel(new GridLayout(commandDatabase.length, 0, 0, VERTICAL_GAP_BETWEEN_KEYWORD_ITEMS));
+
+	commandPanel.setBackground(COLOR_UI_BACKGROUND);
+	
+	for (int i=0; i<commandDatabase.length; i++) {
+	    addCommandKeywordItem(commandPanel, i);
+	}
+	
+	loadCommandKeywordPaneSettings(commandPanel);
+    }
+
+    private void loadParameterKeywordPaneSettings(JPanel paraPanel) {
+	paraKeywordPane.setBounds(490, 195, 396, 155);
+	paraKeywordPane.setViewportView(paraPanel);
+	paraKeywordPane.setVisible(true);
+    }
+
+    private void addParameterKeywordItem(JPanel paraPanel, int i) {
+	KeywordItem keywordBar = new KeywordItem(parameterDatabase[i][DISPLAY_NAME_REF], cfg.getProperty(parameterDatabase[i][CONFIG_NAME_REF]));
+	
+	keywordBar.setPreferredSize(new Dimension(396, 41));
+	keywordBar.setToolTipText(parameterDatabase[i][TOOLTIP_REF]); 
+	keywordBar.setVisible(true);
+	paraPanel.add(keywordBar);
+	
+	paraKeywordItems.add(keywordBar);
+    }
+
+    private void loadCommandKeywordPaneSettings(JPanel commandPanel) {
+	commandKeywordPane.setBounds(34, 195, 396, 155);
+	commandKeywordPane.setViewportView(commandPanel);
+	commandKeywordPane.setVisible(true);
+    }
+
+    private void addCommandKeywordItem(JPanel commandPanel, int i) {
+	KeywordItem keywordBar = new KeywordItem(commandDatabase[i][DISPLAY_NAME_REF], cfg.getProperty(commandDatabase[i][CONFIG_NAME_REF]));
+
+	keywordBar.setPreferredSize(new Dimension(396, 41));
+	keywordBar.setToolTipText(commandDatabase[i][TOOLTIP_REF]);
+	keywordBar.setVisible(true);
+	commandPanel.add(keywordBar);
+	
+	commandKeywordItems.add(keywordBar);
+    }
+    
+    private void loadGuiComponents() {
+	
+	addCancelButton();    
+	addSaveButton();
+	
+	addFolderNameFields();
+	addActiveFeedbackEnabledCheckbox();
+	
+	addCommandKeywordPane();
+	addParaKeywordPane();
+	
+	addDefaultFolderSelector();
+	
+	addWarningLabel();
+	addTitles();
+		
+    }
+
+    private void addWarningLabel() {
+	warningLabel = new JLabel("");
+	warningLabel.setForeground(Color.WHITE);
+	warningLabel.setFont(MainInterface.latoBold16);
+	warningLabel.setHorizontalAlignment(SwingConstants.CENTER);
+	warningLabel.setBounds(110, 364, 700, 28);
+	getContentPane().add(warningLabel);
+    }
+
+    private void addTitles() {
+	
+	JLabel parameterKeywordsTitle = new JLabel(TITLE_PARAMETERS);
+	parameterKeywordsTitle.setHorizontalAlignment(SwingConstants.CENTER);
+	parameterKeywordsTitle.setForeground(Color.WHITE);
+	parameterKeywordsTitle.setFont(MainInterface.latoReg14);
+	parameterKeywordsTitle.setBounds(588, 167, 201, 16);
+	getContentPane().add(parameterKeywordsTitle);
+	
+	
+	JLabel commandKeywordsTitle = new JLabel(TITLE_COMMANDS);
+	commandKeywordsTitle.setForeground(Color.WHITE);
+	commandKeywordsTitle.setHorizontalAlignment(SwingConstants.CENTER);
+	commandKeywordsTitle.setFont(MainInterface.latoReg14);
+	commandKeywordsTitle.setBounds(130, 165, 201, 16);
+	getContentPane().add(commandKeywordsTitle);
+	
+	
+	JLabel activeInputFeedbackTitle = new JLabel(TITLE_ACTIVE_FEEDBACK);
+	activeInputFeedbackTitle.setForeground(Color.WHITE);
+	activeInputFeedbackTitle.setFont(MainInterface.latoReg13);
+	activeInputFeedbackTitle.setHorizontalAlignment(SwingConstants.CENTER);
+	activeInputFeedbackTitle.setBounds(21, 45, 157, 16);
+	getContentPane().add(activeInputFeedbackTitle);
+	
+	
+	JLabel folderSelectionBackgroundLabel = new JLabel(LABEL_FOLDER_SELECTION);
+	folderSelectionBackgroundLabel.setBounds(70, 81, 780, 60);
+	getContentPane().add(folderSelectionBackgroundLabel);
+    }
+
+    private void addDefaultFolderSelector() {
+	
+	defaultFolderSelector = new JComboBox<Object>();
+	defaultFolderSelector.setFocusable(false);
+	defaultFolderSelector.setFont(MainInterface.latoReg13);
+	defaultFolderSelector.setModel(new DefaultComboBoxModel<Object>(new String[] {FOLDER1_ID_STRING, FOLDER2_ID_STRING, FOLDER3_ID_STRING, FOLDER4_ID_STRING, FOLDER5_ID_STRING}));
+	defaultFolderSelector.setSelectedIndex(getCurrentDefaultFolder(defaultFolder));
+	defaultFolderSelector.setMaximumRowCount(MAX_ROW_COUNT);
+	defaultFolderSelector.setBounds(75, 116, 97, 27);
+	getContentPane().add(defaultFolderSelector);
+	
+    }
+
+    private void addSaveButton() {
+	JButton btnSave = new JButton(ICON_SAVE_BUTTON);
+
+	btnSave.setBounds(839, 366, 81, 34);
+	btnSave.setContentAreaFilled(false);
+	btnSave.setBorder(SETTINGS_EMPTY_BORDER);
+	btnSave.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		saveChanges();
+	    }
+	});    
+
+	getContentPane().add(btnSave);
+    }
+
+    private void addParaKeywordPane() {
+	
+	paraKeywordPane = new JScrollPane();
+	paraKeywordPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	paraKeywordPane.setBounds(490, 195, 396, 155);
+	paraKeywordPane.setOpaque(false);
+	paraKeywordPane.setBorder(SETTINGS_EMPTY_BORDER);
+	paraKeywordPane.getViewport().setOpaque(false);
+	paraKeywordPane.setOpaque(false);
+	paraKeywordPane.setVisible(true);
+	paraKeywordPane.setDoubleBuffered(true);
+
+	addScrollBar(paraKeywordPane);
+
+	paraKeywordPane.getVerticalScrollBar().setUnitIncrement(SCROLL_SPEED_PIXELS);
+	
+	getContentPane().add(paraKeywordPane);
+    }
+
+    private void addCommandKeywordPane() {
+	
+	commandKeywordPane = new JScrollPane();
+	commandKeywordPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	commandKeywordPane.setBounds(45, 195, 396, 155);
+	commandKeywordPane.setOpaque(false);
+	commandKeywordPane.setBorder(SETTINGS_EMPTY_BORDER);
+	commandKeywordPane.getViewport().setOpaque(false);
+	commandKeywordPane.setOpaque(false);
+	commandKeywordPane.setVisible(true);
+	commandKeywordPane.setDoubleBuffered(true);
+
+	addScrollBar(commandKeywordPane);
+	commandKeywordPane.getVerticalScrollBar().setUnitIncrement(SCROLL_SPEED_PIXELS);
+	
+	getContentPane().add(commandKeywordPane);
+    }
+
+    private void addScrollBar(JScrollPane scrollPane) {
+	JScrollBar mainScrollBar = scrollPane.getVerticalScrollBar();
+	mainScrollBar.setPreferredSize(new Dimension(SCROLL_THUMB_WIDTH, Integer.MAX_VALUE));
+	mainScrollBar.setUI(new ScrollBarUI());
+    }
+
+    private void addActiveFeedbackEnabledCheckbox() {
+	activeFeedbackCheckbox = new Checkbox("");
+	activeFeedbackCheckbox.setFocusable(false);
+	activeFeedbackCheckbox.setState(MainInterface.isActiveFeedbackEnabled());
+	activeFeedbackCheckbox.setBackground(COLOR_UI_BACKGROUND);
+	activeFeedbackCheckbox.setBounds(170, 40, 25, 25);
+	getContentPane().add(activeFeedbackCheckbox);
+    }
+
+    private void addFolderNameFields() {
+	folder1Field = new FolderNameField(BOUNDS_FOLDER1_FIELD, folder1Name, this);
+	folder2Field = new FolderNameField(BOUNDS_FOLDER2_FIELD, folder2Name, this);
+	folder3Field = new FolderNameField(BOUNDS_FOLDER3_FIELD, folder3Name, this);
+	folder4Field = new FolderNameField(BOUNDS_FOLDER4_FIELD, folder4Name, this);
+	folder5Field = new FolderNameField(BOUNDS_FOLDER5_FIELD, folder5Name, this);
+    }
+
+    private void addCancelButton() {
+	JButton btnCancel = new JButton(ICON_CANCEL_BUTTON);
+	
+	btnCancel.setBounds(0, 366, 81, 34);
+	btnCancel.setContentAreaFilled(false);
+	btnCancel.setBorder(BorderFactory.createEmptyBorder());
+	btnCancel.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		executeQuit();
+	    }
+	});
+	
+	getContentPane().add(btnCancel);
+    }
+    
+    private void loadFrameSettings(JFrame mainFrame) {
+	setBackground(COLOR_UI_BACKGROUND);
+	
+	getContentPane().setBackground(COLOR_UI_BACKGROUND);
+	setAlwaysOnTop(true);
+	setLocationByPlatform(true);
+	
+	getContentPane().setLayout(null);
+	
+	addMainTitle();
+	
+	setLocationRelativeTo(mainFrame); 
+	
+	setResizable(false); 
+	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    private void addMainTitle() {
+	JLabel title = new JLabel(TITLE_PREFERENCES);
+	title.setForeground(Color.WHITE);
+	title.setFont(MainInterface.latoBold20);//new Font("Lato", Font.BOLD, 20));
+	title.setHorizontalAlignment(SwingConstants.CENTER);
+	title.setBounds(369, 17, 182, 25);
+	getContentPane().add(title);
+	setUndecorated(true); 
+	setSize(920, 400);
+    }
+
+
+    private void executeQuit() {
+	MainInterface.getSettingsBtn().setEnabled(true);
+	
+	cfg = new Config();
+	interpreter = new Interpreter(true);
+	
+	dispose();
+    }
+    
+    private void checkKeywordDatabase() throws IllegalArgumentException {
+	Properties checkPropDuplicate = new Properties();
+	
+	for (int i=0; i<commandKeywordItems.size(); i++) {
+	    checkPropDuplicate.setProperty(commandDatabase[i][CONFIG_NAME_REF], commandKeywordItems.get(i).getInputText());
+	}
+	
+	for (int i=0; i<paraKeywordItems.size(); i++) {
+	    checkPropDuplicate.setProperty(parameterDatabase[i][CONFIG_NAME_REF], paraKeywordItems.get(i).getInputText());
+	}
+	
+	new Interpreter(checkPropDuplicate);
+	
+	props = checkPropDuplicate;
+    }
+    
+    private void saveKeywordDatabase() throws IllegalArgumentException {
+	try {
+	    checkKeywordDatabase();
+	} catch (IllegalArgumentException e) {
+	    throw new IllegalArgumentException(e.getMessage());
+	}
+	
+    }
+    
+    private void saveChanges() {
+	MainInterface.setIsActiveFeedbackEnabled(activeFeedbackCheckbox.getState());
+	try {
+		saveKeywordDatabase();
+		saveFolderSettings();
+		
+		// If no exceptions were found:
+		writeToConfigFile();
+		
+		refreshMainInterface();
+		executeQuit();
+	} catch (IllegalArgumentException exceptionFeedback) {
+	    warningLabel.setText(MESSAGE_SAVE_FAILED + exceptionFeedback.getMessage());
+	}
+    }
+
+    private void refreshMainInterface() {
+	MainInterface.loadAllFolderLabels();
+	MainInterface.updateAllFolderLabels();
+	MainInterface.updateTaskDisplay();
+    }
+    
+    private boolean isValidNameSize(String name) {
+	return name.length() < MAX_FOLDER_NAME_LENGTH;
+    }
+    
+    private void checkValidityOfFolderNames() throws IllegalArgumentException {
+	if (isValidFolderName(folder1Field)) {
+	    throw new IllegalArgumentException(String.format(MESSAGE_INVALID_FOLDER_NAME, ID_INT_FOLDER1));
+	} else if (isValidFolderName(folder2Field)) {
+	    throw new IllegalArgumentException(String.format(MESSAGE_INVALID_FOLDER_NAME, ID_INT_FOLDER2));
+	} else if (isValidFolderName(folder3Field)) {
+	    throw new IllegalArgumentException(String.format(MESSAGE_INVALID_FOLDER_NAME, ID_INT_FOLDER3));
+	} else if (isValidFolderName(folder4Field)) {
+	    throw new IllegalArgumentException(String.format(MESSAGE_INVALID_FOLDER_NAME, ID_INT_FOLDER4));
+	} else if (isValidFolderName(folder5Field)) {
+	    throw new IllegalArgumentException(String.format(MESSAGE_INVALID_FOLDER_NAME, ID_INT_FOLDER5));
+	} 
+	
+	return;
+    }
+
+    private boolean isValidFolderName(FolderNameField nameField) {
+	return !isValidNameSize(nameField.getText()) || nameField.getText().trim().isEmpty();
+    }
+    
+    private void saveFolderProps() {
+	defaultFolder = (String) defaultFolderSelector.getSelectedItem();
+	props.setProperty(DEFAULT_FOLDER_ID_STRING, defaultFolder);
+	
+	props.setProperty(FOLDER1_ID_STRING, folder1Field.getText());
+	props.setProperty(FOLDER2_ID_STRING, folder2Field.getText());
+	props.setProperty(FOLDER3_ID_STRING, folder3Field.getText());
+	props.setProperty(FOLDER4_ID_STRING, folder4Field.getText());
+	props.setProperty(FOLDER5_ID_STRING, folder5Field.getText());
+    }
+    
+    private void checkForDuplicateNames() throws IllegalArgumentException {
+	ArrayList<String> currentNames = new ArrayList<String>();
+	
+	if (duplicateNameExists(currentNames, folder1Field)) {
+	    currentNames.add(folder1Field.getText().toLowerCase());
+	} else {
+	    throw new IllegalArgumentException(String.format(MESSAGE_DUPLICATE_FOLDER_NAME, ID_INT_FOLDER1));
+	}
+	
+	if (duplicateNameExists(currentNames, folder2Field)) {
+	    currentNames.add(folder2Field.getText().toLowerCase());
+	} else {
+	    throw new IllegalArgumentException(String.format(MESSAGE_DUPLICATE_FOLDER_NAME, ID_INT_FOLDER2));
+	}
+	
+	if (duplicateNameExists(currentNames, folder3Field)) {
+	    currentNames.add(folder3Field.getText().toLowerCase());
+	} else {
+	    throw new IllegalArgumentException(String.format(MESSAGE_DUPLICATE_FOLDER_NAME, ID_INT_FOLDER3));
+	}
+	
+	if (duplicateNameExists(currentNames, folder4Field)) {
+	    currentNames.add(folder4Field.getText().toLowerCase());
+	} else {
+	    throw new IllegalArgumentException(String.format(MESSAGE_DUPLICATE_FOLDER_NAME, ID_INT_FOLDER4));
+	}
+	
+	if (duplicateNameExists(currentNames, folder5Field)) {
+	    currentNames.add(folder5Field.getText().toLowerCase());
+	} else {
+	    throw new IllegalArgumentException(String.format(MESSAGE_DUPLICATE_FOLDER_NAME, ID_INT_FOLDER5));
+	}
+	
+    }
+
+    private boolean duplicateNameExists(ArrayList<String> currentNames, FolderNameField folderName) {
+	return !currentNames.contains(folderName.getText().toLowerCase());
+    }
+    
+    private void saveFolderSettings() throws IllegalArgumentException {
+	
+	try {
+		checkValidityOfFolderNames();
+		checkForDuplicateNames();
+		
+	} catch (IllegalArgumentException e) {
+	    throw new IllegalArgumentException(e.getMessage());
+	}
+	
+	saveFolderProps();
+	
+    }
+
+    private void writeToConfigFile() {
+	try {
+	    props.store(new FileOutputStream(FILENAME_CONFIG_FILE), null);
+	} catch (FileNotFoundException e) {
+	    e.printStackTrace();
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+    }
+    
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\SettingsPane.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\TaskItem.java
+	 */
+
+public class TaskItem extends JLayeredPane {
+
+    private static final int MAX_DISPLAY_TEXT_LENGTH = 600;
+    private static final int INT_PRIORITY_LOW = 3;
+    private static final int INT_PRIORITY_MEDIUM = 2;
+    private static final int INT_PRIORITY_HIGH = 1;
+    private static final int INT_PRIORITY_NONE = 0;
+    
+    private static final String DATE_FORMAT_ENDED = "ended ";
+    private static final String DATE_FORMAT_ENDS = "ends ";
+    private static final String DATE_FORMAT_STARTS = "starts ";
+    
+    private static final String PRI_STRING_MEDIUM = "med";
+    private static final String PRI_STRING_HIGH = "high";
+    private static final String PRI_STRING_LOW = "low";
+    
+    private static final String EMPTY_LOCATION = "NIL";
+
+    private static final String HTML_END_TAG_WITH_STRIKE = "</strike></html>";
+    private static final String HTML_START_TAG_WITH_STRIKE = "<html><strike>";
+    private static final String HTML_END_TAG = "</html>";
+    private static final String HTML_START_TAG = "<html>";
+
+    private static final String DEFAULT_DISPLAY_TEXT = "<html> Description – <font color='9a9695'>Time @ Location</font></html>";
+    
+    private static final String HTML_FLOATING_TASK = "<html><nobr><font color='f7bbbb'> %1$s</font>&nbsp; <font color='9a9695'>%2$s</font></nobr></html>";
+    private static final String HTML_TIME_DISPLAY_WITH_REMINDER = "<html><nobr> Start: <font color='9a9695'>%1$s</font>End: <font color='9a9695'>%2$s</font>Reminder: <font color='9a9695'>%3$s</font></nobr></html>";
+    private static final String HTML_TIME_DISPLAY = "<html><nobr> Start: <font color='9a9695'>%1$s</font>End: <font color='9a9695'>%2$s</font></nobr></html>";
+    private static final String HTML_INFO_DISPLAY = "<html><nobr> %1$s – <font color='9a9695'>%2$s%3$s</font></nobr></html>";
+    
+    private static final String MESSAGE_OVERFLOW_ELLIPSIS = " ...";
+    private static final String SINGLE_SPACE = " ";
+    private static final String INPUT_DELIMITER = " -";
+    private static final String DESCRIPTION_SEPERATION_HYPHEN = " – ";
+
+    private static final Border SETTINGS_EMPTY_BORDER = BorderFactory.createEmptyBorder(0, 0, 0, 0);
+
+    private static final long serialVersionUID = 1L;
+
+    private static final String HTML_SPACING = "&nbsp;&nbsp;&nbsp;";
+    private static final String PREFIX_AT_LOCATION = " @ ";
+    
+    private static final int DISPLAY_TIME_UPDATE_PERIOD = 60000; //milliseconds
+
+    private static final int LEADING_XPOS_OFFSET = 82;
+    private static final int TRAILING_SPACE_OFFSET = 31;
+    private static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy HH:mm");
+
+    public static PrettyTime prettyTimeParser = new PrettyTime();
+    public static BufferedGraphics bufferedGraphics = new BufferedGraphics();
+
+    private JLabel background;
+    private JLabel checkMark;
+    private JLabel reminderIcon;
+    private JLabel priorityIcon;
+    private JLabel text;
+    private JLabel dateIcon;
+    private JLabel infoIcon;
+    private JLabel uncheckedMark;
+    private JLabel ellipsis;
+    private JLabel apparentId;
+    private JLabel deleteIcon;
+
+    private String description;
+    private String location;
+    private String infoDisplayTime, dateDisplayTime;
+    private int guiId;
+    private static Controller controller;
+    private Calendar reminderTime;
+
+    private boolean isFloatingTask = false;
+    private boolean inDateDisplayState = false;
+
+    private Task timedTask;
+    private FloatingTask floatingTask;
+
+    private int withoutReminderXPosOffset;
+
+    private static Interpreter interpreter;
+    private static JTextPane textPane;
+
+    private ActionListener updateTime = new ActionListener() {
+	public void actionPerformed(ActionEvent evt) {
+	    if (!inDateDisplayState && !isFloatingTask) {
+		setTimedDisplayText(description, location, formatInfoTimings());
+	    }
+	}
+    };
+
+    public TaskItem(JTextPane textPane, Controller controller, final int guiId, Interpreter interpreter) {
+
+	super();
+	linkMainInterfaceComponents(textPane, controller, guiId, interpreter);
+	loadItemSettings(); 
+
+	loadGuiComponents(guiId);
+	addTaskItemBackground();
+	addToggleIconMouseListener();
+    }
+
+    private void loadGuiComponents(final int guiId) {
+
+	addCheckMark(guiId);
+	addUncheckedMark(guiId);
+
+	addDateIcon();
+	addInfoIcon();
+
+	addReminderIcon();
+	addPriorityIcon();
+
+	addOverflowEllipsis();
+	addTextLabel();
+
+	addDeleteIcon();
+	addApparentTaskId();
+
+    }
+
+    private void addTaskItemBackground() {
+	background = new JLabel();
+	background.setSize(888, 40);
+	background.setIcon(bufferedGraphics.getBackground());
+	this.add(background);
+    }
+
+    private void addToggleIconMouseListener() {
+	this.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		showDateInfoIcon();
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		hideDateInfoIcon();
+	    }
+
+	});
+    }
+
+    private void addApparentTaskId() {
+	apparentId = new JLabel("");
+	apparentId.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		deleteTaskShortcut();
+	    }
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		deleteIcon.setVisible(true);		    
+	    }
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		deleteIcon.setVisible(false);
+	    }
+	});
+	apparentId.setHorizontalAlignment(SwingConstants.CENTER);
+	apparentId.setFont(MainInterface.latoReg12); 
+	apparentId.setForeground(Color.WHITE);
+	apparentId.setBounds(34, 2, 34, 34);
+	this.add(apparentId);
+    }
+
+    private void addDeleteIcon() {
+	deleteIcon = new JLabel();
+	deleteIcon.setIcon(bufferedGraphics.getDelete());
+	deleteIcon.setBounds(35, 3, 34, 34);
+	deleteIcon.setVisible(false);
+	this.add(deleteIcon);
+    }
+
+    private void addTextLabel() {
+	text = new JLabel("");
+	text.setToolTipText("");
+	text.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		modifyDescriptionShortcut();
+	    }
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		showDateInfoIcon();
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		hideDateInfoIcon();
+	    }
+
+	});
+	text.setForeground(Color.WHITE);
+	text.setFont(MainInterface.latoReg14);
+	text.setLocation(126, -2);
+	text.setSize(600, 42);
+	text.setText(DEFAULT_DISPLAY_TEXT);
+	this.add(text);
+    }
+
+    private void addOverflowEllipsis() {
+	ellipsis = new JLabel(MESSAGE_OVERFLOW_ELLIPSIS);
+	ellipsis.setForeground(Color.WHITE);
+	ellipsis.setFont(MainInterface.mesloReg16);
+	ellipsis.setBounds(635 + LEADING_XPOS_OFFSET, 9, 40, 24);
+	ellipsis.setVisible(false);
+	add(ellipsis);
+    }
+
+    private void addPriorityIcon() {
+	priorityIcon = new JLabel();
+	priorityIcon.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		if (isFloatingTask) {
+		    cyclePriorities(floatingTask.getPriority());
+		} else {
+		    cyclePriorities(timedTask.getPriority());
+		}
+	    }
+	});
+	priorityIcon.setLocation(666 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET, 7);
+	priorityIcon.setVisible(false);
+	this.add(priorityIcon);
+    }
+
+    private void addReminderIcon() {
+	reminderIcon = new JLabel();
+	reminderIcon.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		reminderShortcut();
+	    }
+	});
+	reminderIcon.setLocation(689 + 10 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET, 7);
+	reminderIcon.setSize(25, 26);
+	reminderIcon.setIcon(bufferedGraphics.getReminderIcon());
+	reminderIcon.setVisible(false);
+	this.add(reminderIcon);
+    }
+
+    private void addInfoIcon() {
+	infoIcon = new JLabel();
+	infoIcon.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		activateInfoState();
+	    }
+
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		showDateInfoIcon();
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		hideDateInfoIcon();
+	    }
+	});
+	infoIcon.setSize(25, 25);
+	infoIcon.setIcon(bufferedGraphics.getInfo());
+	infoIcon.setVisible(false);
+	this.add(infoIcon);
+    }
+
+    private void addDateIcon() {
+	dateIcon = new JLabel();
+	dateIcon.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		activateDateState();
+	    }
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		showDateInfoIcon();
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		hideDateInfoIcon();
+	    }
+	});
+	dateIcon.setSize(25, 25);
+	dateIcon.setIcon(bufferedGraphics.getDate());
+	dateIcon.setVisible(false);
+	this.add(dateIcon);
+    }
+
+    private void addUncheckedMark(final int guiId) {
+	uncheckedMark = new JLabel();
+	uncheckedMark.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		executeCheck(guiId);
+	    }
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		showDateInfoIcon();
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		hideDateInfoIcon();
+	    }
+	});
+	uncheckedMark.setLocation(8 + LEADING_XPOS_OFFSET, 9);
+	uncheckedMark.setSize(23, 23);
+	uncheckedMark.setIcon(bufferedGraphics.getUnchecked());
+	uncheckedMark.setVisible(true);
+	this.add(uncheckedMark);
+    }
+
+    private void addCheckMark(final int guiId) {
+	checkMark = new JLabel();
+	checkMark.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		executeUncheck(guiId);
+	    }
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		showDateInfoIcon();
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		hideDateInfoIcon();
+	    }
+	});
+	checkMark.setLocation(8 + LEADING_XPOS_OFFSET, 9);
+	checkMark.setSize(23, 23);
+	checkMark.setIcon(bufferedGraphics.getCheckMark());
+	checkMark.setVisible(false);
+	this.add(checkMark);
+    }
+
+    private void loadItemSettings() {
+	this.setSize(888, 40);
+	this.setBorder(SETTINGS_EMPTY_BORDER);
+
+	new Timer(DISPLAY_TIME_UPDATE_PERIOD, updateTime).start();
+    }
+
+    private void linkMainInterfaceComponents(JTextPane textPane,
+	    Controller controller, final int guiId, Interpreter interpreter) {
+	TaskItem.textPane = textPane;
+	TaskItem.controller = controller;
+	TaskItem.interpreter = interpreter;
+	this.guiId = guiId;
+    }
+
+    private void addStrikeThrough() {
+	String currentHtmlString = text.getText();
+
+	String stringWithStartTag = currentHtmlString.replace(HTML_START_TAG, HTML_START_TAG_WITH_STRIKE);
+	String stringWithStartAndEndTag = stringWithStartTag.replace(HTML_END_TAG, HTML_END_TAG_WITH_STRIKE);
+
+	text.setText(stringWithStartAndEndTag);
+    }
+
+    private void removeStrikeThrough() {
+	String currentHtmlString = text.getText();
+
+	String stringWithStartTag = currentHtmlString.replace(HTML_START_TAG_WITH_STRIKE, HTML_START_TAG);
+	String stringWithStartAndEndTag = stringWithStartTag.replace(HTML_END_TAG_WITH_STRIKE, HTML_END_TAG);
+
+	text.setText(stringWithStartAndEndTag);
+    }
+
+    private void activateInfoState() {
+
+	inDateDisplayState = false;
+	infoIcon.setVisible(false);
+	dateIcon.setVisible(true);
+
+	setTimedDisplayText(description, location, infoDisplayTime);
+	placeEllipsis(description, location, infoDisplayTime);
+    }
+
+    private void activateDateState() {
+
+	inDateDisplayState = true;
+	dateIcon.setVisible(false);
+	infoIcon.setVisible(true);
+
+	text.setText(dateDisplayTime);
+	ellipsis.setVisible(false);
+    }
+
+    private void reminderShortcut() {
+
+	MainInterface.clearTextPane();
+	String reminderTime = dateFormatter.format(this.reminderTime.getTime());
+
+	textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME) + SINGLE_SPACE + reminderTime);
+    }
+
+    private void deleteTaskShortcut() {	
+
+	controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.DELETE) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId); 
+	refreshDisplay();
+
+    }
+
+    public void refreshDisplay() {
+	MainInterface.updateTaskDisplay();
+    }
+
+    private void modifyDescriptionShortcut() {
+
+	MainInterface.clearTextPane();
+
+	if (isFloatingTask) {
+	    generateFloatingTaskDetails(); 
+	    return;
+	}
+
+	if (!inDateDisplayState) {
+	    generateInfoDetails();
+	} else {
+	    generateTimeDetails();
+	}
+    }
+
+    private void generateTimeDetails() {
+	if (timedTask.getIsThereReminder()) {
+	    textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + SINGLE_SPACE + dateFormatter.format(timedTask.getStartTime().getTime()) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + SINGLE_SPACE
+		    + dateFormatter.format(timedTask.getEndTime().getTime()) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.REMINDER_TIME) + SINGLE_SPACE + dateFormatter.format(this.reminderTime.getTime()));
+	} else {
+	    textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.START_TIME) + SINGLE_SPACE + dateFormatter.format(timedTask.getStartTime().getTime()) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.END_TIME) + SINGLE_SPACE 
+		    + dateFormatter.format(timedTask.getEndTime().getTime()));
+	}
+    }
+
+    private void generateInfoDetails() {
+	String location = "";
+	if (!timedTask.getLocation().equals(EMPTY_LOCATION)) {
+	    location = INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.LOCATION) + SINGLE_SPACE + timedTask.getLocation();
+	}
+
+	textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + SINGLE_SPACE + timedTask.getTaskTitle() + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + location + SINGLE_SPACE);
+    }
+
+    private void generateFloatingTaskDetails() {
+	String location = "";
+
+	if (!floatingTask.getLocation().equals(EMPTY_LOCATION)) {
+	    location = INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.LOCATION) + SINGLE_SPACE + floatingTask.getLocation();
+	}
+
+	textPane.replaceSelection(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + SINGLE_SPACE + floatingTask.getTaskTitle() + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + location + SINGLE_SPACE);
+    }
+
+    private void cyclePriorities(int currentPriority) {
+
+	switch(currentPriority) {
+	case 0:
+	    return;
+	case 1:
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_LOW);
+	    break;
+	case 2:
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_HIGH);
+	    break;
+	case 3:
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_MEDIUM);
+	    break;
+	}
+
+	refreshDisplay();
+
+    }
+
+    public void loadTimedTaskDetails(Task item, int guiId, Calendar reminderTime) {
+
+	timedTask = item;
+
+	assert (timedTask != null);
+
+	loadTimedTaskGuiSettings(reminderTime);
+	initializeTimedDisplayTexts();
+	loadDisplayTime();
+
+	setTimedDisplayText(description, location, infoDisplayTime);
+	setCheckMark(timedTask.getIsTaskDone());
+
+	setReminderIcon(timedTask.getIsThereReminder());
+	setPriorityIcon(timedTask.getPriority(), timedTask.getIsThereReminder());
+
+	setTaskStrikethrough(timedTask);
+	setToggleButtonPos();
+	
+    }
+
+    private void setToggleButtonPos() {
+	int xPosOfToggleBtn = calculateToggleBtnXPos();
+	dateIcon.setLocation(xPosOfToggleBtn, 7);
+	infoIcon.setLocation(xPosOfToggleBtn, 7);
+    }
+
+    private void setTaskStrikethrough(Task timedTask) {
+	if (timedTask.getIsTaskDone()) {
+	    addStrikeThrough();
+	} else {
+	    removeStrikeThrough();
+	}
+    }
+
+    private void setTaskStrikethrough(FloatingTask floatingTask) {
+	if (floatingTask.getIsTaskDone()) {
+	    addStrikeThrough();
+	} else {
+	    removeStrikeThrough();
+	}
+    }
+
+    private void loadDisplayTime() {
+	infoDisplayTime = formatInfoTimings();
+
+	if (timedTask.getIsThereReminder()) {
+	    dateDisplayTime = updateDateTimings(timedTask.getStartTime(), timedTask.getEndTime(), this.reminderTime); 
+	} else {
+	    dateDisplayTime = updateDateTimings(timedTask.getStartTime(), timedTask.getEndTime());
+	}
+    }
+
+    private void initializeTimedDisplayTexts() {
+
+	description = timedTask.getTaskTitle();
+	location = timedTask.getLocation();
+	infoDisplayTime = "";
+
+	if (location.equals(EMPTY_LOCATION)) {
+	    location = "";
+	} else {
+	    location = PREFIX_AT_LOCATION + location;
+	}
+
+	apparentId.setText(guiId + "");
+    }
+
+    private void loadTimedTaskGuiSettings(Calendar reminderTime) {
+	this.reminderTime = reminderTime;
+	isFloatingTask = false;
+
+	reminderIcon.setEnabled(true);
+	infoIcon.setEnabled(true);
+	dateIcon.setEnabled(true);
+    }
+
+    public void loadFloatingTaskDetails(FloatingTask item, int guiId) {
+
+	floatingTask = item;
+
+	assert(floatingTask != null);
+
+	loadFloatingTaskGuiSettings();
+	loadFloatingTaskDisplayText();
+
+	setCheckMark(floatingTask.getIsTaskDone());
+	setPriorityIcon(floatingTask.getPriority(), false);
+	
+	// Note: floating task currently doesn't support reminders
+    }	
+
+    private void loadFloatingTaskDisplayText() {
+	String description = floatingTask.getTaskTitle();
+	String location = "";
+
+	if (floatingTask.getLocation().equals(EMPTY_LOCATION)) {
+	    location = "";
+	} else {
+	    location = PREFIX_AT_LOCATION + floatingTask.getLocation();
+	}
+
+	String displayText = String.format(HTML_FLOATING_TASK, description, location);
+	text.setText(displayText);
+
+	setTaskStrikethrough(floatingTask);
+    }
+
+    private void loadFloatingTaskGuiSettings() {
+	isFloatingTask = true;
+
+	this.remove(reminderIcon);
+	this.remove(infoIcon);
+	this.remove(dateIcon);
+
+	apparentId.setText(guiId + "");
+    }
+
+    private String updateDateTimings(Calendar startTime, Calendar endTime, Calendar remindTime) {
+
+	String displayText = "";
+
+	String startTimeString = dateFormatter.format(startTime.getTime()) + HTML_SPACING;
+	String endTimeString = dateFormatter.format(endTime.getTime()) + HTML_SPACING;
+	String remindTimeString = dateFormatter.format(remindTime.getTime());
+
+	displayText = String.format(HTML_TIME_DISPLAY_WITH_REMINDER, startTimeString, endTimeString, remindTimeString);
+
+	return displayText;
+    }
+
+    private String updateDateTimings(Calendar startTime, Calendar endTime) {
+	String displayText = "";
+
+	String startTimeString = dateFormatter.format(startTime.getTime()) + HTML_SPACING;
+	String endTimeString = dateFormatter.format(endTime.getTime());
+	
+	displayText = String.format(HTML_TIME_DISPLAY, startTimeString, endTimeString);
+	
+	return displayText;	
+    }
+
+    private int calculateToggleBtnXPos() {
+	if (timedTask.getPriority() == INT_PRIORITY_NONE && !timedTask.getIsThereReminder()) {
+	    return 689 + 10 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET;
+	} else if (timedTask.getPriority() == INT_PRIORITY_NONE && timedTask.getIsThereReminder()) {
+	    return 689 + 10 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET - 25 - 10;
+	}
+
+	return priorityIcon.getLocation().x - 13 - 25; // priority.getIcon().getIconWidth()
+    }
+
+    private String formatInfoTimings() {
+	String displayTime;
+	if (timedTask.getStartTime().after(Calendar.getInstance())) {
+	    displayTime = DATE_FORMAT_STARTS + prettyTimeParser.format(timedTask.getStartTime());
+	} else if (timedTask.getEndTime().after(Calendar.getInstance())) {
+	    displayTime = DATE_FORMAT_ENDS + prettyTimeParser.format(timedTask.getEndTime());
+	} else {
+	    displayTime = DATE_FORMAT_ENDED + prettyTimeParser.format(timedTask.getEndTime());
+	}
+	return displayTime;
+    }
+
+    private void setPriorityIcon(int priorityRef, boolean isThereReminder) {
+
+	withoutReminderXPosOffset = 45;
+
+	if (!isFloatingTask && isThereReminder) {
+	    withoutReminderXPosOffset = 10;
+	}
+
+	if (priorityRef == INT_PRIORITY_HIGH) {
+	    setPriHigh(withoutReminderXPosOffset);
+	} else if (priorityRef == INT_PRIORITY_MEDIUM) {
+	    setPriMed(withoutReminderXPosOffset);
+	} else if (priorityRef == INT_PRIORITY_LOW) {
+	    setPriLow(withoutReminderXPosOffset);
+	} else {
+	    priorityIcon.setVisible(false);
+	}
+
+    }
+
+    private void setPriLow(int withoutReminderOffset) {
+	priorityIcon.setIcon(bufferedGraphics.getLowPri());
+	priorityIcon.setSize(23, 20);
+	priorityIcon.setLocation(655 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET + withoutReminderOffset,  10);
+	priorityIcon.setVisible(true);
+    }
+
+    private void setPriMed(int withoutReminderOffset) {
+	priorityIcon.setIcon(bufferedGraphics.getMedPri());
+	priorityIcon.setSize(23, 20);
+	priorityIcon.setLocation(655 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET + withoutReminderOffset,  10);
+	priorityIcon.setVisible(true);
+    }
+
+    private void setPriHigh(int withoutReminderOffset) {
+	priorityIcon.setIcon(bufferedGraphics.getHighPri());
+	priorityIcon.setSize(23, 20);
+	priorityIcon.setLocation(655 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET + withoutReminderOffset, 10);
+	priorityIcon.setVisible(true);
+    }
+
+    private void setReminderIcon (boolean show) {
+	if (show) {
+	    reminderIcon.setVisible(true);
+	} else {
+	    reminderIcon.setVisible(false);
+	}
+    }
+
+    private void setTimedDisplayText(String description, String location, String infoDisplayTime) {
+	
+	String displayText = String.format(HTML_INFO_DISPLAY, description, infoDisplayTime, location);
+	text.setText(displayText);
+
+	placeEllipsis(description, location, infoDisplayTime);
+    }
+
+    private void placeEllipsis(String description, String location,
+	    String displayTime) {
+	Dimension dimensions = text.getPreferredSize();
+	if (dimensions.getWidth() > MAX_DISPLAY_TEXT_LENGTH) {
+	    text.setSize(MAX_DISPLAY_TEXT_LENGTH, 42);
+
+	    ellipsis.setVisible(true);
+	    text.setToolTipText(description + DESCRIPTION_SEPERATION_HYPHEN + displayTime + location);
+	} else {
+	    ellipsis.setVisible(false);
+	    text.setToolTipText("");
+	}
+    }
+
+
+    private void setCheckMark(boolean check) {
+
+	if (check) {
+	    uncheckedMark.setVisible(false);
+	    checkMark.setVisible(true);
+
+
+	} else {
+	    uncheckedMark.setVisible(true);
+	    checkMark.setVisible(false);
+
+	}
+
+    }
+
+    private void showDateInfoIcon() {
+	if (inDateDisplayState) {
+	    infoIcon.setVisible(true);
+	    dateIcon.setVisible(false);
+	} else {
+	    dateIcon.setVisible(true);
+	    infoIcon.setVisible(false);
+	}
+    }
+
+    private void hideDateInfoIcon() {
+	dateIcon.setVisible(false);
+	infoIcon.setVisible(false);
+    }
+
+    private void executeUncheck(final int guiId) {
+	setCheckMark(false);
+	TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.UNMARK) + INPUT_DELIMITER + TaskItem.interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId);
+	MainInterface.getSystemStatusMessage().setText(TaskItem.controller.getSystemMessageString());
+	removeStrikeThrough();
+    }
+
+    private void executeCheck(final int guiId) {
+	setCheckMark(true);
+	TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.MARK) + INPUT_DELIMITER + TaskItem.interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId);
+	MainInterface.getSystemStatusMessage().setText(TaskItem.controller.getSystemMessageString());
+	addStrikeThrough();
+    }
+
+}
+
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\TaskItem.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\UserInputTextPane.java
+	 */
+
+class UserInputTextPane extends JTextPane {
+
+    private static final long serialVersionUID = 1L;
+
+    public UserInputTextPane() {
+	super();
+    }
+
+    public UserInputTextPane(StyledDocument doc) {
+	super(doc);
+    }
+
+    @Override
+    public void replaceSelection(String content) {
+	removeTextAttributes();
+	super.replaceSelection(content);
+	setFocus();
+    }
+
+    private void setFocus() {
+	this.requestFocus();
+    }
+
+    private void removeTextAttributes() {
+	getInputAttributes().removeAttribute(StyleConstants.Foreground);
+	getInputAttributes().removeAttribute(StyleConstants.Bold);
+	getInputAttributes().removeAttribute(StyleConstants.FontFamily);
+    }
+    
+    public void appendParameter(String str, SimpleAttributeSet parameterSetting) throws BadLocationException
+    {
+	StyledDocument document = (StyledDocument) this.getDocument();
+	document.insertString(document.getLength(), str, parameterSetting);
+    }
+}
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\gui\UserInputTextPane.java
+
+
+
+
+

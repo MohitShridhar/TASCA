@@ -20,6 +20,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
+//@author A0105912N
 public class FolderTab extends JLayeredPane {
     
     private static final int INVALID_FOLDER_REF = -1;
