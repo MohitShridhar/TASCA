@@ -83,7 +83,7 @@ public class IOPane extends JFrame {
     }
 
     private void loadGuiComponents(final JFrame mainInterfaceFrame) {
-	MainInterface.getExportButton().setEnabled(false);
+	MainInterface.getExportBtn().setEnabled(false);
 	
 	loadFrameSettings(mainInterfaceFrame); 
 	
@@ -209,7 +209,7 @@ public class IOPane extends JFrame {
     }
 
     private void executeQuit() {
-	MainInterface.getExportButton().setEnabled(true);
+	MainInterface.getExportBtn().setEnabled(true);
 	dispose();
     }
 

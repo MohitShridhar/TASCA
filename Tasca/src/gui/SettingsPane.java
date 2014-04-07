@@ -165,7 +165,7 @@ public class SettingsPane extends JFrame {
     }
 
     private void linkMainInterfaceComponents(Interpreter interpreter, Config cfg) {
-	MainInterface.getBtnSettings().setEnabled(false);
+	MainInterface.getSettingsBtn().setEnabled(false);
 	
 	this.cfg = cfg;
 	this.interpreter = interpreter;
@@ -479,7 +479,7 @@ public class SettingsPane extends JFrame {
 
 
     private void executeQuit() {
-	MainInterface.getBtnSettings().setEnabled(true);
+	MainInterface.getSettingsBtn().setEnabled(true);
 	
 	cfg = new Config();
 	interpreter = new Interpreter(true);
@@ -529,8 +529,8 @@ public class SettingsPane extends JFrame {
     }
 
     private void refreshMainInterface() {
-	MainInterface.loadFolderNames();
-	MainInterface.setFolderLabels();
+	MainInterface.loadAllFolderLabels();
+	MainInterface.updateAllFolderLabels();
 	MainInterface.updateTaskDisplay();
     }
     

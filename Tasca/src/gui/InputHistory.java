@@ -7,11 +7,11 @@ class InputHistory {
         this.state = state;
     }
  
-    public StateMemory saveToMemento() {
+    public StateMemory saveToHistory() {
         return new StateMemory(state);
     }
  
-    public String restoreFromMemento(StateMemory stateMemory) {
+    public String restoreFromHistory(StateMemory stateMemory) {
         state = stateMemory.getSavedInput();
         return state;
     }

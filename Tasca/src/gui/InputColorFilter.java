@@ -379,7 +379,7 @@ public class InputColorFilter extends DocumentFilter {
 	boolean quit;
 	
 	InputColorFilter.interpreter.setCurrentFolder(MainInterface.getCurrentFolderName());        		
-	quit = MainInterface.controller.executeCommands(userInputString, MainInterface.getCurrentFolderName());
+	quit = MainInterface.getController().executeCommands(userInputString, MainInterface.getCurrentFolderName());
 	return quit;
     }
 
@@ -387,7 +387,7 @@ public class InputColorFilter extends DocumentFilter {
 	if (!quit) {
 	    MainInterface.updateTaskDisplay();
 	    MainInterface.clearTextPane();
-	    MainInterface.inputNumRef = MainInterface.inputHistorySize;
+	    MainInterface.setCurrentHistoryState(MainInterface.getInputHistorySize());
 	} else {
 	    mainFrame.dispose();
 	    System.exit(0);        			
