@@ -25,6 +25,7 @@ import storage.Reminder;
 import storage.Task;
 import controller.Controller;
 
+//@author A0105912N
 public class Exporter {
 
     private static final String PROPERTY_PROD_ID = "-//Ben Fortuna//iCal4j 1.0//EN";
