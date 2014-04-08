@@ -24,6 +24,7 @@ import controller.Controller;
 
 public class Interpreter {
     
+    private static final int FIRST_ARGUMENT = 0;
     // Config keys:
     private static final String KEY_QUIT = "quit";
     private static final String KEY_IMPORT = "import";
@@ -210,6 +211,7 @@ public class Interpreter {
             checkCommandDatabaseExceptions(headerKeySet, i, feedback);
         }
     }
+    
     
     /*
      * Function to be used by settings pane:
@@ -471,7 +473,7 @@ public class Interpreter {
 	String commandArgument = null;
 	
 	try {
-		commandArgument = (input.replaceFirst(getFirstWord(input), "").trim()).split(DELIMETER)[0].trim();
+		commandArgument = getDescription(input);
 	} catch (ArrayIndexOutOfBoundsException aE) {
 	    return;
 	}
@@ -483,6 +485,11 @@ public class Interpreter {
             throw new IllegalArgumentException(INVALID_COMMAND_ARGUMENT);
         }
                 
+    }
+
+
+    private String getDescription(String input) {
+	return (input.substring(getFirstWord(input).length()).trim()).split(DELIMETER)[FIRST_ARGUMENT].trim();
     }
     
     private boolean needsDescription(CommandType userCommand) {

@@ -32,11 +32,14 @@ import controller.Controller;
 //@author A0105912N
 public class TaskItem extends JLayeredPane {
 
-    private static final int YPOS_PRIORITY_ICON = 10;
-    private static final int YPOS_TOGGLE_ICONS = 7;
-    private static final int HEIGHT_ELLIPSIS = 42;
+    private static final int PROGRESS_BAR_UPDATE_PERIOD = 120000;
+    private static final int MIN_WIDTH_PROGRESS_BAR = 0;
+    private static final int MAX_WIDTH_PROGRESS_BAR = 762;
+    private static final int HEIGHT_PROGRESS_BAR = 38;
+    private static final Point LOCATION_PROGRESS_BAR = new Point(83, 1);
    
     private static final Dimension DIMENSIONS_PRIORITY_ICON = new Dimension(23, 20);
+    private static final Dimension DIMENSIONS_INITIAL_PROGRESS_BAR = new Dimension(MIN_WIDTH_PROGRESS_BAR, HEIGHT_PROGRESS_BAR);
     private static final Dimension DIMENSIONS_TASK_ITEM = new Dimension(888, 40);
     private static final Dimension DIMENSIONS_DATE_ICON = new Dimension(25, 25);
     private static final Dimension DIMENSIONS_INFO_ICON = DIMENSIONS_DATE_ICON;
@@ -44,6 +47,10 @@ public class TaskItem extends JLayeredPane {
     private static final Rectangle BOUNDS_TEXT_LABEL = new Rectangle(126, -2, 600, 42);
     private static final Rectangle BOUNDS_DELETE_ICON = new Rectangle(35, 3, 34, 34);
     private static final Rectangle BOUNDS_APPARENT_ID = new Rectangle(34, 2, 34, 34);
+    
+    private static final int YPOS_PRIORITY_ICON = 10;
+    private static final int YPOS_TOGGLE_ICONS = 7;
+    private static final int HEIGHT_ELLIPSIS = 42;
     
     private static final int MAX_DISPLAY_TEXT_LENGTH = 600;
     private static final int INT_PRIORITY_LOW = 3;
@@ -68,10 +75,10 @@ public class TaskItem extends JLayeredPane {
 
     private static final String DEFAULT_DISPLAY_TEXT = "<html> Description – <font color='9a9695'>Time @ Location</font></html>";
     
-    private static final String HTML_FLOATING_TASK = "<html><nobr><font color='f7bbbb'> %1$s</font>&nbsp; <font color='9a9695'>%2$s</font></nobr></html>";
+    private static final String HTML_FLOATING_TASK = "<html><nobr><font color='f7bbbb'> %1$s</font> <font color='9a9695'>%2$s</font></nobr></html>";
     private static final String HTML_TIME_DISPLAY_WITH_REMINDER = "<html><nobr> Start: <font color='9a9695'>%1$s</font>End: <font color='9a9695'>%2$s</font>Reminder: <font color='9a9695'>%3$s</font></nobr></html>";
     private static final String HTML_TIME_DISPLAY = "<html><nobr> Start: <font color='9a9695'>%1$s</font>End: <font color='9a9695'>%2$s</font></nobr></html>";
-    private static final String HTML_INFO_DISPLAY = "<html><nobr> %1$s – <font color='9a9695'>%2$s%3$s</font></nobr></html>";
+    private static final String HTML_INFO_DISPLAY = "<html><nobr> %1$s&nbsp; – <font color='9a9695'>%2$s%3$s</font></nobr></html>";
     
     private static final String MESSAGE_OVERFLOW_ELLIPSIS = " ...";
     private static final String SINGLE_SPACE = " ";
@@ -110,6 +117,8 @@ public class TaskItem extends JLayeredPane {
     private JLabel ellipsis;
     private JLabel apparentId;
     private JLabel deleteIcon;
+    
+    private ProgressBar progressBar;
 
     private String description;
     private String location;
@@ -136,6 +145,14 @@ public class TaskItem extends JLayeredPane {
 	    }
 	}
     };
+    
+    private ActionListener updateProgressBar = new ActionListener() {
+	public void actionPerformed(ActionEvent evt) {
+	    if (!isFloatingTask) {
+		updateProgressBar();
+	    }
+	}
+    };
 
     public TaskItem(JTextPane textPane, Controller controller, final int guiId, Interpreter interpreter) {
 
@@ -144,12 +161,13 @@ public class TaskItem extends JLayeredPane {
 	loadItemSettings(); 
 
 	loadGuiComponents(guiId);
+	
 	addTaskItemBackground();
 	addToggleIconMouseListener();
     }
 
     private void loadGuiComponents(final int guiId) {
-
+	
 	addCheckMark(guiId);
 	addUncheckedMark(guiId);
 
@@ -168,6 +186,20 @@ public class TaskItem extends JLayeredPane {
     }
 
     private void addTaskItemBackground() {
+	
+	addStatusProgressBar();
+	addDefaultPlainBackground();
+	
+    }
+
+    private void addStatusProgressBar() {
+	progressBar = new ProgressBar(0, 0); // initialize at coordinate {0, 0}. Location will be set later
+	progressBar.setSize(DIMENSIONS_INITIAL_PROGRESS_BAR);
+	progressBar.setLocation(LOCATION_PROGRESS_BAR);
+	this.add(progressBar);
+    }
+
+    private void addDefaultPlainBackground() {
 	background = new JLabel();
 	background.setSize(DIMENSIONS_ITEM_BACKGROUND);
 	background.setIcon(bufferedGraphics.getBackground());
@@ -384,6 +416,7 @@ public class TaskItem extends JLayeredPane {
 	this.setBorder(SETTINGS_EMPTY_BORDER);
 
 	new Timer(DISPLAY_TIME_UPDATE_PERIOD, updateTime).start();
+	new Timer(PROGRESS_BAR_UPDATE_PERIOD, updateProgressBar).start();
     }
 
     private void linkMainInterfaceComponents(JTextPane textPane,
@@ -502,13 +535,13 @@ public class TaskItem extends JLayeredPane {
 	case 0:
 	    return;
 	case 1:
-	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_LOW);
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_LOW + SINGLE_SPACE + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.FOLDER) + SINGLE_SPACE + MainInterface.getCurrentFolderName());
 	    break;
 	case 2:
-	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_HIGH);
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_HIGH + SINGLE_SPACE + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.FOLDER) + SINGLE_SPACE + MainInterface.getCurrentFolderName());
 	    break;
 	case 3:
-	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_MEDIUM);
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_MEDIUM + SINGLE_SPACE + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.FOLDER) + SINGLE_SPACE + MainInterface.getCurrentFolderName());
 	    break;
 	}
 
@@ -535,6 +568,26 @@ public class TaskItem extends JLayeredPane {
 	setTaskStrikethrough(timedTask);
 	setToggleButtonPos();
 	
+	updateProgressBar();	
+    }
+    
+    private void updateProgressBar() {
+	progressBar.setSize(computeProgressBarWidth(timedTask.getStartTime().getTimeInMillis(), timedTask.getEndTime().getTimeInMillis()), HEIGHT_PROGRESS_BAR);		
+    }
+    
+    public static int computeProgressBarWidth(Long startMillis, Long endMillis) {
+	
+	long millisNow = System.currentTimeMillis();
+	
+	if (startMillis >= endMillis || millisNow >= endMillis) {
+	    return MAX_WIDTH_PROGRESS_BAR;
+	}
+	
+	if (millisNow <= startMillis) {
+	    return MIN_WIDTH_PROGRESS_BAR; 
+	}
+	
+	return (int) (MAX_WIDTH_PROGRESS_BAR - ((endMillis - millisNow) * MAX_WIDTH_PROGRESS_BAR / (endMillis - startMillis)));
     }
 
     private void setToggleButtonPos() {
