@@ -24,7 +24,6 @@ import controller.Controller;
 
 public class Interpreter {
     
-    private static final int FIRST_ARGUMENT = 0;
     // Config keys:
     private static final String KEY_QUIT = "quit";
     private static final String KEY_IMPORT = "import";
@@ -80,6 +79,12 @@ public class Interpreter {
     private static final String EXCEPTION_END_TIME_BEFORE_START_TIME = "Please check that 'start time' occurs chronologically before 'end time'";
     private static final String EXCEPTION_ID_NOT_SPECIFIED = "Please specify the ID of the task";
     
+    // Logging Info:
+    private static final String INFO_READ_KEYWORD_DATABASE = "Command and Keyword database intiated properly";
+    private static final String INFO_LOADED_KEYWORD_HEADERS = "Command and Keyword headers loaded";
+    private static final String INFO_SETTING_PANE_CHECK_NEW_DATABASE = "GUI Settings Pane using interpreter";
+    private static final String INFO_SETTINGS_PANE_SAVING_CONFIG = "GUI Settings Pane saving Config file";
+    
     // Other exceptions:
     private static final int EXCEPTION_NON_EXISTENT_ID = -1;
     public final static Logger logger = Controller.getLogger();
@@ -98,6 +103,7 @@ public class Interpreter {
     private Command command = new Command();
     
     private String currentFolder = STRING_DEFAULT;
+    private static final int FIRST_ARGUMENT = 0;
     
     private static boolean isGuiIdEnabled = false;
     
@@ -145,12 +151,12 @@ public class Interpreter {
         parameterHeaders.put(KEY_FOLDER, ParameterType.FOLDER);
         parameterHeaders.put(KEY_TASK_ID, ParameterType.TASK_ID);
         
-        logger.log(Level.FINE, "Command and Keyword headers loaded");
+        logger.log(Level.FINE, INFO_LOADED_KEYWORD_HEADERS);
         
 	readCommandDatabase();
 	readParameterDatabase();
 	
-	logger.log(Level.FINE, "Command and Keyword database intiated properly");
+	logger.log(Level.FINE, INFO_READ_KEYWORD_DATABASE);
     }
     
     public Interpreter() {
@@ -164,7 +170,7 @@ public class Interpreter {
    
     public Interpreter(Properties props) {
 	
-	logger.log(Level.FINEST, "GUI Settings Pane using interpreter");
+	logger.log(Level.FINEST, INFO_SETTING_PANE_CHECK_NEW_DATABASE);
 	
 	commandKeywords.clear();
 	parameterKeywords.clear();
@@ -179,7 +185,7 @@ public class Interpreter {
     
     public Interpreter(boolean rebuild) {
 	
-	logger.log(Level.FINEST, "GUI Settings Pane saving Config file");
+	logger.log(Level.FINEST, INFO_SETTINGS_PANE_SAVING_CONFIG);
 	
 	if (rebuild) {
 	    cfg = new Config();

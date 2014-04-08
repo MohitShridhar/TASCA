@@ -1,6 +1,6 @@
 0 0 3 2014 3 3 11 27 2014 3 10 11 27 false false false tues
 new location
-1 1 0 2014 3 3 11 34 2014 3 10 11 26 false false false aijwdkawd
+1 1 1 2014 3 3 11 34 2014 3 10 11 26 false false false aijwdkawd
 NIL
 0 2 0 2014 3 3 16 0 2014 3 3 17 0 false false false cs2103
 NIL
@@ -15,8 +15,8 @@ new location added
 NIL
 1 7 0 2014 3 4 16 13 2014 3 5 16 13 false false false submit report
 NIL
-5 8 0 2014 3 4 23 42 2014 3 10 23 42 false false false submit V0.5
-omg its raining
+1 8 0 2014 3 4 23 42 2014 3 10 23 42 false false false submit V0.5
+wtf
 0 9 1 2014 3 4 23 45 2014 3 10 23 45 false true false new task not floating
 new location added to not
 2 10 3 2014 3 5 21 46 2014 3 10 21 46 true true false new task for personal
@@ -39,16 +39,20 @@ new location
 new location
 0 18 1 2014 3 8 16 10 2014 3 10 16 10 false false false awkjd
 new location
-1 19 0 2014 3 8 21 3 2014 3 10 21 3 false true false newtask
+1 19 1 2014 3 8 20 4 2014 3 8 20 14 false false false new task ends in 10 min
+NIL
+1 20 1 2014 3 8 20 42 2014 3 10 20 42 false false false ajwdk
 new location
-3 20 1 2014 3 8 22 34 2014 3 10 22 34 false false false NEW TAKS FOR NUS
+1 21 0 2014 3 8 21 3 2014 3 10 21 3 false true false newtask
+new location
+1 22 2 2014 3 8 22 34 2014 3 10 22 34 false false false NEW TAKS FOR NUS
 nue
-4 21 0 2014 3 8 22 41 2014 3 10 22 41 true false false ajwkda
+4 23 0 2014 3 8 22 41 2014 3 10 22 41 true false false ajwkda
 NIL
 2014 3 10 22 41
-3 22 0 2014 3 10 22 52 2014 3 15 22 52 false false false old task
+3 24 0 2014 3 10 22 52 2014 3 15 22 52 false false false old task
 NIL
-1 23 0 2014 3 10 23 13 2014 3 13 23 13 false false false new task
+1 25 0 2014 3 10 23 13 2014 3 13 23 13 false false false new task
 NIL
-4 24 1 2014 3 8 22 39 2014 3 10 22 39 false false false akjwdn
+4 26 1 2014 3 8 22 39 2014 3 10 22 39 false false false akjwdn
 new location
