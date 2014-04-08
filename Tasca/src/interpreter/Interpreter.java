@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import controller.Controller;
 
 
 /**
@@ -73,9 +77,11 @@ public class Interpreter {
     private static final String EXCEPTION_KEYWORD_MULTIPLE_WORDS = "The synonym(s) for \"%1$s\" have to be single words";
     private static final String EXCEPTION_NO_END_TIME_SPECIFIED = "You must specify 'end time' since you have specified 'start time' OR just specify 'end time'";
     private static final String EXCEPTION_END_TIME_BEFORE_START_TIME = "Please check that 'start time' occurs chronologically before 'end time'";
+    private static final String EXCEPTION_ID_NOT_SPECIFIED = "Please specify the ID of the task";
     
     // Other exceptions:
     private static final int EXCEPTION_NON_EXISTENT_ID = -1;
+    public final static Logger logger = Controller.getLogger();
     
     // Hash maps:
     private static Map<String, CommandType> commandKeywords = new HashMap<String, CommandType>();
@@ -138,9 +144,12 @@ public class Interpreter {
         parameterHeaders.put(KEY_FOLDER, ParameterType.FOLDER);
         parameterHeaders.put(KEY_TASK_ID, ParameterType.TASK_ID);
         
+        logger.log(Level.FINE, "Command and Keyword headers loaded");
         
 	readCommandDatabase();
 	readParameterDatabase();
+	
+	logger.log(Level.FINE, "Command and Keyword database intiated properly");
     }
     
     public Interpreter() {
@@ -153,6 +162,9 @@ public class Interpreter {
      */
    
     public Interpreter(Properties props) {
+	
+	logger.log(Level.FINEST, "GUI Settings Pane using interpreter");
+	
 	commandKeywords.clear();
 	parameterKeywords.clear();
 	
@@ -165,6 +177,9 @@ public class Interpreter {
      */
     
     public Interpreter(boolean rebuild) {
+	
+	logger.log(Level.FINEST, "GUI Settings Pane saving Config file");
+	
 	if (rebuild) {
 	    cfg = new Config();
 	    
@@ -217,14 +232,17 @@ public class Interpreter {
     public static void checkCommandDatabaseExceptions(String[] headerKeySet, int i,
 	    CommandFeedback feedback) {
 	if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
+	    logger.log(Level.WARNING, String.format(ERROR_DATABASE_DUPLICATE_COMMAND, headerKeySet[i].toString()));
 	    throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_COMMAND, headerKeySet[i].toString()));
 	}
 
 	if (feedback == CommandFeedback.EMPTY_KEYWORD) {
+	    logger.log(Level.WARNING, String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
 	    throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
 	}
 
 	if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
+	    logger.log(Level.WARNING, String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
 	    throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
 	}
     }
@@ -317,14 +335,17 @@ public class Interpreter {
     public static void checkParameterDatabaseExceptions(String[] headerKeySet,
 	    int i, CommandFeedback feedback) {
 	if (feedback == CommandFeedback.INVALID_DATABASE_DUPLICATES) {
+	    logger.log(Level.WARNING, String.format(ERROR_DATABASE_DUPLICATE_PARA, headerKeySet[i].toString()));
 	    throw new IllegalArgumentException(String.format(ERROR_DATABASE_DUPLICATE_PARA, headerKeySet[i].toString()));
 	}
 
 	if (feedback == CommandFeedback.EMPTY_KEYWORD) {
+	    logger.log(Level.WARNING, String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
 	    throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_KEYWORD_IN_DATABASE, headerKeySet[i].toString()));
 	}
 
 	if (feedback == CommandFeedback.MULTIPLE_WORD_KEYWORD) {
+	    logger.log(Level.WARNING, String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
 	    throw new IllegalArgumentException(String.format(EXCEPTION_KEYWORD_MULTIPLE_WORDS, headerKeySet[i].toString()));
 	}
     }
@@ -399,8 +420,8 @@ public class Interpreter {
             parseAndProcessParameters(input);
         }
         
-        checkForOtherExceptions();
         command.setCommandType(mainCommand); 
+        checkForOtherExceptions();
         
         updateCurrFolderReference();
     }
@@ -415,12 +436,20 @@ public class Interpreter {
     private void checkForOtherExceptions() throws IllegalArgumentException {
 	
 	if (!currentParameters.contains(ParameterType.END_TIME) && currentParameters.contains(ParameterType.START_TIME)) {
+	    logger.log(Level.WARNING, EXCEPTION_NO_END_TIME_SPECIFIED);
 	    throw new IllegalArgumentException(EXCEPTION_NO_END_TIME_SPECIFIED);
 	}
 	
 	if ((currentParameters.contains(ParameterType.END_TIME) && currentParameters.contains(ParameterType.START_TIME)) && command.getParameters().getStartTime().after(command.getParameters().getEndTime())) {
+	    logger.log(Level.WARNING, EXCEPTION_END_TIME_BEFORE_START_TIME);
 	    throw new IllegalArgumentException(EXCEPTION_END_TIME_BEFORE_START_TIME);
 	}
+	
+	if (needsId(command.getCommandType()) && !currentParameters.contains(ParameterType.TASK_ID)) {
+	    logger.log(Level.WARNING, EXCEPTION_ID_NOT_SPECIFIED);
+	    throw new IllegalArgumentException(EXCEPTION_ID_NOT_SPECIFIED);
+	}
+	
     }
     
     private void updateCurrFolderReference() {
@@ -450,6 +479,7 @@ public class Interpreter {
         CommandFeedback feedback = command.setDescription(commandArgument);
         
         if (needsDescription(interpretCommand(getFirstWord(input))) && feedback == CommandFeedback.EMPTY_DESCRIPTION) {
+            logger.log(Level.WARNING, INVALID_COMMAND_ARGUMENT);
             throw new IllegalArgumentException(INVALID_COMMAND_ARGUMENT);
         }
                 
@@ -457,16 +487,26 @@ public class Interpreter {
     
     private boolean needsDescription(CommandType userCommand) {
         
-        if (userCommand == CommandType.ADD || userCommand == CommandType.SEARCH) {
+        if (userCommand == CommandType.ADD || userCommand == CommandType.SEARCH || userCommand == CommandType.IMPORT || userCommand == CommandType.EXPORT) {
             return true;
         }
         
         return false;
     }
+    
+    private boolean needsId(CommandType userCommand) {
+	
+        if (userCommand == CommandType.MODIFY || userCommand == CommandType.MARK || userCommand == CommandType.UNMARK) {
+            return true;
+        }
+        
+	return false;
+    }
 
 
     private void checkCommandValidity(CommandType mainCommand) throws InvalidParameterException {
         if (mainCommand == CommandType.INVALID) {
+            logger.log(Level.WARNING, INVALID_COMMAND_TYPE);
             throw new InvalidParameterException(INVALID_COMMAND_TYPE);
         }
     }
@@ -503,10 +543,12 @@ public class Interpreter {
     public void checkForParameterExceptions(String paraArgument,
 	    ParameterType parameterType) {
 	if (parameterType == ParameterType.INVALID) {
+	    logger.log(Level.WARNING, INVALID_PARAMETER_TYPE);
 	    throw new IllegalArgumentException(INVALID_PARAMETER_TYPE);
 	}
 	
 	if (paraArgument.isEmpty()) {
+	    logger.log(Level.WARNING, EXCEPTION_EMPTY_ARGUMENT);
 	    throw new IllegalArgumentException(EXCEPTION_EMPTY_ARGUMENT);
 	}
     }
@@ -514,6 +556,7 @@ public class Interpreter {
 
     public void checkIfParameterExists(ParameterType parameterType) throws IllegalArgumentException {
 	if (currentParameters.contains(parameterType)) {
+	    logger.log(Level.WARNING, EXCEPTION_DUPLICATE_PARAMETERS);
             throw new IllegalArgumentException(EXCEPTION_DUPLICATE_PARAMETERS);
         }
 	
@@ -523,20 +566,28 @@ public class Interpreter {
     private void isParameterArgumentValid (CommandFeedback feedback) throws InvalidParameterException {
         switch (feedback) {
         case EMPTY_DESCRIPTION:
+            logger.log(Level.WARNING, EXCEPTION_EMPTY_DESCRIPTION);
             throw new InvalidParameterException(EXCEPTION_EMPTY_DESCRIPTION);   
         case EMPTY_LOCATION:
+            logger.log(Level.WARNING, EXCEPTION_EMPTY_LOCATION);
             throw new InvalidParameterException(EXCEPTION_EMPTY_LOCATION);          
         case INVALID_START_TIME:
+            logger.log(Level.WARNING, INVALID_START_TIME);
             throw new InvalidParameterException(INVALID_START_TIME);
         case INVALID_END_TIME:
+            logger.log(Level.WARNING, INVALID_END_TIME);
             throw new InvalidParameterException(INVALID_END_TIME);
         case INVALID_REMIND_TIME:
+            logger.log(Level.WARNING, INVALID_REMINDER_TIME);
             throw new InvalidParameterException(INVALID_REMINDER_TIME);
         case INVALID_PRIORITY:
+            logger.log(Level.WARNING, INVALID_PRIORITY_REF);
             throw new InvalidParameterException(INVALID_PRIORITY_REF);
         case INVALID_FOLDER_REF:
+            logger.log(Level.WARNING, INVALID_FOLDER_REF);
             throw new InvalidParameterException(INVALID_FOLDER_REF);
         case INVALID_TASK_ID:
+            logger.log(Level.WARNING, INVALID_TASK_ID);
             throw new InvalidParameterException(INVALID_TASK_ID);           
         default:
             return;        

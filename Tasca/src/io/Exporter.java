@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.security.InvalidParameterException;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.fortuna.ical4j.data.CalendarOutputter;
 import net.fortuna.ical4j.model.DateTime;
@@ -27,14 +29,24 @@ import controller.Controller;
 
 //@author A0105912N
 public class Exporter {
-
+    
+    private static final String DEFAULT_OUTPUT_FILENAME = "TASCA_Export.ics";
+    private static final String MESSAGE_WRITING_FAILED = "Could not write ics file";
+    private static final String MESSAGE_UID_GENERATION_FAILED = "Could not generate UID Reference";
+    
+    public final static Logger logger = Controller.getLogger();
+    
+    private static final String INFO_EXPORT_FROM_GUI = "Export initiated from GUI file finder interface";
+    private static final String INFO_EXPORT_FROM_COMMAND_LINE = "Exporting initated from input bar";
+    private static final String FILETYPE_ICS = ".ics";
+    
     private static final String PROPERTY_PROD_ID = "-//Ben Fortuna//iCal4j 1.0//EN";
     private static final String FILEPATH_BACKSLASH = "/";
     private static final String EXCEPTION_LOCATION_NOT_SPECIFIED = "NIL";
     private static final String CONSTANT_UID_REF = "1";
     private static final String ERROR_ALL_FLOATING_TASKS = ".ics files are not used for storing ONLY floating tasks";
 
-    private static String exportFileName = "TASCA_Export.ics";
+    private static String exportFileName = DEFAULT_OUTPUT_FILENAME;
 
     private static final int EMPTY_PRIORITY_REF = 0;
     private static final int EMPTY_LIST = 0;
@@ -51,7 +63,9 @@ public class Exporter {
      */
 
     public Exporter(String savePath) {
-	exportFileName = "TASCA_Export.ics";
+	logger.log(Level.INFO, INFO_EXPORT_FROM_COMMAND_LINE);
+	
+	exportFileName = DEFAULT_OUTPUT_FILENAME;
 	controller = new Controller();
 	exportToIcs(savePath);
     }
@@ -61,7 +75,9 @@ public class Exporter {
      */
 
     public Exporter(String savePath, String fileName, Controller controller) {
-	exportFileName = fileName + ".ics";
+	logger.log(Level.INFO, INFO_EXPORT_FROM_GUI);
+	
+	exportFileName = fileName + FILETYPE_ICS;
 	Exporter.controller = controller;
 	exportToIcs(savePath);
     }
@@ -87,7 +103,7 @@ public class Exporter {
 	try {
 	    ug = new UidGenerator(CONSTANT_UID_REF);
 	} catch (SocketException e1) {
-	    e1.printStackTrace();
+	    logger.log(Level.SEVERE, MESSAGE_UID_GENERATION_FAILED + e1.getStackTrace());
 	}
 	newEvent.getProperties().add(ug.generateUid());
     }
@@ -167,7 +183,7 @@ public class Exporter {
 	try {
 	    fout = new FileOutputStream(outputPath);
 	} catch (FileNotFoundException e) {
-	    e.printStackTrace();
+	    logger.log(Level.SEVERE, MESSAGE_WRITING_FAILED + e.getStackTrace());
 	}
 
 	CalendarOutputter outputter = new CalendarOutputter();
@@ -175,7 +191,7 @@ public class Exporter {
 	try {
 	    outputter.output(exportCal, fout);
 	} catch (IOException | ValidationException e) {
-	    e.printStackTrace();
+	    logger.log(Level.SEVERE, MESSAGE_WRITING_FAILED + e.getStackTrace());
 	}
     }
 

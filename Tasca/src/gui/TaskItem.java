@@ -6,6 +6,8 @@ import interpreter.ParameterType;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -30,6 +32,19 @@ import controller.Controller;
 //@author A0105912N
 public class TaskItem extends JLayeredPane {
 
+    private static final int YPOS_PRIORITY_ICON = 10;
+    private static final int YPOS_TOGGLE_ICONS = 7;
+    private static final int HEIGHT_ELLIPSIS = 42;
+   
+    private static final Dimension DIMENSIONS_PRIORITY_ICON = new Dimension(23, 20);
+    private static final Dimension DIMENSIONS_TASK_ITEM = new Dimension(888, 40);
+    private static final Dimension DIMENSIONS_DATE_ICON = new Dimension(25, 25);
+    private static final Dimension DIMENSIONS_INFO_ICON = DIMENSIONS_DATE_ICON;
+    private static final Dimension DIMENSIONS_ITEM_BACKGROUND = DIMENSIONS_TASK_ITEM;
+    private static final Rectangle BOUNDS_TEXT_LABEL = new Rectangle(126, -2, 600, 42);
+    private static final Rectangle BOUNDS_DELETE_ICON = new Rectangle(35, 3, 34, 34);
+    private static final Rectangle BOUNDS_APPARENT_ID = new Rectangle(34, 2, 34, 34);
+    
     private static final int MAX_DISPLAY_TEXT_LENGTH = 600;
     private static final int INT_PRIORITY_LOW = 3;
     private static final int INT_PRIORITY_MEDIUM = 2;
@@ -73,7 +88,12 @@ public class TaskItem extends JLayeredPane {
     private static final int DISPLAY_TIME_UPDATE_PERIOD = 60000; //milliseconds
 
     private static final int LEADING_XPOS_OFFSET = 82;
+    private static final Rectangle BOUNDS_CHECK_MARK = new Rectangle(8 + LEADING_XPOS_OFFSET, 9, 23, 23);
+    private static final Rectangle BOUNDS_UNCHECKED_MARK = BOUNDS_CHECK_MARK;
+    private static final Rectangle BOUNDS_ELLIPSIS = new Rectangle(635 + LEADING_XPOS_OFFSET, 9, 40, 24);
     private static final int TRAILING_SPACE_OFFSET = 31;
+    private static final Rectangle BOUNDS_REMINDER_ICON = new Rectangle(689 + 10 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET, 7, 25, 26);
+    private static final Point LOCATION_PRIORITY_ICON_INIT = new Point(666 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET, 7);
     private static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy HH:mm");
 
     public static PrettyTime prettyTimeParser = new PrettyTime();
@@ -149,7 +169,7 @@ public class TaskItem extends JLayeredPane {
 
     private void addTaskItemBackground() {
 	background = new JLabel();
-	background.setSize(888, 40);
+	background.setSize(DIMENSIONS_ITEM_BACKGROUND);
 	background.setIcon(bufferedGraphics.getBackground());
 	this.add(background);
     }
@@ -188,14 +208,14 @@ public class TaskItem extends JLayeredPane {
 	apparentId.setHorizontalAlignment(SwingConstants.CENTER);
 	apparentId.setFont(MainInterface.latoReg12); 
 	apparentId.setForeground(Color.WHITE);
-	apparentId.setBounds(34, 2, 34, 34);
+	apparentId.setBounds(BOUNDS_APPARENT_ID);
 	this.add(apparentId);
     }
 
     private void addDeleteIcon() {
 	deleteIcon = new JLabel();
 	deleteIcon.setIcon(bufferedGraphics.getDelete());
-	deleteIcon.setBounds(35, 3, 34, 34);
+	deleteIcon.setBounds(BOUNDS_DELETE_ICON);
 	deleteIcon.setVisible(false);
 	this.add(deleteIcon);
     }
@@ -221,8 +241,7 @@ public class TaskItem extends JLayeredPane {
 	});
 	text.setForeground(Color.WHITE);
 	text.setFont(MainInterface.latoReg14);
-	text.setLocation(126, -2);
-	text.setSize(600, 42);
+	text.setBounds(BOUNDS_TEXT_LABEL);
 	text.setText(DEFAULT_DISPLAY_TEXT);
 	this.add(text);
     }
@@ -231,7 +250,7 @@ public class TaskItem extends JLayeredPane {
 	ellipsis = new JLabel(MESSAGE_OVERFLOW_ELLIPSIS);
 	ellipsis.setForeground(Color.WHITE);
 	ellipsis.setFont(MainInterface.mesloReg16);
-	ellipsis.setBounds(635 + LEADING_XPOS_OFFSET, 9, 40, 24);
+	ellipsis.setBounds(BOUNDS_ELLIPSIS);
 	ellipsis.setVisible(false);
 	add(ellipsis);
     }
@@ -248,7 +267,7 @@ public class TaskItem extends JLayeredPane {
 		}
 	    }
 	});
-	priorityIcon.setLocation(666 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET, 7);
+	priorityIcon.setLocation(LOCATION_PRIORITY_ICON_INIT);
 	priorityIcon.setVisible(false);
 	this.add(priorityIcon);
     }
@@ -261,8 +280,7 @@ public class TaskItem extends JLayeredPane {
 		reminderShortcut();
 	    }
 	});
-	reminderIcon.setLocation(689 + 10 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET, 7);
-	reminderIcon.setSize(25, 26);
+	reminderIcon.setBounds(BOUNDS_REMINDER_ICON);
 	reminderIcon.setIcon(bufferedGraphics.getReminderIcon());
 	reminderIcon.setVisible(false);
 	this.add(reminderIcon);
@@ -286,7 +304,7 @@ public class TaskItem extends JLayeredPane {
 		hideDateInfoIcon();
 	    }
 	});
-	infoIcon.setSize(25, 25);
+	infoIcon.setSize(DIMENSIONS_INFO_ICON);
 	infoIcon.setIcon(bufferedGraphics.getInfo());
 	infoIcon.setVisible(false);
 	this.add(infoIcon);
@@ -309,7 +327,7 @@ public class TaskItem extends JLayeredPane {
 		hideDateInfoIcon();
 	    }
 	});
-	dateIcon.setSize(25, 25);
+	dateIcon.setSize(DIMENSIONS_DATE_ICON);
 	dateIcon.setIcon(bufferedGraphics.getDate());
 	dateIcon.setVisible(false);
 	this.add(dateIcon);
@@ -332,8 +350,7 @@ public class TaskItem extends JLayeredPane {
 		hideDateInfoIcon();
 	    }
 	});
-	uncheckedMark.setLocation(8 + LEADING_XPOS_OFFSET, 9);
-	uncheckedMark.setSize(23, 23);
+	uncheckedMark.setBounds(BOUNDS_UNCHECKED_MARK);
 	uncheckedMark.setIcon(bufferedGraphics.getUnchecked());
 	uncheckedMark.setVisible(true);
 	this.add(uncheckedMark);
@@ -356,15 +373,14 @@ public class TaskItem extends JLayeredPane {
 		hideDateInfoIcon();
 	    }
 	});
-	checkMark.setLocation(8 + LEADING_XPOS_OFFSET, 9);
-	checkMark.setSize(23, 23);
+	checkMark.setBounds(BOUNDS_CHECK_MARK);
 	checkMark.setIcon(bufferedGraphics.getCheckMark());
 	checkMark.setVisible(false);
 	this.add(checkMark);
     }
 
     private void loadItemSettings() {
-	this.setSize(888, 40);
+	this.setSize(DIMENSIONS_TASK_ITEM);
 	this.setBorder(SETTINGS_EMPTY_BORDER);
 
 	new Timer(DISPLAY_TIME_UPDATE_PERIOD, updateTime).start();
@@ -523,8 +539,8 @@ public class TaskItem extends JLayeredPane {
 
     private void setToggleButtonPos() {
 	int xPosOfToggleBtn = calculateToggleBtnXPos();
-	dateIcon.setLocation(xPosOfToggleBtn, 7);
-	infoIcon.setLocation(xPosOfToggleBtn, 7);
+	dateIcon.setLocation(xPosOfToggleBtn, YPOS_TOGGLE_ICONS);
+	infoIcon.setLocation(xPosOfToggleBtn, YPOS_TOGGLE_ICONS);
     }
 
     private void setTaskStrikethrough(Task timedTask) {
@@ -641,15 +657,16 @@ public class TaskItem extends JLayeredPane {
 	
 	return displayText;	
     }
-
+    
+    // The following int constants were generated on a trial&error basis:
     private int calculateToggleBtnXPos() {
 	if (timedTask.getPriority() == INT_PRIORITY_NONE && !timedTask.getIsThereReminder()) {
-	    return 689 + 10 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET;
+	    return 699 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET;
 	} else if (timedTask.getPriority() == INT_PRIORITY_NONE && timedTask.getIsThereReminder()) {
-	    return 689 + 10 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET - 25 - 10;
+	    return 699 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET - 25 - 10;
 	}
 
-	return priorityIcon.getLocation().x - 13 - 25; // priority.getIcon().getIconWidth()
+	return priorityIcon.getLocation().x - 13 - 25; 
     }
 
     private String formatInfoTimings() {
@@ -665,7 +682,8 @@ public class TaskItem extends JLayeredPane {
     }
 
     private void setPriorityIcon(int priorityRef, boolean isThereReminder) {
-
+	
+	// The following int constants were generated on a trial&error basis::
 	withoutReminderXPosOffset = 45;
 
 	if (!isFloatingTask && isThereReminder) {
@@ -683,25 +701,27 @@ public class TaskItem extends JLayeredPane {
 	}
 
     }
-
+    
+    // The following int constants were generated on a trial&error basis:
+    
     private void setPriLow(int withoutReminderOffset) {
 	priorityIcon.setIcon(bufferedGraphics.getLowPri());
-	priorityIcon.setSize(23, 20);
-	priorityIcon.setLocation(655 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET + withoutReminderOffset,  10);
+	priorityIcon.setSize(DIMENSIONS_PRIORITY_ICON);
+	priorityIcon.setLocation(655 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET + withoutReminderOffset,  YPOS_PRIORITY_ICON);
 	priorityIcon.setVisible(true);
     }
 
     private void setPriMed(int withoutReminderOffset) {
 	priorityIcon.setIcon(bufferedGraphics.getMedPri());
-	priorityIcon.setSize(23, 20);
-	priorityIcon.setLocation(655 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET + withoutReminderOffset,  10);
+	priorityIcon.setSize(DIMENSIONS_PRIORITY_ICON);
+	priorityIcon.setLocation(655 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET + withoutReminderOffset,  YPOS_PRIORITY_ICON);
 	priorityIcon.setVisible(true);
     }
 
     private void setPriHigh(int withoutReminderOffset) {
 	priorityIcon.setIcon(bufferedGraphics.getHighPri());
-	priorityIcon.setSize(23, 20);
-	priorityIcon.setLocation(655 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET + withoutReminderOffset, 10);
+	priorityIcon.setSize(DIMENSIONS_PRIORITY_ICON);
+	priorityIcon.setLocation(655 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET + withoutReminderOffset, YPOS_PRIORITY_ICON);
 	priorityIcon.setVisible(true);
     }
 
@@ -725,7 +745,7 @@ public class TaskItem extends JLayeredPane {
 	    String displayTime) {
 	Dimension dimensions = text.getPreferredSize();
 	if (dimensions.getWidth() > MAX_DISPLAY_TEXT_LENGTH) {
-	    text.setSize(MAX_DISPLAY_TEXT_LENGTH, 42);
+	    text.setSize(MAX_DISPLAY_TEXT_LENGTH, HEIGHT_ELLIPSIS);
 
 	    ellipsis.setVisible(true);
 	    text.setToolTipText(description + DESCRIPTION_SEPERATION_HYPHEN + displayTime + location);

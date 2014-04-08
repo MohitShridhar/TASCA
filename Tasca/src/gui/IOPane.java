@@ -4,6 +4,8 @@ import io.Exporter;
 import io.Importer;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -25,6 +27,13 @@ import controller.Controller;
 //@author A0105912N
 public class IOPane extends JFrame {
     
+    private static final Rectangle BOUNDS_CLOSE_BUTTON = new Rectangle(373, 10, 17, 17);
+    private static final Rectangle BOUNDS_EXPORT_BUTTON = new Rectangle(55, 83, 81, 34);
+    private static final Rectangle BOUNDS_PANE_GRAPHIC = new Rectangle(160, 50, 80, 100);
+    private static final Rectangle BOUNDS_IMPORT_BUTTON = new Rectangle(264, 83, 81, 34);
+    
+    private static final Dimension DIMENSIONS_IO_PANE = new Dimension(400, 200);
+
     private static final String INVALID_FILENAME_REGEX = 
 	    
     "# Match a valid Windows filename (unspecified file system).          \n" +
@@ -69,6 +78,7 @@ public class IOPane extends JFrame {
     
     public IOPane(JFrame mainFrame, JLabel systemStatusMessage, Controller controller) {
 	super(TITLELESS_JFRAME);
+	
 	linkMainInterfaceComponents(systemStatusMessage, controller);
 	
 	loadGuiComponents(mainFrame);
@@ -96,7 +106,7 @@ public class IOPane extends JFrame {
 
     private void addImportButton(final JFrame mainInterfaceFrame) {
 	JButton btnImport = new JButton(ICON_IMPORT);
-	btnImport.setBounds(264, 83, 81, 34); // Coordinates and Size in pixels
+	btnImport.setBounds(BOUNDS_IMPORT_BUTTON); 
 	btnImport.setContentAreaFilled(false);
 	btnImport.setBorder(BorderFactory.createEmptyBorder());
 	btnImport.addActionListener(new ActionListener() {
@@ -111,13 +121,13 @@ public class IOPane extends JFrame {
 
     private void addExportPaneGraphic() {
 	JLabel icon = new JLabel(ICON_PANE_GRAPHIC);
-	icon.setBounds(160, 50, 80, 100); // Coordinates and Size in pixels
+	icon.setBounds(BOUNDS_PANE_GRAPHIC); 
 	
 	getContentPane().add(icon);
     }
 
     private void loadFrameSettings(final JFrame mainInterfaceFrame) {
-	setSize(400, 200); // Size in pixels
+	setSize(DIMENSIONS_IO_PANE);
 	setBackground(Color.decode(UI_BACKGROUND_COLOR_HEX));
 	
 	getContentPane().setBackground(Color.decode(UI_BACKGROUND_COLOR_HEX));
@@ -135,7 +145,7 @@ public class IOPane extends JFrame {
     private void addExportButton(final JFrame mainFrame) {
 	JButton btnExport = new JButton(ICON_EXPORT);
 	
-	btnExport.setBounds(55, 83, 81, 34); // Coordinates and Size in pixels
+	btnExport.setBounds(BOUNDS_EXPORT_BUTTON); 
 	btnExport.setContentAreaFilled(false);
 	btnExport.setBorder(BorderFactory.createEmptyBorder());
 	btnExport.addActionListener(new ActionListener() {
@@ -162,7 +172,7 @@ public class IOPane extends JFrame {
 	btnClose.setContentAreaFilled(false);
 	btnClose.setBorder(SETTINGS_EMPTY_BORDER);
 	
-	btnClose.setBounds(373, 10, 17, 17); // Coordinates and Size in pixels
+	btnClose.setBounds(BOUNDS_CLOSE_BUTTON); 
 	
 	getContentPane().add(btnClose);
     }

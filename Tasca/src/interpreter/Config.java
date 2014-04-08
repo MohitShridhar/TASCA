@@ -6,17 +6,25 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import controller.Controller;
 
 import junit.framework.Assert;
 
 //@author A0105912N
 public class Config
 {
+    public final static Logger logger = Controller.getLogger();
+    
     private static final String DELIMITER_PARAMETER = ",";
     private static final String FILENAME_USER_CONFIG_FILE = "Config.cfg";
     private static final String MESSAGE_GENERATING_CONFIG_FILE = "Config.cfg file not found. Generating Default Configurations";
     private static final String FILENAME_DEFAULT_CONFIG_FILE = "Default_Config.cfg";
-    private static final String MESSAGE_SERIOUS_ERROR_CONFIG_FILE = "Serious error: Default config file not found";
+    
+    private static final String MESSAGE_SERIOUS_ERROR_DEFAULT_CONFIG_NOT_FOUND = "Serious error: Default config file not found";
+    private static final String MESSAGE_DEFAULT_CONFIG_SAVE_FAILED = "Could save default config file. Settings can't be edited";
     
     private static final int INT_FOLDER5 = 5;
     private static final int INT_FOLDER4 = 4;
@@ -105,7 +113,7 @@ public class Config
 	    configFile.load(new FileInputStream(FILENAME_USER_CONFIG_FILE));
 
 	}catch(Exception eta){
-	    System.out.println(MESSAGE_GENERATING_CONFIG_FILE);
+	    logger.log(Level.WARNING, MESSAGE_GENERATING_CONFIG_FILE);
 	    loadDefaultConfig();
 	}
     }
@@ -113,9 +121,9 @@ public class Config
     public void loadDefaultConfig() {
 	try {
 	    configFile.load(Config.class.getResourceAsStream(FILENAME_DEFAULT_CONFIG_FILE));
-	}catch(Exception eta){
-	    eta.printStackTrace();
-	    Assert.fail(MESSAGE_SERIOUS_ERROR_CONFIG_FILE);
+	}catch(Exception severeException){
+	    logger.log(Level.SEVERE, MESSAGE_SERIOUS_ERROR_DEFAULT_CONFIG_NOT_FOUND + severeException.getStackTrace());
+	    Assert.fail(MESSAGE_SERIOUS_ERROR_DEFAULT_CONFIG_NOT_FOUND);
 	}
 
 	saveDefaultConfig();
@@ -124,10 +132,12 @@ public class Config
     public void saveDefaultConfig() {
 	try {
 	    configFile.store(new FileOutputStream(FILENAME_USER_CONFIG_FILE), null);
-	} catch (FileNotFoundException e) {
-	    e.printStackTrace();
-	} catch (IOException e) {
-	    e.printStackTrace();
+	} catch (FileNotFoundException serverException) {
+	    logger.log(Level.SEVERE, MESSAGE_DEFAULT_CONFIG_SAVE_FAILED + serverException.getStackTrace());
+	    Assert.fail(MESSAGE_DEFAULT_CONFIG_SAVE_FAILED);
+	} catch (IOException serverException) {
+	    logger.log(Level.SEVERE, MESSAGE_DEFAULT_CONFIG_SAVE_FAILED + serverException.getStackTrace());
+	    Assert.fail(MESSAGE_DEFAULT_CONFIG_SAVE_FAILED);
 	}
     }
 

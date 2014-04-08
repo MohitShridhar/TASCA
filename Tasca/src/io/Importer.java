@@ -10,6 +10,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
@@ -24,6 +26,13 @@ import controller.Controller;
 
 //@author A0105912N
 public class Importer {
+        
+    public final static Logger logger = Controller.getLogger();
+    
+    private static final String MESSAGE_COULD_NOT_READ_FILE = "Could not read ICS file";
+    private static final String MESSAGE_COULD_NOT_BUILD_ICS = "Could not build ics calendar";
+    private static final String INFO_IMPORT_FROM_COMMAND_LINE = "Import intiated from command line input";
+    private static final String INFO_IMPORT_FROM_GUI = "Impor initated from GUI file finder interface";
     
     private static final int PRIORITY_MED_REF = 2;
     private static final int PRIORITY_HIGH_REF = 1;
@@ -62,11 +71,15 @@ public class Importer {
     private static Controller controller;
 
     public Importer(String filePath) {
+	logger.log(Level.INFO, INFO_IMPORT_FROM_COMMAND_LINE);
+	
 	controller = new Controller();
 	importIcs(filePath);
     }
 
     public Importer(String filePath, Controller controller) {
+	logger.log(Level.INFO, INFO_IMPORT_FROM_GUI);
+	
 	Importer.controller = controller;
 	importIcs(filePath);	
     }
@@ -226,7 +239,7 @@ public class Importer {
 	try {
 	    fin = new FileInputStream(filePath);
 	} catch (FileNotFoundException e) {
-	    e.printStackTrace();
+	    logger.log(Level.SEVERE, MESSAGE_COULD_NOT_READ_FILE + e.getStackTrace());
 	}
 
 	CalendarBuilder builder = new CalendarBuilder();
@@ -235,7 +248,7 @@ public class Importer {
 	try {
 	    calendar = builder.build(fin);
 	} catch (IOException | ParserException e) {
-	    e.printStackTrace();
+	    logger.log(Level.SEVERE, MESSAGE_COULD_NOT_BUILD_ICS + e.getStackTrace());
 	}
 	return calendar;
     }

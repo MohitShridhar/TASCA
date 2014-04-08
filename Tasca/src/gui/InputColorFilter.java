@@ -11,6 +11,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -26,15 +28,38 @@ import javax.swing.text.StyleConstants;
 
 import org.antlr.runtime.tree.RewriteEmptyStreamException;
 
-//@author A0105912N
-public class InputColorFilter extends DocumentFilter {
+import controller.Controller;
 
+//@author A0105912N
+/**
+ * @author MohitSridhar
+ *
+ */
+/**
+ * @author MohitSridhar
+ *
+ */
+/**
+ * @author MohitSridhar
+ *
+ */
+/**
+ * @author MohitSridhar
+ *
+ */
+public class InputColorFilter extends DocumentFilter {
+    
+    private static InputColorFilter filterInstance = null;
+    
+    private static final String WARNING_PARSING_NOT_SUCCESSFUL = "Interpreter parsing not successful";
     private static final char SINGLE_SPACE = ' ';
     private static final char DELIMETER_CHAR_FORM = '-';
     private static final String DELIMITER_STRING_FORM = "-";
     private static final String EXPRESSION_NEW_LINE = "\\n";
     private static final int FONT_SIZE_COMMAND = 16;
     private static final String FONT_TYPE_COMMAND = "Meslo LG S";
+    
+    private static Logger logger = Controller.getLogger();
     
     private static final ImageIcon GRAPHIC_FAILED_INPUT_BAR = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Failed Input Bar.gif"));
     private static final ImageIcon GRAPHIC_SUCCESS_INPUT_BAR = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Success Input Bar.gif"));
@@ -100,7 +125,18 @@ public class InputColorFilter extends DocumentFilter {
         }
     };
     
-    public InputColorFilter(JFrame frame, final JTextPane textPane, Interpreter interpreter, JLabel background, JLabel feedbackText, JLabel feedbackBackground) {
+    /*
+     * Singleton: Only one color filter is required because only one input textpane is used
+     */
+    public static InputColorFilter getInstance(JFrame frame, final JTextPane textPane, Interpreter interpreter, JLabel background, JLabel feedbackText, JLabel feedbackBackground) {
+	if (filterInstance == null) {
+	    filterInstance = new InputColorFilter(frame, textPane, interpreter, background, feedbackText, feedbackBackground);
+	}
+	
+	return filterInstance;
+    }
+    
+    private InputColorFilter(JFrame frame, final JTextPane textPane, Interpreter interpreter, JLabel background, JLabel feedbackText, JLabel feedbackBackground) {
 	
         linkMainInterfaceComponents(frame, textPane, interpreter, background,feedbackText, feedbackBackground);      
         buildAllAttributeSets();
@@ -282,6 +318,8 @@ public class InputColorFilter extends DocumentFilter {
 	} catch(IllegalArgumentException | RewriteEmptyStreamException e) {
 	    isParseSuccessful = false;
 	    activateExceptionFeedbackBar(e);
+	    
+	    logger.log(Level.WARNING, WARNING_PARSING_NOT_SUCCESSFUL);
 	}
 	
 	return isParseSuccessful;

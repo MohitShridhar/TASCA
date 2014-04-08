@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -47,20 +49,19 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import junit.framework.Assert;
+
 import storage.FloatingTask;
 import storage.Reminder;
 import controller.Controller;
 
-// TODO: Add more help error messages. Implement all user exceptions
 
 //@author A0105912N
 public class MainInterface {
-
-    private static final Dimension DIMENSIONS_TASK_ITEM = new Dimension(888, 40);
+   
     private static final int INVALID_INPUT_HISTORY_REF = -1;
     private static final int VERTICAL_GAP_BETWEEN_ITEMS = 13;
     private static final Color COLOR_UI_BACKGROUND = Color.decode("#272822");
-    private static final Rectangle DISPLAY_PANE_BOUNDS = new Rectangle(0, 80, 888, 262);
     private static final int DISPLAY_PANE_MAX_HEIGHT = 262;
 
     private static final String FONT_NAME_LUCIDA_GRANDE = "Lucida Grande";
@@ -72,10 +73,15 @@ public class MainInterface {
     private static final String FILEPATH_FONT_MESLO_REG = "/GUI Graphics/Fonts/MesloLGM-Regular.ttf";
     private static final String FILEPATH_FONT_LUCIDA_GRANDE = "/GUI Graphics/Fonts/Lucida Grande.ttf";
     private static final String FILEPATH_FONT_LATO_REG = "/GUI Graphics/Fonts/Lato-Reg.ttf";
+    
+    private static final String INFO_CREATING_SETTINGS_PANE = "Creating settings pane";
+    private static final String INFO_CREATING_IO_PANE = "Creating IOPane";
+    private static final String MESSAGE_LOADING_FONTS_FAILED = "Could not load important fonts";
 
     private static Controller controller = new Controller();
     private static JFrame mainFrame;
-
+    private static Logger logger = Controller.getLogger();
+    
     // Window + components:
     public static Font mesloReg16, mesloBold16,menloReg, latoReg, latoReg15, latoReg14, latoReg12, latoBold13, latoBold20, latoBold16,latoReg13, lucidaReg22;
     private static int windowPosX=0,windowPosY=0;
@@ -94,6 +100,7 @@ public class MainInterface {
     private static final String FILEPATH_ICON_UP_INDICATOR = "/GUI Graphics/Size Arrow Up.png";
     
     private static final String MESSAGE_WELCOME = "memora vivere";
+    private static final String MESSAGE_EMPTY_LIST = "Just do it. Later.";
     private static final Border SETTINGS_EMPTY_BORDER = BorderFactory.createEmptyBorder(0,0,0,0);
     private static final int VIEWPORT_HEIGHT_DISPLAY_PANE = 262;
     
@@ -138,6 +145,26 @@ public class MainInterface {
     private static final int MAX_SCROLL_SPEED_IN_PIXELS = 1;
     private static final int SCROLL_THUMB_WIDTH = 16;
     private static final int DELAY_KEY_PRESS = 170;
+    
+    // Component Dimensions/Locations:    
+    private static final Rectangle BOUNDS_CLOSE_BUTTON = new Rectangle(862, 7, 17, 17);
+    private static final Rectangle BOUNDS_LAYERED_PANE = new Rectangle(0, 0, 888, 342);
+    private static final Rectangle BOUNDS_TASK_PANE = new Rectangle(0, 80, 888, 262);
+    private static final Rectangle BOUNDS_DOWN_INDICATOR = new Rectangle(861, 440, 18, 18);
+    private static final Rectangle BOUNDS_UP_INDICATOR = new Rectangle(861, 412, 18, 18);
+    private static final Rectangle BOUNDS_SCROLL_PANE = new Rectangle(50, 423, 745, 23);
+    private static final Rectangle BOUNDS_EMPTY_LIST_MESSAGE = new Rectangle(214, 200, 460, 28);
+    private static final Rectangle BOUNDS_SYSTEM_MESSAGE = new Rectangle(0, 484, 888, 16);
+    private static final Rectangle BOUNDS_MINIMIZE_BUTTON = new Rectangle(836, 7, 18, 18);
+    private static final Rectangle BOUNDS_INPUT_BAR_BACKGROUND = new Rectangle(37, 412, 814, 46);
+    private static final Rectangle BOUNDS_FEEDBACK_TEXT_BACKGROUND = new Rectangle(77, 361, 750, 52);
+    private static final Rectangle BOUNDS_FEEDBACK_TEXT = new Rectangle(99, 373, 694, 18);
+    private static final Rectangle BOUNDS_SETTINGS_BUTTON = new Rectangle(505, 365, 27, 27);
+    private static final Rectangle BOUNDS_EXPORT_BUTTON = new Rectangle(351, 365, 26, 26);
+    
+    private static final Dimension DIMENSIONS_TASK_ITEM = new Dimension(888, 40);
+    private static final Dimension DIMENSIONS_MAIN_FRAME = new Dimension(888, 500);
+    private static final Rectangle DISPLAY_PANE_BOUNDS = BOUNDS_TASK_PANE;
 
     // Input color filter:
     private static InputColorFilter colorFilter;
@@ -189,7 +216,8 @@ public class MainInterface {
 	    ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, MainInterface.class.getResourceAsStream(FILEPATH_FONT_MESLO_BOLD)));
 
 	} catch (IOException | FontFormatException e) {
-	    e.printStackTrace();
+	    logger.log(Level.SEVERE, MESSAGE_LOADING_FONTS_FAILED + e.getStackTrace());
+	    Assert.fail(MESSAGE_LOADING_FONTS_FAILED);
 	}
     }
 
@@ -217,10 +245,6 @@ public class MainInterface {
 
     public static void setActiveFeedbackEnabled(boolean activeFeedbackEnabled) {
 	MainInterface.activeFeedbackEnabled = activeFeedbackEnabled;
-    }
-
-    public static String getUserInput() {
-	return colorFilter.getUserInput();
     }
 
     public static void loadAllFolderLabels(){
@@ -264,7 +288,7 @@ public class MainInterface {
 	return cfg.getFolderId(original.get(index).getTask().getFolder());
     }
 
-    public static boolean isCurrentFolder(FolderName folder) {
+    private static boolean isCurrentFolder(FolderName folder) {
 	return folder == getCurrFolder() ||  getCurrFolder() == getDefaultFolder();
     }
 
@@ -331,16 +355,16 @@ public class MainInterface {
 	return displayPanel;
     }
 
-    private static void adjustDisplayViewport(JPanel tempPanel, int previousScrollPos) {
-	double preferredHeight = tempPanel.getPreferredSize().getHeight(); 
+    private static void adjustDisplayViewport(JPanel displayPanel, int previousScrollPos) {
+	double preferredHeight = displayPanel.getPreferredSize().getHeight(); 
 
 	if (preferredHeight < DISPLAY_PANE_MAX_HEIGHT) {
-	    taskPane.setSize(tempPanel.getPreferredSize());
+	    taskPane.setSize(displayPanel.getPreferredSize());
 	} else {
 	    taskPane.setBounds(DISPLAY_PANE_BOUNDS);
 	}
 
-	taskPane.setViewportView(tempPanel);
+	taskPane.setViewportView(displayPanel);
 	taskPane.setVisible(true);
 
 	setVerticalScollPos(previousScrollPos);
@@ -348,14 +372,14 @@ public class MainInterface {
 
     private static void addFloatingTasks(
 	    LinkedList<FloatingTask> folderSortedFloatingTasks,
-	    JPanel tempPanel, int numOfTimedTasks) {
+	    JPanel displayPanel, int numOfTimedTasks) {
 
 	for (int i = 0; i < folderSortedFloatingTasks.size(); i++) {
 	    TaskItem taskBar = new TaskItem(textPane, getController(), computeFloatingTaskGuiId(numOfTimedTasks, i), interpreter);
 	    taskBar.loadFloatingTaskDetails(folderSortedFloatingTasks.get(i), computeFloatingTaskGuiId(numOfTimedTasks, i));
 
 	    Interpreter.addGuiId(computeFloatingTaskGuiId(numOfTimedTasks, i), folderSortedFloatingTasks.get(i).getTaskID());
-	    loadTaskItemProperties(tempPanel, taskBar);
+	    loadTaskItemProperties(displayPanel, taskBar);
 	}
     }
 
@@ -363,22 +387,22 @@ public class MainInterface {
 	return index + 1 + numOfTimedTasks;
     }
 
-    private static void loadTaskItemProperties(JPanel tempPanel,
+    private static void loadTaskItemProperties(JPanel displayPanel,
 	    TaskItem taskBar) {
 	taskBar.setPreferredSize(DIMENSIONS_TASK_ITEM);
 	taskBar.setVisible(true);
-	tempPanel.add(taskBar);
+	displayPanel.add(taskBar);
     }
 
     private static int addTimedTasks(
-	    LinkedList<Reminder> folderSortedTimedTasks, JPanel tempPanel) {
+	    LinkedList<Reminder> folderSortedTimedTasks, JPanel displayPanel) {
 	int i;
 	for (i=0; i < folderSortedTimedTasks.size(); i++) {
 	    TaskItem taskBar = new TaskItem(textPane, getController(), computeTimedTaskGuiId(i), interpreter);
 	    taskBar.loadTimedTaskDetails(folderSortedTimedTasks.get(i).getTask(), computeTimedTaskGuiId(i), folderSortedTimedTasks.get(i).getReminderTime());
 
 	    Interpreter.addGuiId(computeTimedTaskGuiId(i), folderSortedTimedTasks.get(i).getTask().getTaskID());
-	    loadTaskItemProperties(tempPanel, taskBar);
+	    loadTaskItemProperties(displayPanel, taskBar);
 	}
 	return i;
     }
@@ -436,7 +460,7 @@ public class MainInterface {
     }
 
 
-    public static void initializeGuiComponents(final JFrame currFrame) {
+    private static void initializeGuiComponents(final JFrame currFrame) {
 
 	loadAllFolderLabels();
 	initDefaultFolderState();
@@ -512,11 +536,12 @@ public class MainInterface {
 
     private static void addExportButton(final JFrame frame) {
 	btnExport = new JButton(ICON_EXPORT_BUTTON);
-	btnExport.setBounds(351, 365, 26, 26);
+	btnExport.setBounds(BOUNDS_EXPORT_BUTTON);
 	btnExport.setContentAreaFilled(false);
 	btnExport.setBorder(BorderFactory.createEmptyBorder());
 	btnExport.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
+		logger.log(Level.INFO, INFO_CREATING_IO_PANE);
 		new IOPane(frame, getSystemStatusMessage(), getController());
 	    }
 	});   
@@ -526,11 +551,12 @@ public class MainInterface {
 
     private static void addSettingsButton(final JFrame frame) {
 	btnSettings = new JButton(ICON_SETTINGS_BUTTON);
-	btnSettings.setBounds(505, 365, 27, 27);
+	btnSettings.setBounds(BOUNDS_SETTINGS_BUTTON);
 	btnSettings.setContentAreaFilled(false);
 	btnSettings.setBorder(BorderFactory.createEmptyBorder());
 	btnSettings.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
+		logger.log(Level.INFO, INFO_CREATING_SETTINGS_PANE);
 		initiateSettingsPane(frame);
 	    }
 	});     
@@ -541,18 +567,18 @@ public class MainInterface {
 	feedbackText.setHorizontalAlignment(SwingConstants.CENTER);
 	feedbackText.setForeground(Color.WHITE);
 	feedbackText.setFont(latoReg15);
-	feedbackText.setBounds(99, 373, 694, 18);
+	feedbackText.setBounds(BOUNDS_FEEDBACK_TEXT);
 	frame.getContentPane().add(feedbackText);
 
 	feedbackBackground.setIcon(ICON_FEEDBACK_BACKGROUND);
-	feedbackBackground.setBounds(77, 361, 750, 52);
+	feedbackBackground.setBounds(BOUNDS_FEEDBACK_TEXT_BACKGROUND);
 	frame.getContentPane().add(feedbackBackground);
 
 	feedbackText.setVisible(false);
 	feedbackBackground.setVisible(false);
 
 	inputBackground.setIcon(ICON_INPUT_BACKGROUND);
-	inputBackground.setBounds(37, 412, 814, 46);
+	inputBackground.setBounds(BOUNDS_INPUT_BAR_BACKGROUND);
 	frame.getContentPane().add(inputBackground);
     }
 
@@ -579,7 +605,7 @@ public class MainInterface {
 	feedbackBackground = new JLabel("");
     }
 
-    public static void processCtrlShortcuts(KeyEvent event) {
+    private static void processCtrlShortcuts(KeyEvent event) {
 	if (isStartTimeShortcut(event)) {
 	    
 	    appendToTextPane(textPane, DELIMITER + interpreter.getDefaultParaSyn(ParameterType.START_TIME), ParameterType.START_TIME);
@@ -725,7 +751,7 @@ public class MainInterface {
 	    textPane.appendParameter(SINGLE_SPACE, normalSetting);
 	    textPane.setCaretPosition(textPane.getText().length());
 	} catch (BadLocationException e) {
-	    e.printStackTrace();
+	    logger.log(Level.WARNING, "" + e.getStackTrace());
 	}
 
     }
@@ -739,7 +765,7 @@ public class MainInterface {
 	return textPane.getText().indexOf(newString) >= 0;
     }
 
-    public static void addMinimizeButton(final JFrame frame) {
+    private static void addMinimizeButton(final JFrame frame) {
 	JButton btnMinimize = new JButton("");
 	btnMinimize.setBackground(Color.BLACK);
 	btnMinimize.addMouseListener(new MouseAdapter() {
@@ -749,7 +775,7 @@ public class MainInterface {
 	    }
 	});
 	btnMinimize.setIcon(ICON_MINIMIZE_BUTTON);
-	btnMinimize.setBounds(836, 7, 18, 18);
+	btnMinimize.setBounds(BOUNDS_MINIMIZE_BUTTON);
 
 	btnMinimize.setBorderPainted(false);
 	btnMinimize.setContentAreaFilled(false);
@@ -758,27 +784,27 @@ public class MainInterface {
 	frame.getContentPane().add(btnMinimize);
     }
 
-    public static void createSystemMessageLabel() {
+    private static void createSystemMessageLabel() {
 	setSystemStatusMessage(new JLabel(""));
 	getSystemStatusMessage().setHorizontalAlignment(SwingConstants.CENTER);
-	getSystemStatusMessage().setBounds(0, 484, 888, 16);
+	getSystemStatusMessage().setBounds(BOUNDS_SYSTEM_MESSAGE);
 	getSystemStatusMessage().setFont(latoReg12);
 	getSystemStatusMessage().setForeground(Color.WHITE);
 
 	mainFrame.getContentPane().add(getSystemStatusMessage());
     }
 
-    public static void createEmptyListMessageLabel() {
-	msgEmptyList = new JLabel("Just do it. Later.");
+    private static void createEmptyListMessageLabel() {
+	msgEmptyList = new JLabel(MESSAGE_EMPTY_LIST);
 	msgEmptyList.setForeground(Color.WHITE);
 	msgEmptyList.setHorizontalAlignment(SwingConstants.CENTER);
 	msgEmptyList.setFont(lucidaReg22);
-	msgEmptyList.setBounds(214, 200, 460, 28);
+	msgEmptyList.setBounds(BOUNDS_EMPTY_LIST_MESSAGE);
 	msgEmptyList.setVisible(false);
 	mainFrame.getContentPane().add(msgEmptyList);
     }
 
-    public static void createInputBar(final JFrame frame, JLabel inputBackground,
+    private static void createInputBar(final JFrame frame, JLabel inputBackground,
 	    JLabel feedbackText, JLabel feedbackBackground) {
 	
 	createInputTextPane(); 
@@ -792,7 +818,7 @@ public class MainInterface {
     private static void addInputColorFilter(final JFrame frame,
 	    JLabel inputBackground, JLabel feedbackText,
 	    JLabel feedbackBackground) {
-	colorFilter = (new InputColorFilter(frame, textPane, interpreter, inputBackground, feedbackText, feedbackBackground));
+	colorFilter = (InputColorFilter.getInstance(frame, textPane, interpreter, inputBackground, feedbackText, feedbackBackground));
 	((AbstractDocument) textPane.getDocument()).setDocumentFilter(colorFilter);
     }
 
@@ -800,8 +826,7 @@ public class MainInterface {
 	JScrollPane scrollPane = new JScrollPane(textPane);
 	scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 	scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	scrollPane.setLocation(50, 423);
-	scrollPane.setSize(745, 23);
+	scrollPane.setBounds(BOUNDS_SCROLL_PANE);
 	scrollPane.setOpaque(false);
 	scrollPane.setBorder(SETTINGS_EMPTY_BORDER);
 
@@ -824,29 +849,31 @@ public class MainInterface {
 	Interpreter.setIsGuiIdEnabled(true);
     }
 
-    public static void initIndicators(final JFrame frame) {
+    private static void initIndicators(final JFrame frame) {
 	try {
 	    upIndicator = new JLabel(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_ICON_UP_INDICATOR)))));
 	} catch (IOException exception) {
-	    exception.printStackTrace();
+	    logger.log(Level.SEVERE, BufferedGraphics.MESSAGE_GRAPHICS_LOAD_FAILED + exception.getStackTrace());
+	    Assert.fail(BufferedGraphics.MESSAGE_GRAPHICS_LOAD_FAILED);
 	}
 
-	upIndicator.setBounds(861, 412, 18, 18);
+	upIndicator.setBounds(BOUNDS_UP_INDICATOR);
 	upIndicator.setVisible(false);
 	frame.getContentPane().add(upIndicator);
 
 	try {
 	    downIndicator = new JLabel(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_ICON_DOWN_INDICATOR)))));
 	} catch (IOException exception) {
-	    exception.printStackTrace();
+	    logger.log(Level.SEVERE, BufferedGraphics.MESSAGE_GRAPHICS_LOAD_FAILED + exception.getStackTrace());
+	    Assert.fail(BufferedGraphics.MESSAGE_GRAPHICS_LOAD_FAILED);
 	}
 
-	downIndicator.setBounds(861, 440, 18, 18);
+	downIndicator.setBounds(BOUNDS_DOWN_INDICATOR);
 	downIndicator.setVisible(false);
 	frame.getContentPane().add(downIndicator);
     }
 
-    public static void createShutdownHook() {
+    private static void createShutdownHook() {
 	Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
 	    public void run() {
@@ -855,7 +882,7 @@ public class MainInterface {
 	}));
     }
 
-    public static void createTaskListPane(final JFrame frame) {
+    private static void createTaskListPane(final JFrame frame) {
 	JLayeredPane layeredPane = initLayeredPane();
 
 	buildTaskPane(layeredPane);
@@ -866,7 +893,7 @@ public class MainInterface {
     private static void buildTaskPane(JLayeredPane layeredPane) {
 	taskPane = new JScrollPane();
 	taskPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	taskPane.setBounds(0, 80, 888, 262);
+	taskPane.setBounds(BOUNDS_TASK_PANE);
 	taskPane.setOpaque(false);
 	taskPane.setBorder(SETTINGS_EMPTY_BORDER);
 	taskPane.getViewport().setOpaque(false);
@@ -881,7 +908,7 @@ public class MainInterface {
 
     private static JLayeredPane initLayeredPane() {
 	JLayeredPane layeredPane = new JLayeredPane();
-	layeredPane.setBounds(0, 0, 888, 342);
+	layeredPane.setBounds(BOUNDS_LAYERED_PANE);
 	layeredPane.setOpaque(false);
 	layeredPane.setBorder(SETTINGS_EMPTY_BORDER);
 	return layeredPane;
@@ -895,7 +922,7 @@ public class MainInterface {
 	taskPane.getVerticalScrollBar().setUnitIncrement(MAX_SCROLL_SPEED_IN_PIXELS);
     }
 
-    public static void addCloseButton(final JFrame frame) {
+    private static void addCloseButton(final JFrame frame) {
 	JButton btnClose = new JButton(ICON_CLOSE_BUTTON);
 
 	btnClose.setBackground(Color.BLACK);
@@ -909,30 +936,30 @@ public class MainInterface {
 	btnClose.setContentAreaFilled(false);
 	btnClose.setBorder(SETTINGS_EMPTY_BORDER);
 
-	btnClose.setBounds(862, 7, 17, 17);
+	btnClose.setBounds(BOUNDS_CLOSE_BUTTON);
 	frame.getContentPane().add(btnClose);
     }
 
-    public static void initDefaultFolderState() {
+    private static void initDefaultFolderState() {
 	setCurrFolder(getDefaultFolder());
 	setPrevFolder(getCurrFolder());
 
 	setCycleRef(Integer.parseInt(getDefaultFolder().toString().charAt(6) + "" ) - 1); // char at index 6 in FolderName contains the folder id number
     }
 
-    public static void loadFrameSettings() {
+    private static void loadFrameSettings() {
 	mainFrame = new JFrame(TITLELESS_JFRAME);
 
 	mainFrame.setBackground(COLOR_UI_BACKGROUND);
 	mainFrame.getContentPane().setLayout(null);
 	mainFrame.setUndecorated(true); 
-	mainFrame.setSize(888, 500);
+	mainFrame.setSize(DIMENSIONS_MAIN_FRAME);
 	mainFrame.setResizable(false); 
 	mainFrame.setLocationRelativeTo(null); 
 	mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    public static void initiateSettingsPane(final JFrame frame) {
+    private static void initiateSettingsPane(final JFrame frame) {
 	new SettingsPane(frame, interpreter, cfg);
     }
 

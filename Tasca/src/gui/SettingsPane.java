@@ -17,6 +17,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -32,10 +34,33 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
+import controller.Controller;
+
 
 //@author A0105912N
 public class SettingsPane extends JFrame {
+
+    private static final String MESSAGE_CONFIG_WRITE_FAILED = "Could not write config file";
+    private static final Rectangle BOUNDS_MAIN_TITLE = new Rectangle(369, 17, 182, 25);
+    private static final Rectangle BOUNDS_CANCEL_BUTTON = new Rectangle(0, 366, 81, 34);
+    private static final Rectangle BOUNDS_ACTIVE_FEEDBACK_CHECKBOX = new Rectangle(170, 40, 25, 25);
+    private static final Rectangle BOUNDS_COMM_PANE = new Rectangle(45, 195, 396, 155);
+    private static final Rectangle BOUNDS_PARA_PANE = new Rectangle(490, 195, 396, 155);
+    private static final Rectangle BOUNDS_SAVE_BUTTON = new Rectangle(839, 366, 81, 34);
+    private static final Rectangle BOUNDS_DEFAULT_FOLDER_SELECTOR = new Rectangle(75, 116, 97, 27);
+    private static final Rectangle BOUNDS_FOLDER_LABEL = new Rectangle(70, 81, 780, 60);
+    private static final Rectangle BOUNDS_FEEDBACK_CHECKBOX_LABEL = new Rectangle(21, 45, 157, 16);
+    private static final Rectangle BOUNDS_COMM_TITLE = new Rectangle(130, 165, 201, 16);
+    private static final Rectangle BOUNDS_PARA_TITLE = new Rectangle(588, 167, 201, 16);
+    private static final Rectangle BOUNDS_WARNING_LABEL = new Rectangle(110, 364, 700, 28);
+    private static final Rectangle BOUNDS_COMMAND_KEYWORD_PANE = new Rectangle(34, 195, 396, 155);
+    private static final Rectangle BOUNDS_PARA_KEYWORD_PANE = BOUNDS_PARA_PANE;
     
+    private static final Logger logger = Controller.getLogger();
+    
+    private static final Dimension DIMENSIONS_KEYWORD_BAR_PREFERRED_SIZE = new Dimension(396, 41);
+    private static final Dimension DIMENSIONS_SETTINGS_PANE = new Dimension(920, 400);
+
     private static final String FILENAME_CONFIG_FILE = "Config.cfg";
     
     private static final String MESSAGE_INVALID_FOLDER_NAME = "Please specify a shorter name for Folder %1$s or check that it's not empty";
@@ -255,7 +280,7 @@ public class SettingsPane extends JFrame {
     }
 
     private void loadParameterKeywordPaneSettings(JPanel paraPanel) {
-	paraKeywordPane.setBounds(490, 195, 396, 155);
+	paraKeywordPane.setBounds(BOUNDS_PARA_KEYWORD_PANE);
 	paraKeywordPane.setViewportView(paraPanel);
 	paraKeywordPane.setVisible(true);
     }
@@ -263,7 +288,7 @@ public class SettingsPane extends JFrame {
     private void addParameterKeywordItem(JPanel paraPanel, int i) {
 	KeywordItem keywordBar = new KeywordItem(parameterDatabase[i][DISPLAY_NAME_REF], cfg.getProperty(parameterDatabase[i][CONFIG_NAME_REF]));
 	
-	keywordBar.setPreferredSize(new Dimension(396, 41));
+	keywordBar.setPreferredSize(DIMENSIONS_KEYWORD_BAR_PREFERRED_SIZE);
 	keywordBar.setToolTipText(parameterDatabase[i][TOOLTIP_REF]); 
 	keywordBar.setVisible(true);
 	paraPanel.add(keywordBar);
@@ -272,7 +297,7 @@ public class SettingsPane extends JFrame {
     }
 
     private void loadCommandKeywordPaneSettings(JPanel commandPanel) {
-	commandKeywordPane.setBounds(34, 195, 396, 155);
+	commandKeywordPane.setBounds(BOUNDS_COMMAND_KEYWORD_PANE);
 	commandKeywordPane.setViewportView(commandPanel);
 	commandKeywordPane.setVisible(true);
     }
@@ -280,7 +305,7 @@ public class SettingsPane extends JFrame {
     private void addCommandKeywordItem(JPanel commandPanel, int i) {
 	KeywordItem keywordBar = new KeywordItem(commandDatabase[i][DISPLAY_NAME_REF], cfg.getProperty(commandDatabase[i][CONFIG_NAME_REF]));
 
-	keywordBar.setPreferredSize(new Dimension(396, 41));
+	keywordBar.setPreferredSize(DIMENSIONS_KEYWORD_BAR_PREFERRED_SIZE);
 	keywordBar.setToolTipText(commandDatabase[i][TOOLTIP_REF]);
 	keywordBar.setVisible(true);
 	commandPanel.add(keywordBar);
@@ -311,7 +336,7 @@ public class SettingsPane extends JFrame {
 	warningLabel.setForeground(Color.WHITE);
 	warningLabel.setFont(MainInterface.latoBold16);
 	warningLabel.setHorizontalAlignment(SwingConstants.CENTER);
-	warningLabel.setBounds(110, 364, 700, 28);
+	warningLabel.setBounds(BOUNDS_WARNING_LABEL);
 	getContentPane().add(warningLabel);
     }
 
@@ -321,7 +346,7 @@ public class SettingsPane extends JFrame {
 	parameterKeywordsTitle.setHorizontalAlignment(SwingConstants.CENTER);
 	parameterKeywordsTitle.setForeground(Color.WHITE);
 	parameterKeywordsTitle.setFont(MainInterface.latoReg14);
-	parameterKeywordsTitle.setBounds(588, 167, 201, 16);
+	parameterKeywordsTitle.setBounds(BOUNDS_PARA_TITLE);
 	getContentPane().add(parameterKeywordsTitle);
 	
 	
@@ -329,7 +354,7 @@ public class SettingsPane extends JFrame {
 	commandKeywordsTitle.setForeground(Color.WHITE);
 	commandKeywordsTitle.setHorizontalAlignment(SwingConstants.CENTER);
 	commandKeywordsTitle.setFont(MainInterface.latoReg14);
-	commandKeywordsTitle.setBounds(130, 165, 201, 16);
+	commandKeywordsTitle.setBounds(BOUNDS_COMM_TITLE);
 	getContentPane().add(commandKeywordsTitle);
 	
 	
@@ -337,12 +362,12 @@ public class SettingsPane extends JFrame {
 	activeInputFeedbackTitle.setForeground(Color.WHITE);
 	activeInputFeedbackTitle.setFont(MainInterface.latoReg13);
 	activeInputFeedbackTitle.setHorizontalAlignment(SwingConstants.CENTER);
-	activeInputFeedbackTitle.setBounds(21, 45, 157, 16);
+	activeInputFeedbackTitle.setBounds(BOUNDS_FEEDBACK_CHECKBOX_LABEL);
 	getContentPane().add(activeInputFeedbackTitle);
 	
 	
 	JLabel folderSelectionBackgroundLabel = new JLabel(LABEL_FOLDER_SELECTION);
-	folderSelectionBackgroundLabel.setBounds(70, 81, 780, 60);
+	folderSelectionBackgroundLabel.setBounds(BOUNDS_FOLDER_LABEL);
 	getContentPane().add(folderSelectionBackgroundLabel);
     }
 
@@ -354,7 +379,7 @@ public class SettingsPane extends JFrame {
 	defaultFolderSelector.setModel(new DefaultComboBoxModel<Object>(new String[] {FOLDER1_ID_STRING, FOLDER2_ID_STRING, FOLDER3_ID_STRING, FOLDER4_ID_STRING, FOLDER5_ID_STRING}));
 	defaultFolderSelector.setSelectedIndex(getCurrentDefaultFolder(defaultFolder));
 	defaultFolderSelector.setMaximumRowCount(MAX_ROW_COUNT);
-	defaultFolderSelector.setBounds(75, 116, 97, 27);
+	defaultFolderSelector.setBounds(BOUNDS_DEFAULT_FOLDER_SELECTOR);
 	getContentPane().add(defaultFolderSelector);
 	
     }
@@ -362,7 +387,7 @@ public class SettingsPane extends JFrame {
     private void addSaveButton() {
 	JButton btnSave = new JButton(ICON_SAVE_BUTTON);
 
-	btnSave.setBounds(839, 366, 81, 34);
+	btnSave.setBounds(BOUNDS_SAVE_BUTTON);
 	btnSave.setContentAreaFilled(false);
 	btnSave.setBorder(SETTINGS_EMPTY_BORDER);
 	btnSave.addActionListener(new ActionListener() {
@@ -378,7 +403,7 @@ public class SettingsPane extends JFrame {
 	
 	paraKeywordPane = new JScrollPane();
 	paraKeywordPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	paraKeywordPane.setBounds(490, 195, 396, 155);
+	paraKeywordPane.setBounds(BOUNDS_PARA_PANE);
 	paraKeywordPane.setOpaque(false);
 	paraKeywordPane.setBorder(SETTINGS_EMPTY_BORDER);
 	paraKeywordPane.getViewport().setOpaque(false);
@@ -397,7 +422,7 @@ public class SettingsPane extends JFrame {
 	
 	commandKeywordPane = new JScrollPane();
 	commandKeywordPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	commandKeywordPane.setBounds(45, 195, 396, 155);
+	commandKeywordPane.setBounds(BOUNDS_COMM_PANE);
 	commandKeywordPane.setOpaque(false);
 	commandKeywordPane.setBorder(SETTINGS_EMPTY_BORDER);
 	commandKeywordPane.getViewport().setOpaque(false);
@@ -422,7 +447,7 @@ public class SettingsPane extends JFrame {
 	activeFeedbackCheckbox.setFocusable(false);
 	activeFeedbackCheckbox.setState(MainInterface.isActiveFeedbackEnabled());
 	activeFeedbackCheckbox.setBackground(COLOR_UI_BACKGROUND);
-	activeFeedbackCheckbox.setBounds(170, 40, 25, 25);
+	activeFeedbackCheckbox.setBounds(BOUNDS_ACTIVE_FEEDBACK_CHECKBOX);
 	getContentPane().add(activeFeedbackCheckbox);
     }
 
@@ -437,7 +462,7 @@ public class SettingsPane extends JFrame {
     private void addCancelButton() {
 	JButton btnCancel = new JButton(ICON_CANCEL_BUTTON);
 	
-	btnCancel.setBounds(0, 366, 81, 34);
+	btnCancel.setBounds(BOUNDS_CANCEL_BUTTON);
 	btnCancel.setContentAreaFilled(false);
 	btnCancel.setBorder(BorderFactory.createEmptyBorder());
 	btnCancel.addActionListener(new ActionListener() {
@@ -471,10 +496,10 @@ public class SettingsPane extends JFrame {
 	title.setForeground(Color.WHITE);
 	title.setFont(MainInterface.latoBold20);//new Font("Lato", Font.BOLD, 20));
 	title.setHorizontalAlignment(SwingConstants.CENTER);
-	title.setBounds(369, 17, 182, 25);
+	title.setBounds(BOUNDS_MAIN_TITLE);
 	getContentPane().add(title);
 	setUndecorated(true); 
-	setSize(920, 400);
+	setSize(DIMENSIONS_SETTINGS_PANE);
     }
 
 
@@ -507,6 +532,7 @@ public class SettingsPane extends JFrame {
 	try {
 	    checkKeywordDatabase();
 	} catch (IllegalArgumentException e) {
+	    logger.log(Level.WARNING, e.getMessage());
 	    throw new IllegalArgumentException(e.getMessage());
 	}
 	
@@ -626,9 +652,9 @@ public class SettingsPane extends JFrame {
 	try {
 	    props.store(new FileOutputStream(FILENAME_CONFIG_FILE), null);
 	} catch (FileNotFoundException e) {
-	    e.printStackTrace();
+	    logger.log(Level.SEVERE, MESSAGE_CONFIG_WRITE_FAILED + e.getStackTrace());
 	} catch (IOException e) {
-	    e.printStackTrace();
+	    logger.log(Level.SEVERE,MESSAGE_CONFIG_WRITE_FAILED + e.getStackTrace());
 	}
     }
     

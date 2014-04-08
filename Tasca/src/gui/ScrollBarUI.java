@@ -15,7 +15,10 @@ import javax.swing.plaf.metal.MetalScrollBarUI;
 //@author A0105912N
 class ScrollBarUI extends MetalScrollBarUI {
     
+    private static final Dimension DIMENSIONS_EMPTY = new Dimension(0, 0);
+    
     private static final Color COLOR_UI_BACKGROUND = Color.decode("#272822");
+    
     private static final int OFFSET_HEIGHT_THUMB = 1;
     private static final int OFFSET_WIDTH_THUMB = 2;
     private Image imageThumb, imageTrack;
@@ -70,9 +73,9 @@ class ScrollBarUI extends MetalScrollBarUI {
 
     private JButton createZeroButton() {
 	JButton jbutton = new JButton();
-	jbutton.setPreferredSize(new Dimension(0, 0));
-	jbutton.setMinimumSize(new Dimension(0, 0));
-	jbutton.setMaximumSize(new Dimension(0, 0));
+	jbutton.setPreferredSize(DIMENSIONS_EMPTY);
+	jbutton.setMinimumSize(DIMENSIONS_EMPTY);
+	jbutton.setMaximumSize(DIMENSIONS_EMPTY);
 	return jbutton;
     }
 

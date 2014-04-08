@@ -59,8 +59,8 @@ public class Controller {
 	private Scanner myScanner = new Scanner(System.in);
 	private SystemMessage systemMessage = new SystemMessage();
 
-	private Handler handler;
-	private Logger logger = Logger.getLogger("Controller");
+	public static Handler handler;
+	private static Logger logger = Logger.getLogger("TASCA Log");
 
 	private Timer systemTimer;
 	private ReminderTimerTask reminderTimerTask;
@@ -77,7 +77,8 @@ public class Controller {
 		}
 		SimpleFormatter formatter = new SimpleFormatter();
 		handler.setFormatter(formatter);
-		logger.addHandler(handler);
+		getLogger().setLevel(Level.SEVERE); // Warnings, Info, Fine etc. will be ignored for debugging. Re-enable in final release
+		getLogger().addHandler(handler);
 		return;
 	}
 
@@ -508,6 +509,14 @@ public class Controller {
 			Logic.displayAllFloat();
 		}
 		return;
+	}
+
+	public static Logger getLogger() {
+	    return logger;
+	}
+
+	public static void setLogger(Logger logger) {
+	    Controller.logger = logger;
 	}
 
 }

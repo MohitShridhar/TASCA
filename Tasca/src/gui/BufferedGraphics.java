@@ -2,9 +2,15 @@ package gui;
 
 import java.awt.Image;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+
+import junit.framework.Assert;
+
+import controller.Controller;
 
 //@author A0105912N
 public class BufferedGraphics {
@@ -22,6 +28,9 @@ public class BufferedGraphics {
     private static final String FILEPATH_REMINDER_ICON = "/GUI Graphics/Task Item Reminder Icon.png";
     private static final String FILEPATH_UNCHECKED = "/GUI Graphics/Unchecked Icon.png";
     private static final String FILEPATH_CHECK_MARK = "/GUI Graphics/Task Item Check Mark.gif";
+    
+    public final static Logger logger = Controller.getLogger();
+    public static final String MESSAGE_GRAPHICS_LOAD_FAILED = "Could not load important graphics";
     
     private ImageIcon checkMark;
     private ImageIcon reminderIcon;
@@ -50,7 +59,8 @@ public class BufferedGraphics {
 	    bufferSettingsPaneUi();
 	   
 	} catch (IOException e) {
-	    e.printStackTrace();
+	    logger.log(Level.SEVERE, MESSAGE_GRAPHICS_LOAD_FAILED + e.getStackTrace());
+	    Assert.fail(MESSAGE_GRAPHICS_LOAD_FAILED);
 	}
 	
     }

@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -20,8 +22,14 @@ import javax.swing.JLayeredPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
+import controller.Controller;
+
+import junit.framework.Assert;
+
 //@author A0105912N
 public class FolderTab extends JLayeredPane {
+    
+    public final static Logger logger = Controller.getLogger();
     
     private static final int INVALID_FOLDER_REF = -1;
     private static final int NUM_FOLDERS = 5;
@@ -48,7 +56,8 @@ public class FolderTab extends JLayeredPane {
 	    tabNotClickedIcon = new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_IMAGE_NOT_CLICKED))));
 	    tabClickedIcon = new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_IMAGE_CLICKED))));
 	} catch (IOException e) {
-	    e.printStackTrace();
+	    logger.log(Level.SEVERE, BufferedGraphics.MESSAGE_GRAPHICS_LOAD_FAILED + e.getStackTrace());
+	    Assert.fail(BufferedGraphics.MESSAGE_GRAPHICS_LOAD_FAILED);
 	}
     }
     
