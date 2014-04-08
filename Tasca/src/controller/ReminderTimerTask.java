@@ -1,6 +1,7 @@
 package controller;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.TimerTask;
 
 import storage.AllTasks;
@@ -11,21 +12,36 @@ import storage.Task;
  * @author Narinderpal Singh Dhillon
  * @Matric A0097416X
  */
-public class ReminderTimerTask extends TimerTask{
+public class ReminderTimerTask extends TimerTask {
 	private AllTasks allTasks;
-	
+	private Controller controller;
+
 	public void run() {
 		Reminder currentReminder = allTasks.getCurrentReminder();
-		if (currentReminder == null){
+
+		int count = 0, total = allTasks.getTaskSize();
+		Calendar temp = Calendar.getInstance();
+		while (count < total) {
+			Task task = allTasks.getTask(count);
+			if (task.getEndTime().getTime().before(temp.getTime())) {
+				allTasks.getTask(count).setIsTaskDone(true);
+			}
+			count++;
+		}
+		controller.updateDisplayGUI(controller.getDisplayStatus());
+		if (currentReminder == null) {
 			return;
-		}else {
+		} else {
 			Task task = currentReminder.getTask();
 
 			SimpleDateFormat display = new SimpleDateFormat(
 					"E yyyy.MM.dd 'at' hh:mm:ss a zzz");
-			System.out.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
-			System.out.printf("*-*-*-*-*-*-*-*-*-*-*-*-!!!REMINDER!!!!-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
-			System.out.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			System.out
+					.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			System.out
+					.printf("*-*-*-*-*-*-*-*-*-*-*-*-!!!REMINDER!!!!-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			System.out
+					.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
 			System.out.println("id: " + task.getTaskID());
 			System.out.println("priority: " + task.getPriority());
 			System.out.println("start: "
@@ -42,17 +58,20 @@ public class ReminderTimerTask extends TimerTask{
 			System.out.println((task.getIsTaskDone()) ? "YES" : "NO");
 			System.out.printf("Is All Day Event: ");
 			System.out.println((task.getIsAllDayEvent()) ? "YES" : "NO");
-			System.out.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
-			System.out.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
-			System.out.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			System.out
+					.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			System.out
+					.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			System.out
+					.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
 		}
-		
+
 		return;
 	}
-	
-	
-	public ReminderTimerTask (AllTasks allTasks) {
+
+	public ReminderTimerTask(AllTasks allTasks, Controller controller) {
 		this.allTasks = allTasks;
+		this.controller = controller;
 		return;
 	}
 

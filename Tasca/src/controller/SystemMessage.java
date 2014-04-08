@@ -50,5 +50,27 @@ public class SystemMessage {
 		this.displayStatus = temp;
 		return;
 	}
+	
+	public void sortForGUI () {
+		int count = 0 , total = timedTaskList.size();
+		
+		LinkedList<Reminder> temp = new LinkedList<Reminder>();
+		while (count < total){
+			if (timedTaskList.get(count).getTask().getIsTaskDone() == false){
+				temp.add(timedTaskList.get(count));
+			}
+			count ++;
+		}
+		count = 0;
+		
+		while (count < total){
+			if (timedTaskList.get(count).getTask().getIsTaskDone() == true){
+				temp.add(timedTaskList.get(count));
+			}
+			count ++;
+		}
+		
+		this.timedTaskList = temp;
+	}
 
 }
