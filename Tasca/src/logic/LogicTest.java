@@ -26,7 +26,8 @@ public class LogicTest {
 		test.addTask(0, task1);
 		test.addTask(0, task2);
 		
-		Logic.initStorage(test, systemMessage);
+		Logic.initStorage(test);
+		Logic.initSystemMessage(systemMessage);
 		assertFalse(Logic.deleteTask(-1));
 
 	}
@@ -41,7 +42,8 @@ public class LogicTest {
 		test.addTask(0, task1);
 		test.addTask(0, task2);
 		
-		Logic.initStorage(test,systemMessage);
+		Logic.initStorage(test);
+		Logic.initSystemMessage(systemMessage);
 		assertFalse(Logic.deleteTask(10));
 
 	}

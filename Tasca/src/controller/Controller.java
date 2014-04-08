@@ -67,7 +67,8 @@ public class Controller {
 
 	public Controller() {
 		initialiseTasks();
-		Logic.initStorage(allTasks, systemMessage);
+		Logic.initStorage(allTasks);
+		Logic.initSystemMessage(systemMessage);
 		this.executeCommands("all");
 		systemMessage.setFloatingList(allTasks.getFloatingList());
 		try {
@@ -264,7 +265,8 @@ public class Controller {
 			systemMessage.setSystemMessage(MESSAGE_UNDO);
 			if (!undoRedo.isUndoEmpty()) {
 				allTasks = undoRedo.undo(allTasks);
-				Logic.initStorage(allTasks, systemMessage);
+				Logic.initStorage(allTasks);
+				Logic.initSystemMessage(systemMessage);
 			}
 			updateDisplayGUI(systemMessage.getDisplayStatus());
 			break;
@@ -273,7 +275,8 @@ public class Controller {
 			systemMessage.setSystemMessage(MESSAGE_REDO);
 			if (!undoRedo.isRedoEmpty()) {
 				allTasks = undoRedo.redo(allTasks);
-				Logic.initStorage(allTasks, systemMessage);
+				Logic.initStorage(allTasks);
+				Logic.initSystemMessage(systemMessage);
 			}
 			updateDisplayGUI(systemMessage.getDisplayStatus());
 			break;
@@ -295,7 +298,8 @@ public class Controller {
 			undoRedo.addUndo(allTasks);
 			systemMessage.setSystemMessage(MESSAGE_CLEAR);
 			allTasks = new AllTasks();
-			Logic.initStorage(allTasks, systemMessage);
+			Logic.initStorage(allTasks);
+			Logic.initSystemMessage(systemMessage);
 			updateDisplayGUI(systemMessage.getDisplayStatus());
 			break;
 

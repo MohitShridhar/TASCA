@@ -21,13 +21,14 @@ public class Logic {
 	private static AllTasks _storage;
 	private static SystemMessage systemMessage;
 
-	public static void initStorage(AllTasks alltasks, SystemMessage temp) {
+	public static void initStorage(AllTasks alltasks) {
 		_storage = alltasks;
-		systemMessage = temp;
-
-		return;
 	}
 
+	public static void initSystemMessage(SystemMessage sysMsg) {
+	systemMessage = sysMsg;
+	}
+	
 	public static AllTasks getStorage() {
 		return _storage;
 	}
