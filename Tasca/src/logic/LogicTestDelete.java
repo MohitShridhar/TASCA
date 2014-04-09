@@ -18,9 +18,9 @@ public class LogicTestDelete {
 		Date start = current;
 		Date end = new Date(current.getTime() + 60000L);
 		
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add function", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add2 function", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add3 function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add2 function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add3 function", "COM1", current);
 		
 		boolean result = Logic.deleteTask(2);
 		assertTrue(result);
@@ -34,9 +34,9 @@ public class LogicTestDelete {
 		Date start = current;
 		Date end = new Date(current.getTime() + 60000L);
 		
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add function", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add2 function", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add3 function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add2 function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add3 function", "COM1", current);
 		
 		boolean result = Logic.deleteTask(0);
 		assertTrue(result);
@@ -50,9 +50,9 @@ public class LogicTestDelete {
 		Date start = current;
 		Date end = new Date(current.getTime() + 60000L);
 		
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add function", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add2 function", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add3 function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add2 function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add3 function", "COM1", current);
 		
 		boolean result = Logic.deleteTask(5);
 		assertFalse(result);
@@ -66,9 +66,9 @@ public class LogicTestDelete {
 		Date start = current;
 		Date end = new Date(current.getTime() + 60000L);
 		
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add function", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add2 function", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add3 function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add2 function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add3 function", "COM1", current);
 		
 		boolean result = Logic.deleteTask(-1);
 		assertFalse(result);

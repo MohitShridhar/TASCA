@@ -24,7 +24,7 @@ public class Controller {
 	private static final String MESSAGE_EXPORT_SUCCESSFUL = "All events were successfully exported to ";
 	private static final String MESSAGE_IMPORT_SUCCESSFUL = "All events were successfully imported from ";
 	private static final String MESSAGE_TASK_ADDED = "The event has been added";
-	private static final String MESSAGE_TASK_DELETED = "The event has been deleted";
+	private static final String MESSAGE_TASK_DELETED = "The event has been deleted.";
 	private static final String MESSAGE_TASK_MODIFIED = "The event has been modified";
 	private static final String MESSAGE_DISPLAY_TODAY = "All events for today are being displayed";
 	private static final String MESSAGE_DISPLAY_TOMORROW = "All events for tomorrow are being displayed";
@@ -40,6 +40,7 @@ public class Controller {
 	private static final String MESSAGE_UNDO = "Undo successful";
 	private static final String MESSAGE_REDO = "Redo successful";
 	private static final String MESSAGE_CLEAR = "All events have been cleared";
+	private static final String MESSAGE_IMPORT = "Import successful";
 
 	private static final long SYSTEM_TIMER_TASK_PERIOD = 5000;
 	private static final int STATUS_ALL = 0;
@@ -60,7 +61,7 @@ public class Controller {
 	private SystemMessage systemMessage = new SystemMessage();
 
 	public static Handler handler;
-	private static Logger logger = Logger.getLogger("TASCA Log");
+	public static Logger logger = Logger.getLogger("TASCA Log");
 
 	private Timer systemTimer;
 	private ReminderTimerTask reminderTimerTask;
@@ -69,17 +70,18 @@ public class Controller {
 		initialiseTasks();
 		Logic.initStorage(allTasks);
 		Logic.initSystemMessage(systemMessage);
-		this.executeCommands("all");
+		Interpreter newInt = new Interpreter();
+		this.executeCommands(newInt
+				.getDefaultCommandSyn(CommandType.DISPLAY_ALL));
 		systemMessage.setFloatingList(allTasks.getFloatingList());
 		try {
-			handler = new FileHandler("log.txt");
+			handler = new FileHandler("Tasca Log.txt");
 		} catch (Exception e) {
 
 		}
 		SimpleFormatter formatter = new SimpleFormatter();
 		handler.setFormatter(formatter);
-		getLogger().setLevel(Level.SEVERE); // Warnings, Info, Fine etc. will be ignored for debugging. Re-enable in final release
-		getLogger().addHandler(handler);
+		logger.addHandler(handler);
 		return;
 	}
 
@@ -92,7 +94,7 @@ public class Controller {
 			System.out.printf("%s\n", MESSAGE_FILE_NOT_FOUND);
 		}
 		allTasks.clearAllMissedReminders();
-		reminderTimerTask = new ReminderTimerTask(allTasks);
+		reminderTimerTask = new ReminderTimerTask(allTasks, this);
 		systemTimer.scheduleAtFixedRate(reminderTimerTask,
 				SYSTEM_TIMER_TASK_PERIOD, SYSTEM_TIMER_TASK_PERIOD);
 		return;
@@ -101,23 +103,24 @@ public class Controller {
 	public String getSystemMessageString() {
 		return systemMessage.getSystemMessage();
 	}
-	
+
 	public SystemMessage getCurrentSystemState() {
-	    	return systemMessage;
+		systemMessage.sortForGUI();
+		return systemMessage;
 	}
 
 	public boolean executeCommands(String input) {
 		Interpreter newInt = new Interpreter();
-		//String input;
-
-		//input = myScanner.nextLine();
 
 		try {
 			newInt.processUserInput(input);
 			Command command = newInt.getCommandAndPara();
 			assert (command.getCommandType() != null);
-			// logger.log(Level.SEVERE, "Entering executeLogic",
-			// command.getCommandType());
+			getLogger().setLevel(Level.SEVERE); // Warnings, Info, Fine etc.
+												// will be ignored for
+												// debugging. Re-enable in final
+												// release
+			// getLogger().addHandler(handler);
 			return executeLogic(command);
 		} catch (IllegalArgumentException eI) {
 			System.out.println("Exception - " + eI + "\n");
@@ -125,15 +128,12 @@ public class Controller {
 		}
 
 	}
-	
-	/*
-	 * To be used by GUI for default folder context reference
-	 */
+
 	public boolean executeCommands(String input, String currFolder) {
 		Interpreter newInt = new Interpreter();
 
 		try {
-		    	newInt.setCurrentFolder(currFolder);
+			newInt.setCurrentFolder(currFolder);
 			newInt.processUserInput(input);
 			Command command = newInt.getCommandAndPara();
 			assert (command.getCommandType() != null);
@@ -152,6 +152,32 @@ public class Controller {
 			System.out.printf("%s", MESSAGE_FILE_NOT_FOUND);
 		}
 		return;
+	}
+
+	public void mutexAdd(LinkedList<String> input) {
+		int total = input.size(), count = 0;
+		undoRedo.addUndo(allTasks);
+		systemMessage.setSystemMessage(MESSAGE_IMPORT);
+
+		while (count < total) {
+			boolean isThereReminder = true;
+			Calendar startTime = Calendar.getInstance();
+			Interpreter newInt = new Interpreter();
+
+			try {
+				newInt.processUserInput(input.get(count));
+				Command command = newInt.getCommandAndPara();
+				isThereReminder = checkForNulls(command, isThereReminder,
+						startTime);
+
+				execute_add(command, isThereReminder, startTime);
+			} catch (IllegalArgumentException eI) {
+				System.out.println("Exception - " + eI + "\n");
+			}
+		}
+		
+		updateDisplayGUI(systemMessage.getDisplayStatus());
+
 	}
 
 	private boolean executeLogic(Command command) {
@@ -180,7 +206,6 @@ public class Controller {
 			undoRedo.addUndo(allTasks);
 			systemMessage.setSystemMessage(MESSAGE_TASK_DELETED);
 			execute_delete(command);
-			updateDisplayGUI(systemMessage.getDisplayStatus());
 			break;
 
 		case "MODIFY":
@@ -266,7 +291,6 @@ public class Controller {
 			if (!undoRedo.isUndoEmpty()) {
 				allTasks = undoRedo.undo(allTasks);
 				Logic.initStorage(allTasks);
-				Logic.initSystemMessage(systemMessage);
 			}
 			updateDisplayGUI(systemMessage.getDisplayStatus());
 			break;
@@ -276,7 +300,6 @@ public class Controller {
 			if (!undoRedo.isRedoEmpty()) {
 				allTasks = undoRedo.redo(allTasks);
 				Logic.initStorage(allTasks);
-				Logic.initSystemMessage(systemMessage);
 			}
 			updateDisplayGUI(systemMessage.getDisplayStatus());
 			break;
@@ -296,10 +319,29 @@ public class Controller {
 
 		case "CLEAR":
 			undoRedo.addUndo(allTasks);
+
+			String typedFolder = new Config().getFolderId(
+					command.getParameters().getFolder()).toString();
+			if (typedFolder.equals("FOLDER1")) {
+				Logic.clearFolder(1);
+			}
+			if (typedFolder.equals("FOLDER2")) {
+				Logic.clearFolder(2);
+			}
+			if (typedFolder.equals("FOLDER3")) {
+				Logic.clearFolder(3);
+			}
+			if (typedFolder.equals("FOLDER4")) {
+				Logic.clearFolder(4);
+			}
+			if (typedFolder.equals("FOLDER5")) {
+				Logic.clearFolder(5);
+			}
+			if (typedFolder.equals("DEFAULT")) {
+				Logic.clearFolder(0);
+			}
+
 			systemMessage.setSystemMessage(MESSAGE_CLEAR);
-			allTasks = new AllTasks();
-			Logic.initStorage(allTasks);
-			Logic.initSystemMessage(systemMessage);
 			updateDisplayGUI(systemMessage.getDisplayStatus());
 			break;
 
@@ -394,13 +436,10 @@ public class Controller {
 					.getParameters().getDescription(), command.getParameters()
 					.getLocation());
 		} else {
-			if (command.getParameters().getStartTime() != null
-					&& command.getParameters().getEndTime() == null) {
-				systemMessage.setSystemMessage(MESSAGE_PROVIDE_END_TIME);
-			} else {
-				execute_add_timedTask(command, isThereReminder, startTime,
-						priority, folder);
-			}
+
+			execute_add_timedTask(command, isThereReminder, startTime,
+					priority, folder);
+
 		}
 	}
 
@@ -433,18 +472,26 @@ public class Controller {
 	private void execute_add_timedTask(Command command,
 			boolean isThereReminder, Calendar startTime, int priority,
 			int folder) {
+		Calendar endTime = Calendar.getInstance();
+
+		if (command.getParameters().getStartTime() != null
+				&& command.getParameters().getEndTime() == null) {
+			endTime.add(Calendar.DAY_OF_YEAR, 1);
+		} else {
+			endTime = command.getParameters().getEndTime();
+		}
 		if (isThereReminder) {
 
-			Logic.addTask(folder, priority, startTime.getTime(), command
-					.getParameters().getEndTime().getTime(), isThereReminder,
-					false, false, command.getParameters().getDescription(),
-					command.getParameters().getLocation(), command
-							.getParameters().getRemindTime().getTime());
+			Logic.addTask(folder, priority, startTime.getTime(), endTime
+					.getTime(), isThereReminder, false, false, command
+					.getParameters().getDescription(), command.getParameters()
+					.getLocation(), command.getParameters().getRemindTime()
+					.getTime());
 		} else {
-			Logic.addTask(folder, priority, startTime.getTime(), command
-					.getParameters().getEndTime().getTime(), isThereReminder,
-					false, false, command.getParameters().getDescription(),
-					command.getParameters().getLocation(), null);
+			Logic.addTask(folder, priority, startTime.getTime(), endTime
+					.getTime(), isThereReminder, false, false, command
+					.getParameters().getDescription(), command.getParameters()
+					.getLocation(), null);
 		}
 	}
 
@@ -471,20 +518,21 @@ public class Controller {
 			if (command.getParameters().getTaskId() != null) {
 				Logic.deleteTask(Integer.parseInt(command.getParameters()
 						.getTaskId()));
-			}else {
+				updateDisplayGUI(systemMessage.getDisplayStatus());
+			} else {
 				systemMessage.setSystemMessage(MESSAGE_SEARCH);
 				Logic.searchTask(command.getParameters().getDescription());
 				systemMessage.setDisplayStatus(STATUS_PERIOD);
-				
+
 			}
 		} catch (Exception e) {
-			// Logic.deleteSearch(command.getParameters().getDescription(),
-			// myScanner);
-			systemMessage.setSystemMessage(MESSAGE_PROVIDE_TASK_ID);
+			systemMessage.setSystemMessage(MESSAGE_SEARCH);
+			Logic.searchTask(command.getParameters().getDescription());
+			systemMessage.setDisplayStatus(STATUS_PERIOD);
 		}
 	}
 
-	private void updateDisplayGUI(int displayStatus) {
+	public void updateDisplayGUI(int displayStatus) {
 		if (displayStatus == STATUS_ALL) {
 			Logic.displayAll();
 
@@ -509,18 +557,26 @@ public class Controller {
 			Logic.displayAll();
 			systemMessage.setDisplayStatus(STATUS_ALL);
 		}
-		if(displayStatus == STATUS_DISPLAY_FLOAT){
+		if (displayStatus == STATUS_DISPLAY_FLOAT) {
 			Logic.displayAllFloat();
 		}
 		return;
 	}
 
 	public static Logger getLogger() {
-	    return logger;
+		return logger;
 	}
 
 	public static void setLogger(Logger logger) {
-	    Controller.logger = logger;
+		Controller.logger = logger;
+	}
+
+	public int getDisplayStatus() {
+		return systemMessage.getDisplayStatus();
+	}
+
+	public AllTasks getAllTask() {
+		return allTasks;
 	}
 
 }

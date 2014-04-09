@@ -22,11 +22,11 @@ public class LogicTestDeleteSearch {
 		Date start = current;
 		Date end = new Date(current.getTime() + 60000L);
 		
-		Logic.addTask(0, 0, start, end, false, false, false, "pineapple", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "watermelon", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "green apple", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "papaya", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "honeydew", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "pineapple", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "watermelon", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "green apple", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "papaya", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "honeydew", "COM1", current);
 
 		assertTrue(storage.getTaskSize() == 5);
 		
@@ -49,11 +49,11 @@ public class LogicTestDeleteSearch {
 		Date start = current;
 		Date end = new Date(current.getTime() + 60000L);
 		
-		Logic.addTask(0, 0, start, end, false, false, false, "pineapple", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "watermelon", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "green apple", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "papaya", "COM1", current);
-		Logic.addTask(0, 0, start, end, false, false, false, "honeydew", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "pineapple", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "watermelon", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "green apple", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "papaya", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "honeydew", "COM1", current);
 
 		assertTrue(storage.getTaskSize() == 5);
 		

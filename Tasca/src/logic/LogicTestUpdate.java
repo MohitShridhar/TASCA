@@ -19,7 +19,7 @@ public class LogicTestUpdate {
 		Date start = current;
 		Date end = new Date(current.getTime() + 60000L);
 		
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add function", "COM1", current);
 
 		start.setTime(current.getTime() + 60000L);
 		end.setTime(current.getTime() + 120000L);
@@ -31,7 +31,7 @@ public class LogicTestUpdate {
 		
 		boolean result;
 		
-		result = Logic.updateTask(0, "0", "1", startDate, endDate, false, "Test logic modify function", "ICUBE", current);
+		result = Logic.updateTask("0", "1", startDate, endDate, false, "Test logic modify function", "ICUBE", current);
 				
 		assertTrue(result);
 	}
@@ -44,7 +44,7 @@ public class LogicTestUpdate {
 		Date start = current;
 		Date end = new Date(current.getTime() + 60000L);
 		
-		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add function", "COM1", current);
+		Logic.addTask(0, start, end, false, false, false, "Test logic add function", "COM1", current);
 
 		start.setTime(current.getTime() + 60000L);
 		end.setTime(current.getTime() + 120000L);
@@ -56,7 +56,7 @@ public class LogicTestUpdate {
 		
 		boolean result;
 		
-		result = Logic.updateTask(0, "0", "1", endDate, startDate, false, "Test logic modify function", "ICUBE", current);
+		result = Logic.updateTask("0", "1", endDate, startDate, false, "Test logic modify function", "ICUBE", current);
 				
 		assertFalse(result);
 	}
