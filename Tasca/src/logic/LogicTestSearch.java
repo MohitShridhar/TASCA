@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import storage.AllTasks;
 
-//@Nigel Cheok A0094655U
+//@author A0094655U
 public class LogicTestSearch {
 
 	//testing for search function

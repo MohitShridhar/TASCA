@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import storage.AllTasks;
 
+//@author A0094655U
 public class LogicTestDelete {
 
 	@Test

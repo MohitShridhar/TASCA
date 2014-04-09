@@ -29,7 +29,8 @@ public class Logic {
 		new Importer(filePath); // TODO: implement singleton + be
 								// consistent with exporter
 	}
-	//@Nigel Cheok A0094655U
+	
+	//@author A0094655U
 	public static void initStorage(AllTasks alltasks) {
 		_storage = alltasks;
 
@@ -39,11 +40,13 @@ public class Logic {
 	public static void initSystemMessage(SystemMessage sysMsg) {
 		systemMessage = sysMsg;
 	}
-	//@Nigel Cheok A0094655U
+	
+	//@author A0094655U
 	public static AllTasks getStorage() {
 		return _storage;
 	}
-	//@Nigel Cheok A0094655U
+	
+	//@author A0094655U
 	public static boolean addTask(int folder, int priority, Date start,
 			Date end, boolean isThereReminder, boolean isTaskDone,
 			boolean isAllDayEvent, String title, String location, Date reminder) {
@@ -210,7 +213,8 @@ public class Logic {
 			}
 		}
 	}
-	//@Nigel Cheok A0094655U
+	
+	//@author A0094655U
 	public static void displayAllTasks() {
 		int totalNumOfTasks = _storage.getSize();
 		LinkedList<Reminder> list = new LinkedList<Reminder>();
@@ -221,7 +225,8 @@ public class Logic {
 		systemMessage.setTimedList(list);
 		systemMessage.setFloatingList(_storage.getFloatingList());
 	}
-	//@Nigel Cheok A0094655U
+	
+	//@author A0094655U
 	public static void displayTasksAtPeriod(Date startDateSpecified,
 			Date endDateSpecified) {
 		int totalNumOfTasks = _storage.getTaskSize();
@@ -248,7 +253,8 @@ public class Logic {
 		systemMessage.setTimedList(list);
 		systemMessage.setFloatingList(list2);
 	}
-	//@Nigel Cheok A0094655U
+	
+	//@author A0094655U
 	public static void displayTasksAtDate(Date dateSpecified) {
 		Calendar endDate = Calendar.getInstance();
 		endDate.setTime(dateSpecified);
@@ -256,7 +262,8 @@ public class Logic {
 		endDate.set(Calendar.MINUTE, 59);
 		displayTasksAtPeriod(dateSpecified, endDate.getTime());
 	}
-	//@Nigel Cheok A0094655U
+	
+	//@author A0094655U
 	public static int searchTask(String searchString) {
 		int totalNumOfTasks = _storage.getSize(), count = 0;
 		LinkedList<Reminder> list = new LinkedList<Reminder>();
@@ -310,7 +317,8 @@ public class Logic {
 		}
 		System.out.printf("%d Tasks have been done and deleted", count);
 	}
-	//@Nigel Cheok A0094655U
+	
+	//@author A0094655U
 	public static String getUserInput(Scanner input) {
 		// Scanner input = new Scanner(System.in);
 		String result = input.nextLine();
@@ -554,13 +562,15 @@ public class Logic {
 		return;
 	}
 	
+	//@author A0094655U
 	public static void displayToday() {
 		Calendar today = Calendar.getInstance();
 		today.set(Calendar.HOUR_OF_DAY, 0);
 		today.set(Calendar.MINUTE, 0);
 		displayTasksAtDate(today.getTime());
 	}
-
+	
+	//@author A0094655U
 	public static void displayTomorrow() {
 		// long tomorrowInMillis = System.currentTimeMillis()
 		// + CONSTANT_MILLISECONDS_IN_A_DAY;
@@ -602,7 +612,8 @@ public class Logic {
 			return false;
 		}
 	}
-	//@Nigel Cheok A0094655U
+	
+	//@author A0094655U
 	private static boolean isInString(String mainString, String subString) {
 		if (subString.trim().length() == 0) {
 			return false;

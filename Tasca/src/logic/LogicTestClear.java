@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import storage.AllTasks;
 
-//@Nigel Cheok A0094655U
+//@author A0094655U
 public class LogicTestClear {
 
 	@Test
@@ -25,7 +25,7 @@ public class LogicTestClear {
 		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add3 function", "COM1", current);
 
 		assertTrue(Logic.getStorage().getSize() == 3);
-		Logic.clearAll();
+		Logic.clearFolder(0);
 		assertTrue(Logic.getStorage().getSize() == 0);		
 	}
 	
@@ -34,7 +34,7 @@ public class LogicTestClear {
 		AllTasks storage = new AllTasks();
 		Logic.initStorage(storage);
 		
-		Logic.clearAll();
+		Logic.clearFolder(0);
 		assertTrue(Logic.getStorage().getSize() == 0);		
 	}
 
