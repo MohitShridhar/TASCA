@@ -21,6 +21,15 @@ public class Logic {
 	private static AllTasks _storage;
 	private static SystemMessage systemMessage;
 
+	public static void export(String savePath) {
+		new Exporter(savePath); // TODO: implement singleton
+	}
+
+	public static void importFile(String filePath) {
+		new Importer(filePath); // TODO: implement singleton + be
+								// consistent with exporter
+	}
+	//@Nigel Cheok A0094655U
 	public static void initStorage(AllTasks alltasks) {
 		_storage = alltasks;
 
@@ -30,25 +39,11 @@ public class Logic {
 	public static void initSystemMessage(SystemMessage sysMsg) {
 		systemMessage = sysMsg;
 	}
-
+	//@Nigel Cheok A0094655U
 	public static AllTasks getStorage() {
 		return _storage;
 	}
-
-	/**
-	 * @author Narinderpal Singh Dhillon
-	 * @Matric A0097416X
-	 */
-	public static boolean addFloatingTask(int folder, int priority,
-			boolean isTaskDone, String title, String location) {
-		int dummyID = 0;
-		FloatingTask temp = new FloatingTask(folder, dummyID, priority,
-				isTaskDone, title, location);
-		_storage.addFloatingTask(temp);
-		return true;
-
-	}
-
+	//@Nigel Cheok A0094655U
 	public static boolean addTask(int folder, int priority, Date start,
 			Date end, boolean isThereReminder, boolean isTaskDone,
 			boolean isAllDayEvent, String title, String location, Date reminder) {
@@ -146,38 +141,6 @@ public class Logic {
 		return isTaskDeleted;
 	}
 
-	public static boolean taskIsDone(int index) {
-		int totalNumOfTasks = _storage.getSize();
-		if (index < totalNumOfTasks && index >= 0) {
-			if (index < _storage.getTaskSize() && index >= 0) {
-				_storage.getTask(index).setIsTaskDone(true);
-			} else {
-				_storage.getFloatingTask(index).setIsTaskDone(true);
-			}
-			return true;
-		} else {
-			systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
-			return false;
-		}
-
-	}
-
-	public static boolean taskIsNotDone(int index) {
-		int totalNumOfTasks = _storage.getSize();
-		if (index < totalNumOfTasks && index >= 0) {
-			if (index < _storage.getTaskSize() && index >= 0) {
-				_storage.getTask(index).setIsTaskDone(false);
-			} else {
-				_storage.getFloatingTask(index).setIsTaskDone(false);
-			}
-			return true;
-		} else {
-			systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
-			return false;
-		}
-
-	}
-
 	public static void displayTask(int index, LinkedList<Reminder> list,
 			LinkedList<FloatingTask> list2) {
 
@@ -247,16 +210,7 @@ public class Logic {
 			}
 		}
 	}
-
-	public static void export(String savePath) {
-		new Exporter(savePath); // TODO: implement singleton
-	}
-
-	public static void importFile(String filePath) {
-		new Importer(filePath); // TODO: implement singleton + be
-								// consistent with exporter
-	}
-
+	//@Nigel Cheok A0094655U
 	public static void displayAllTasks() {
 		int totalNumOfTasks = _storage.getSize();
 		LinkedList<Reminder> list = new LinkedList<Reminder>();
@@ -267,7 +221,7 @@ public class Logic {
 		systemMessage.setTimedList(list);
 		systemMessage.setFloatingList(_storage.getFloatingList());
 	}
-
+	//@Nigel Cheok A0094655U
 	public static void displayTasksAtPeriod(Date startDateSpecified,
 			Date endDateSpecified) {
 		int totalNumOfTasks = _storage.getTaskSize();
@@ -294,7 +248,7 @@ public class Logic {
 		systemMessage.setTimedList(list);
 		systemMessage.setFloatingList(list2);
 	}
-
+	//@Nigel Cheok A0094655U
 	public static void displayTasksAtDate(Date dateSpecified) {
 		Calendar endDate = Calendar.getInstance();
 		endDate.setTime(dateSpecified);
@@ -302,25 +256,7 @@ public class Logic {
 		endDate.set(Calendar.MINUTE, 59);
 		displayTasksAtPeriod(dateSpecified, endDate.getTime());
 	}
-
-	public static void displayToday() {
-		Calendar today = Calendar.getInstance();
-		today.set(Calendar.HOUR_OF_DAY, 0);
-		today.set(Calendar.MINUTE, 0);
-		displayTasksAtDate(today.getTime());
-	}
-
-	public static void displayTomorrow() {
-		// long tomorrowInMillis = System.currentTimeMillis()
-		// + CONSTANT_MILLISECONDS_IN_A_DAY;
-
-		Calendar tomorrow = Calendar.getInstance();
-		tomorrow.set(tomorrow.get(Calendar.YEAR), tomorrow.get(Calendar.MONTH),
-				tomorrow.get(Calendar.DATE) + 1, 0, 0);
-		// Date tomorrow = new Date(tomorrowInMillis);
-		displayTasksAtDate(tomorrow.getTime());
-	}
-
+	//@Nigel Cheok A0094655U
 	public static int searchTask(String searchString) {
 		int totalNumOfTasks = _storage.getSize(), count = 0;
 		LinkedList<Reminder> list = new LinkedList<Reminder>();
@@ -357,7 +293,7 @@ public class Logic {
 					deleteTask(index);
 					totalNumOfTasks--;
 					count++;
-				}else{
+				} else {
 					index++;
 				}
 			} else {
@@ -365,16 +301,16 @@ public class Logic {
 					deleteTask(index);
 					totalNumOfTasks--;
 					count++;
-				}else{
+				} else {
 					index++;
 				}
 
 			}
-			
+
 		}
 		System.out.printf("%d Tasks have been done and deleted", count);
 	}
-
+	//@Nigel Cheok A0094655U
 	public static String getUserInput(Scanner input) {
 		// Scanner input = new Scanner(System.in);
 		String result = input.nextLine();
@@ -404,54 +340,7 @@ public class Logic {
 		}
 	}
 
-	/**
-	 * @author Narinderpal Singh Dhillon
-	 * @Matric A0097416X
-	 */
-	public static void updateFloatingTask(int folder, String indexString,
-			String priority, String title, String location)
-			throws IndexOutOfBoundsException {
-
-		int priorityInt, index = Integer.parseInt(indexString);
-
-		if (index < _storage.getTaskSize()) {
-			throw new IndexOutOfBoundsException();
-		} else {
-
-			if (index < _storage.getSize() && index >= _storage.getTaskSize()) {
-				boolean isTaskDone = _storage.getFloatingTask(index)
-						.getIsTaskDone();
-
-				if (priority == "null") {
-					priorityInt = _storage.getFloatingTask(index).getPriority();
-				} else {
-					priorityInt = Integer.parseInt(priority);
-				}
-				if (title == null) {
-					title = _storage.getFloatingTask(index).getTaskTitle();
-				}
-				if (location == null) {
-					location = _storage.getFloatingTask(index).getLocation();
-				}
-				if (folder == -1) {
-					folder = _storage.getFloatingTask(index).getFolder();
-				}
-				
-				_storage.getFloatingTask(index).setFolder(folder);
-				_storage.getFloatingTask(index).setPriority(priorityInt);
-				_storage.getFloatingTask(index).setLocation(location);
-				_storage.getFloatingTask(index).setTaskTitle(title);
-				_storage.getFloatingTask(index).setIsTaskDone(isTaskDone);
-
-				
-				return;
-
-			} else {
-				systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
-			}
-		}
-	}
-
+	
 	/**
 	 * @author Narinderpal Singh Dhillon
 	 * @Matric A0097416X
@@ -532,6 +421,66 @@ public class Logic {
 		return isTaskUpdated;
 
 	}
+	
+	/**
+	 * @author Narinderpal Singh Dhillon
+	 * @Matric A0097416X
+	 */
+	public static boolean addFloatingTask(int folder, int priority,
+			boolean isTaskDone, String title, String location) {
+		int dummyID = 0;
+		FloatingTask temp = new FloatingTask(folder, dummyID, priority,
+				isTaskDone, title, location);
+		_storage.addFloatingTask(temp);
+		return true;
+
+	}
+	/**
+	 * @author Narinderpal Singh Dhillon
+	 * @Matric A0097416X
+	 */
+	public static void updateFloatingTask(int folder, String indexString,
+			String priority, String title, String location)
+			throws IndexOutOfBoundsException {
+
+		int priorityInt, index = Integer.parseInt(indexString);
+
+		if (index < _storage.getTaskSize()) {
+			throw new IndexOutOfBoundsException();
+		} else {
+
+			if (index < _storage.getSize() && index >= _storage.getTaskSize()) {
+				boolean isTaskDone = _storage.getFloatingTask(index)
+						.getIsTaskDone();
+
+				if (priority == "null") {
+					priorityInt = _storage.getFloatingTask(index).getPriority();
+				} else {
+					priorityInt = Integer.parseInt(priority);
+				}
+				if (title == null) {
+					title = _storage.getFloatingTask(index).getTaskTitle();
+				}
+				if (location == null) {
+					location = _storage.getFloatingTask(index).getLocation();
+				}
+				if (folder == -1) {
+					folder = _storage.getFloatingTask(index).getFolder();
+				}
+
+				_storage.getFloatingTask(index).setFolder(folder);
+				_storage.getFloatingTask(index).setPriority(priorityInt);
+				_storage.getFloatingTask(index).setLocation(location);
+				_storage.getFloatingTask(index).setTaskTitle(title);
+				_storage.getFloatingTask(index).setIsTaskDone(isTaskDone);
+
+				return;
+
+			} else {
+				systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
+			}
+		}
+	}
 
 	public static void displayAll() {
 		int count = 0;
@@ -567,25 +516,24 @@ public class Logic {
 	 * @Matric A0097416X
 	 */
 	public static void clearFolder(int folder) {
-		int count=0 ;
-		
-		while (count < _storage.getSize()){
-			if(count < _storage.getTaskSize()){
-				if(_storage.getTask(count).getFolder() == folder){
+		int count = 0;
+
+		while (count < _storage.getSize()) {
+			if (count < _storage.getTaskSize()) {
+				if (_storage.getTask(count).getFolder() == folder) {
 					deleteTask(count);
-				}else {
+				} else {
 					count++;
 				}
-			}else {
-				if(_storage.getFloatingTask(count).getFolder() == folder){
+			} else {
+				if (_storage.getFloatingTask(count).getFolder() == folder) {
 					deleteTask(count);
-				}else {
+				} else {
 					count++;
 				}
 			}
 		}
-		
-		
+
 	}
 
 	/**
@@ -605,7 +553,56 @@ public class Logic {
 		displayTasksAtPeriod(monday.getTime(), sunday.getTime());
 		return;
 	}
+	
+	public static void displayToday() {
+		Calendar today = Calendar.getInstance();
+		today.set(Calendar.HOUR_OF_DAY, 0);
+		today.set(Calendar.MINUTE, 0);
+		displayTasksAtDate(today.getTime());
+	}
 
+	public static void displayTomorrow() {
+		// long tomorrowInMillis = System.currentTimeMillis()
+		// + CONSTANT_MILLISECONDS_IN_A_DAY;
+
+		Calendar tomorrow = Calendar.getInstance();
+		tomorrow.set(tomorrow.get(Calendar.YEAR), tomorrow.get(Calendar.MONTH),
+				tomorrow.get(Calendar.DATE) + 1, 0, 0);
+		// Date tomorrow = new Date(tomorrowInMillis);
+		displayTasksAtDate(tomorrow.getTime());
+	}
+
+	public static boolean taskIsDone(int index) {
+		int totalNumOfTasks = _storage.getSize();
+		if (index < totalNumOfTasks && index >= 0) {
+			if (index < _storage.getTaskSize() && index >= 0) {
+				_storage.getTask(index).setIsTaskDone(true);
+			} else {
+				_storage.getFloatingTask(index).setIsTaskDone(true);
+			}
+			return true;
+		} else {
+			systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
+			return false;
+		}
+
+	}
+	
+	public static boolean taskIsNotDone(int index) {
+		int totalNumOfTasks = _storage.getSize();
+		if (index < totalNumOfTasks && index >= 0) {
+			if (index < _storage.getTaskSize() && index >= 0) {
+				_storage.getTask(index).setIsTaskDone(false);
+			} else {
+				_storage.getFloatingTask(index).setIsTaskDone(false);
+			}
+			return true;
+		} else {
+			systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
+			return false;
+		}
+	}
+	//@Nigel Cheok A0094655U
 	private static boolean isInString(String mainString, String subString) {
 		if (subString.trim().length() == 0) {
 			return false;
