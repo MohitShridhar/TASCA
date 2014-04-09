@@ -41,6 +41,7 @@ public class Controller {
 	private static final String MESSAGE_REDO = "Redo successful";
 	private static final String MESSAGE_CLEAR = "All events have been cleared";
 	private static final String MESSAGE_IMPORT = "Import successful";
+	private static final String MESSAGE_DELETE_SEARCH = "Please select the task to delete";
 
 	private static final long SYSTEM_TIMER_TASK_PERIOD = 5000;
 	private static final int STATUS_ALL = 0;
@@ -477,6 +478,8 @@ public class Controller {
 
 		if (command.getParameters().getStartTime() != null
 				&& command.getParameters().getEndTime() == null) {
+			startTime.setTime(command.getParameters().getStartTime().getTime());
+			endTime.setTime(command.getParameters().getStartTime().getTime());
 			endTime.add(Calendar.DAY_OF_YEAR, 1);
 		} else {
 			endTime = command.getParameters().getEndTime();
@@ -521,13 +524,13 @@ public class Controller {
 						.getTaskId()));
 				updateDisplayGUI(systemMessage.getDisplayStatus());
 			} else {
-				systemMessage.setSystemMessage(MESSAGE_SEARCH);
+				systemMessage.setSystemMessage(MESSAGE_DELETE_SEARCH);
 				Logic.searchTask(command.getParameters().getDescription());
 				systemMessage.setDisplayStatus(STATUS_PERIOD);
 
 			}
 		} catch (Exception e) {
-			systemMessage.setSystemMessage(MESSAGE_SEARCH);
+			systemMessage.setSystemMessage(MESSAGE_DELETE_SEARCH);
 			Logic.searchTask(command.getParameters().getDescription());
 			systemMessage.setDisplayStatus(STATUS_PERIOD);
 		}

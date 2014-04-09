@@ -55,6 +55,7 @@ public class SystemMessage {
 		int count = 0 , total = timedTaskList.size();
 		
 		LinkedList<Reminder> temp = new LinkedList<Reminder>();
+		LinkedList<FloatingTask> temp2 = new LinkedList<FloatingTask>();
 		while (count < total){
 			if (timedTaskList.get(count).getTask().getIsTaskDone() == false){
 				temp.add(timedTaskList.get(count));
@@ -70,7 +71,24 @@ public class SystemMessage {
 			count ++;
 		}
 		
+		count = 0;
+		total = floatingTaskList.size();
+		while (count < total){
+			if (floatingTaskList.get(count).getIsTaskDone() == false){
+				temp2.add(floatingTaskList.get(count));
+			}
+			count ++;
+		}
+		
+		count = 0;
+		while (count < total){
+			if (floatingTaskList.get(count).getIsTaskDone() == true){
+				temp2.add(floatingTaskList.get(count));
+			}
+			count ++;
+		}
 		this.timedTaskList = temp;
+		this.floatingTaskList = temp2;
 	}
 
 }
