@@ -1,6 +1,7 @@
 package gui;
 
 import interpreter.CommandType;
+import interpreter.Config;
 import interpreter.Interpreter;
 import interpreter.ParameterType;
 
@@ -102,6 +103,9 @@ public class TaskItem extends JLayeredPane {
     private static final Rectangle BOUNDS_REMINDER_ICON = new Rectangle(689 + 10 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET, 7, 25, 26);
     private static final Point LOCATION_PRIORITY_ICON_INIT = new Point(666 + LEADING_XPOS_OFFSET + TRAILING_SPACE_OFFSET, 7);
     private static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy HH:mm");
+    
+    private static final int INT_DEFAULT_FOLDER = 0;
+    private static final String STRING_DEFAULT_FOLDER = "default";
 
     public static PrettyTime prettyTimeParser = new PrettyTime();
     public static BufferedGraphics bufferedGraphics = new BufferedGraphics();
@@ -530,23 +534,62 @@ public class TaskItem extends JLayeredPane {
     }
 
     private void cyclePriorities(int currentPriority) {
-
+	
+	String currentFolder = getTaskFolder();
+	
 	switch(currentPriority) {
 	case 0:
 	    return;
 	case 1:
-	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_LOW + SINGLE_SPACE + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.FOLDER) + SINGLE_SPACE + MainInterface.getCurrentFolderName());
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_LOW + SINGLE_SPACE + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.FOLDER) + SINGLE_SPACE + currentFolder);
 	    break;
 	case 2:
-	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_HIGH + SINGLE_SPACE + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.FOLDER) + SINGLE_SPACE + MainInterface.getCurrentFolderName());
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_HIGH + SINGLE_SPACE + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.FOLDER) + SINGLE_SPACE + currentFolder);
 	    break;
 	case 3:
-	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_MEDIUM + SINGLE_SPACE + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.FOLDER) + SINGLE_SPACE + MainInterface.getCurrentFolderName());
+	    controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.MODIFY) + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + PRI_STRING_MEDIUM + SINGLE_SPACE + INPUT_DELIMITER + interpreter.getDefaultParaSyn(ParameterType.FOLDER) + SINGLE_SPACE + currentFolder);
 	    break;
 	}
 
 	refreshDisplay();
 
+    }
+
+    private String getTaskFolder() {
+	Config cfg = new Config();
+	
+	String currentFolder = MainInterface.getCurrentFolderName(); // fall-back folder
+	
+	if (!isFloatingTask) {
+	    currentFolder = getTimedTaskFolder(cfg);
+	} else {
+	    currentFolder = getFloatingTaskFolder(cfg);
+	}
+	return currentFolder;
+    }
+
+    private String getFloatingTaskFolder(Config cfg) {
+	String currentFolder;
+	
+	if (floatingTask.getFolder() != INT_DEFAULT_FOLDER) {
+	    currentFolder =  cfg.getFolderName(cfg.getFolderId(floatingTask.getFolder()));
+	} else {
+	    currentFolder = STRING_DEFAULT_FOLDER;
+	}
+	
+	return currentFolder;
+    }
+
+    private String getTimedTaskFolder(Config cfg) {
+	String currentFolder;
+	
+	if (timedTask.getFolder() != INT_DEFAULT_FOLDER) {
+	    currentFolder = cfg.getFolderName(cfg.getFolderId(timedTask.getFolder()));
+	} else {
+	    currentFolder = STRING_DEFAULT_FOLDER;
+	}
+	
+	return currentFolder;
     }
 
     public void loadTimedTaskDetails(Task item, int guiId, Calendar reminderTime) {

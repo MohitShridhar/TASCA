@@ -171,6 +171,7 @@ public class Controller {
 						startTime);
 
 				execute_add(command, isThereReminder, startTime);
+				count++;
 			} catch (IllegalArgumentException eI) {
 				System.out.println("Exception - " + eI + "\n");
 			}

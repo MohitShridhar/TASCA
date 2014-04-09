@@ -137,7 +137,6 @@ public class MainInterface {
     private static JLabel upIndicator, downIndicator, inputBackground, feedbackText, feedbackBackground, msgEmptyList, systemStatusMessage;
 
     private static Config cfg;
-    private static boolean activeFeedbackEnabled = true;
     
     private static SimpleAttributeSet parameterSetting = new SimpleAttributeSet();
     private static SimpleAttributeSet normalSetting = new SimpleAttributeSet();
@@ -225,26 +224,19 @@ public class MainInterface {
 
 	SwingUtilities.invokeLater(new Runnable() {
 	    public void run() {
-
 		new MainInterface();
-
-
-
 	    }
 	});
 
     }
 
-    public static boolean isActiveFeedbackEnabled() {
-	return activeFeedbackEnabled;
+    public static boolean getIsActiveFeedbackEnabled() {
+	return cfg.getIsActiveFeedbackEnabled();
     }
 
-    public static void setIsActiveFeedbackEnabled(boolean isEnabled) {
-	setActiveFeedbackEnabled(isEnabled);
-    }
-
-    public static void setActiveFeedbackEnabled(boolean activeFeedbackEnabled) {
-	MainInterface.activeFeedbackEnabled = activeFeedbackEnabled;
+    
+    public static boolean getIsDefaultCollated() {
+	return cfg.getIsDefaultCollated();
     }
 
     public static void loadAllFolderLabels(){
@@ -274,32 +266,14 @@ public class MainInterface {
 
 	LinkedList<Reminder> original = getController().getCurrentSystemState().getTimedList();
 	LinkedList<Reminder> folderSortedList = new LinkedList<Reminder>();
-	
-	LinkedList<Reminder> completedTasks = new LinkedList<Reminder>();
 
 	for (int i=0; i<original.size(); i++) {
 	    if (isCurrentFolder(getReminderFolder(original, i))) {
 		folderSortedList.add(original.get(i));
-//		addToTimedList(original, folderSortedList, completedTasks, i);
 	    }
 	}
-	
-	folderSortedList.addAll(completedTasks);
 
 	return folderSortedList;
-    }
-
-    private static void addToTimedList(LinkedList<Reminder> original, LinkedList<Reminder> folderSortedList, LinkedList<Reminder> completedTasks, int index) {
-
-	if (!getIsTimedTaskDone(original, index)) {
-	    folderSortedList.add(original.get(index));
-	} else {
-	    completedTasks.add(original.get(index));
-	}
-    }
-
-    private static boolean getIsTimedTaskDone(LinkedList<Reminder> original, int index) {
-	return original.get(index).getTask().getIsTaskDone();
     }
 
     private static FolderName getReminderFolder(LinkedList<Reminder> original, int index) {
@@ -307,7 +281,13 @@ public class MainInterface {
     }
 
     private static boolean isCurrentFolder(FolderName folder) {
-	return folder == getCurrFolder() ||  getCurrFolder() == getDefaultFolder();
+
+	if (getIsDefaultCollated()) {
+	    return folder == getCurrFolder() ||  getCurrFolder() == getDefaultFolder();
+	} else {
+	    return folder == getCurrFolder() || (folder == FolderName.DEFAULT && getCurrFolder() == getDefaultFolder());
+	}
+	
     }
 
     private static LinkedList<FloatingTask> folderSortFloatingTasks() {
@@ -315,30 +295,13 @@ public class MainInterface {
 	LinkedList<FloatingTask> original = getController().getCurrentSystemState().getFloatingList();
 	LinkedList<FloatingTask> folderSortedList = new LinkedList<FloatingTask>();
 	
-	LinkedList<FloatingTask> completedTasks = new LinkedList<FloatingTask>();
-	
 	for (int i=0; i<original.size(); i++) {
 	    if (isCurrentFolder(getTaskFolder(original, i))) {
-//		addToFloatingList(original, folderSortedList, completedTasks, i);
 		folderSortedList.add(original.get(i));
 	    }
 	}
 	
-	folderSortedList.addAll(completedTasks);
-	
 	return folderSortedList;
-    }
-
-    private static void addToFloatingList(LinkedList<FloatingTask> original, LinkedList<FloatingTask> folderSortedList, LinkedList<FloatingTask> completedTasks, int index)  {
-	if (!getIsFloatingTaskDone(original, index)) {
-	    folderSortedList.add(original.get(index));
-	} else {
-	    completedTasks.add(original.get(index));
-	}
-    }
-    
-    private static boolean getIsFloatingTaskDone(LinkedList<FloatingTask> original, int index) {
-	return original.get(index).getIsTaskDone();
     }
 
     private static FolderName getTaskFolder(LinkedList<FloatingTask> original, int index) {
@@ -361,7 +324,6 @@ public class MainInterface {
 
 	JPanel displayPanel = initDisplayPanel(folderSortedTimedTasks, folderSortedFloatingTasks); 
 	rebuildItemList(currentScrollPos, folderSortedTimedTasks,folderSortedFloatingTasks, displayPanel);
-
     }
 
     private static void rebuildItemList(int scrollPos,

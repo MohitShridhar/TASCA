@@ -40,7 +40,7 @@ import controller.Controller;
 //@author A0105912N
 public class SettingsPane extends JFrame {
 
-    private static final String MESSAGE_CONFIG_WRITE_FAILED = "Could not write config file";
+    private static final Rectangle BOUNDS_DEFAULT_COLLATES_LABEL = new Rectangle(640, 45, 201, 16);
     private static final Rectangle BOUNDS_MAIN_TITLE = new Rectangle(369, 17, 182, 25);
     private static final Rectangle BOUNDS_CANCEL_BUTTON = new Rectangle(0, 366, 81, 34);
     private static final Rectangle BOUNDS_ACTIVE_FEEDBACK_CHECKBOX = new Rectangle(170, 40, 25, 25);
@@ -62,10 +62,13 @@ public class SettingsPane extends JFrame {
     private static final Dimension DIMENSIONS_SETTINGS_PANE = new Dimension(920, 400);
 
     private static final String FILENAME_CONFIG_FILE = "Config.cfg";
+    private static final String BOOLEAN_REF_DEFAULT_COLLATED = "isDefaultCollated";
+    private static final String BOOLEAN_REF_FEEDBACK_ENABLED = "isActiveFeedbackEnabled";
     
     private static final String MESSAGE_INVALID_FOLDER_NAME = "Please specify a shorter name for Folder %1$s or check that it's not empty";
     private static final String MESSAGE_DUPLICATE_FOLDER_NAME = "Folder %1$s's name is a duplicate";
     private static final String MESSAGE_SAVE_FAILED = "SAVE FAILED: ";
+    private static final String MESSAGE_CONFIG_WRITE_FAILED = "Could not write config file";
     
     private static final ImageIcon ICON_CANCEL_BUTTON = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Settings Cancel Button.png"));
     private static final ImageIcon LABEL_FOLDER_SELECTION = new ImageIcon(MainInterface.class.getResource("/GUI Graphics/Settings Folder Display.png"));
@@ -73,6 +76,7 @@ public class SettingsPane extends JFrame {
     
     private static final String TITLE_PREFERENCES = "PREFERENCES";
     private static final String TITLE_ACTIVE_FEEDBACK = "Active Input Feedback";
+    private static final String TITLE_DEFAULT_COLLATES = "Default Folder collates tasks";
     private static final String TITLE_COMMANDS = "COMMANDS";
     private static final String TITLE_PARAMETERS = "PARAMETERS";
 
@@ -121,7 +125,7 @@ public class SettingsPane extends JFrame {
 
     
     private int dragPosX = 0, dragPosY = 0;
-    private Checkbox activeFeedbackCheckbox;
+    private Checkbox activeFeedbackCheckbox, defaultCollatedCheckbox;
     private Config cfg;
     private String folder1Name, folder2Name, folder3Name, folder4Name, folder5Name, defaultFolder;
     
@@ -319,7 +323,7 @@ public class SettingsPane extends JFrame {
 	addSaveButton();
 	
 	addFolderNameFields();
-	addActiveFeedbackEnabledCheckbox();
+	addCheckBoxes();
 	
 	addCommandKeywordPane();
 	addParaKeywordPane();
@@ -357,7 +361,6 @@ public class SettingsPane extends JFrame {
 	commandKeywordsTitle.setBounds(BOUNDS_COMM_TITLE);
 	getContentPane().add(commandKeywordsTitle);
 	
-	
 	JLabel activeInputFeedbackTitle = new JLabel(TITLE_ACTIVE_FEEDBACK);
 	activeInputFeedbackTitle.setForeground(Color.WHITE);
 	activeInputFeedbackTitle.setFont(MainInterface.latoReg13);
@@ -365,6 +368,12 @@ public class SettingsPane extends JFrame {
 	activeInputFeedbackTitle.setBounds(BOUNDS_FEEDBACK_CHECKBOX_LABEL);
 	getContentPane().add(activeInputFeedbackTitle);
 	
+	JLabel defaultCollatedTitle = new JLabel(TITLE_DEFAULT_COLLATES);
+	defaultCollatedTitle.setForeground(Color.WHITE);
+	defaultCollatedTitle.setFont(MainInterface.latoReg13);
+	defaultCollatedTitle.setHorizontalAlignment(SwingConstants.RIGHT);
+	defaultCollatedTitle.setBounds(BOUNDS_DEFAULT_COLLATES_LABEL);
+	getContentPane().add(defaultCollatedTitle);
 	
 	JLabel folderSelectionBackgroundLabel = new JLabel(LABEL_FOLDER_SELECTION);
 	folderSelectionBackgroundLabel.setBounds(BOUNDS_FOLDER_LABEL);
@@ -442,13 +451,22 @@ public class SettingsPane extends JFrame {
 	mainScrollBar.setUI(new ScrollBarUI());
     }
 
-    private void addActiveFeedbackEnabledCheckbox() {
+    private void addCheckBoxes() {
+	
 	activeFeedbackCheckbox = new Checkbox("");
 	activeFeedbackCheckbox.setFocusable(false);
-	activeFeedbackCheckbox.setState(MainInterface.isActiveFeedbackEnabled());
+	activeFeedbackCheckbox.setState(cfg.getIsActiveFeedbackEnabled());
 	activeFeedbackCheckbox.setBackground(COLOR_UI_BACKGROUND);
 	activeFeedbackCheckbox.setBounds(BOUNDS_ACTIVE_FEEDBACK_CHECKBOX);
 	getContentPane().add(activeFeedbackCheckbox);
+	
+	
+	defaultCollatedCheckbox = new Checkbox("");
+	defaultCollatedCheckbox.setFocusable(false);
+	defaultCollatedCheckbox.setState(cfg.getIsDefaultCollated());
+	defaultCollatedCheckbox.setBackground(COLOR_UI_BACKGROUND);
+	defaultCollatedCheckbox.setBounds(new Rectangle(846, 40, 25, 25));
+	getContentPane().add(defaultCollatedCheckbox);
     }
 
     private void addFolderNameFields() {
@@ -539,10 +557,12 @@ public class SettingsPane extends JFrame {
     }
     
     private void saveChanges() {
-	MainInterface.setIsActiveFeedbackEnabled(activeFeedbackCheckbox.getState());
+
+	
 	try {
 		saveKeywordDatabase();
 		saveFolderSettings();
+		saveCheckBoxes();
 		
 		// If no exceptions were found:
 		writeToConfigFile();
@@ -552,6 +572,11 @@ public class SettingsPane extends JFrame {
 	} catch (IllegalArgumentException exceptionFeedback) {
 	    warningLabel.setText(MESSAGE_SAVE_FAILED + exceptionFeedback.getMessage());
 	}
+    }
+
+    private void saveCheckBoxes() {
+	props.setProperty(BOOLEAN_REF_FEEDBACK_ENABLED, Boolean.toString(activeFeedbackCheckbox.getState()));
+	props.setProperty(BOOLEAN_REF_DEFAULT_COLLATED, Boolean.toString(defaultCollatedCheckbox.getState()));
     }
 
     private void refreshMainInterface() {

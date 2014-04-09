@@ -16,6 +16,10 @@ import junit.framework.Assert;
 //@author A0105912N
 public class Config
 {
+    private static final String BOOLEAN_REF_IS_COLLATED = "isDefaultCollated";
+
+    private static final String BOOLEAN_REF_IS_FEEDBACK_ENABLED = "isActiveFeedbackEnabled";
+
     public final static Logger logger = Controller.getLogger();
     
     private static final String DELIMITER_PARAMETER = ",";
@@ -169,5 +173,13 @@ public class Config
 
     public Properties getConfigFile() {
 	return configFile;
+    }
+    
+    public boolean getIsActiveFeedbackEnabled() {
+	return Boolean.parseBoolean(getProperty(BOOLEAN_REF_IS_FEEDBACK_ENABLED));
+    }
+
+    public boolean getIsDefaultCollated() {
+	return Boolean.parseBoolean(getProperty(BOOLEAN_REF_IS_COLLATED));
     }
 }

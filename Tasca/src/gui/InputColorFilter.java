@@ -326,7 +326,7 @@ public class InputColorFilter extends DocumentFilter {
     }
 
     private void activateExceptionFeedbackBar(RuntimeException e) {
-	if (MainInterface.isActiveFeedbackEnabled()) {
+	if (MainInterface.getIsActiveFeedbackEnabled()) {
 	    feedbackBackground.setVisible(true);
 	    feedbackText.setVisible(true);
 	    feedbackText.setText(e.getMessage());
@@ -334,7 +334,7 @@ public class InputColorFilter extends DocumentFilter {
     }
 
     private void deactiveExceptionFeedbackBar() {
-	if (MainInterface.isActiveFeedbackEnabled()) {
+	if (MainInterface.getIsActiveFeedbackEnabled()) {
 	    feedbackText.setVisible(false);
 	    feedbackBackground.setVisible(false);
 	}

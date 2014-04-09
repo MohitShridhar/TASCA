@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -107,7 +108,14 @@ public class Importer {
     }
 
     public void parseAndSaveItems(Calendar calendar) {
-	for (@SuppressWarnings("rawtypes")
+	
+	if (calendar == null) {
+	    return;
+	}
+	
+	LinkedList<String> newTaskList = new LinkedList<String>();
+	
+	for (@SuppressWarnings("rawtypes") // Compiler warning suppression
 	Iterator i = calendar.getComponents().iterator(); i.hasNext();) {
 	    VEvent newTask = (VEvent) i.next();
 	    readTaskProperties(newTask);
@@ -115,11 +123,13 @@ public class Importer {
 	    VAlarm newReminder = (VAlarm) newTask.getAlarms().getComponent(Component.VALARM);
 	    readReminderProperties(newReminder);	  	    
 
-	    saveItem();
+	    addItemToList(newTaskList);
 	}
+	
+	controller.mutexAdd(newTaskList);
     }
 
-    public void saveItem() {
+    public void addItemToList(LinkedList<String> newTaskList) {
 
 	Interpreter interpreter = new Interpreter();
 
@@ -157,7 +167,7 @@ public class Importer {
 	    priority = DELIMETER_SPACED + interpreter.getDefaultParaSyn(ParameterType.PRIORITY) + SINGLE_SPACE + decodePriority();
 	}
 
-	controller.executeCommands(interpreter.getDefaultCommandSyn(CommandType.ADD) + SINGLE_SPACE + description + endTime + startTime + remindTime + location + priority);	
+	newTaskList.add(interpreter.getDefaultCommandSyn(CommandType.ADD) + SINGLE_SPACE + description + endTime + startTime + remindTime + location + priority);	
     }
 
     private String decodePriority() {
