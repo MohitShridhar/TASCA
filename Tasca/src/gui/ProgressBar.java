@@ -14,7 +14,8 @@ public class ProgressBar extends JLabel
 
     private static final Color COLOR_PROGRESS_INDICATOR = Color.decode("#302a28");
     private static final int INITIAL_HEIGHT_BAR = 40;
-    private static final int INTIAL_WIDTH_BAR = 888;
+    private static final int INITIAL_WIDTH_BAR = 888;
+    
     private static final long serialVersionUID = 1L;
 
     private double xCoordinate, yCoordinate;
@@ -27,7 +28,7 @@ public class ProgressBar extends JLabel
     }
 
     private void drawRectangle() {
-	rectangle = new Rectangle2D.Double(this.xCoordinate , this.yCoordinate, INTIAL_WIDTH_BAR, INITIAL_HEIGHT_BAR);
+	rectangle = new Rectangle2D.Double(this.xCoordinate , this.yCoordinate, INITIAL_WIDTH_BAR, INITIAL_HEIGHT_BAR);
     }
 
     private void linkMainInterfaceComponents(double xCoordinate,

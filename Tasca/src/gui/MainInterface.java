@@ -279,7 +279,8 @@ public class MainInterface {
 
 	for (int i=0; i<original.size(); i++) {
 	    if (isCurrentFolder(getReminderFolder(original, i))) {
-		addToTimedList(original, folderSortedList, completedTasks, i);
+		folderSortedList.add(original.get(i));
+//		addToTimedList(original, folderSortedList, completedTasks, i);
 	    }
 	}
 	
@@ -318,7 +319,8 @@ public class MainInterface {
 	
 	for (int i=0; i<original.size(); i++) {
 	    if (isCurrentFolder(getTaskFolder(original, i))) {
-		addToFloatingList(original, folderSortedList, completedTasks, i);
+//		addToFloatingList(original, folderSortedList, completedTasks, i);
+		folderSortedList.add(original.get(i));
 	    }
 	}
 	
