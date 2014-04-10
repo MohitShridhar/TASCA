@@ -14,6 +14,7 @@ public class LogicTestSearch {
 	//testing for search function
 	
 	@Test
+	//test if search obtains the correct number of matches when finding substring.
 	public void testSearchTask() {
 		
 		
@@ -38,9 +39,9 @@ public class LogicTestSearch {
 		
 	}
 	@Test
+	//no match found when substring is not inside any tasks.
 	public void testSearch2Task() {
-		
-		
+				
 		AllTasks storage = new AllTasks();
 		
 		Logic.initStorage(storage);
@@ -63,8 +64,8 @@ public class LogicTestSearch {
 	}
 
 	@Test
+	//when searching for a white space, search should not display any.
 	public void testSearch3Task() {
-		
 		
 		AllTasks storage = new AllTasks();
 		

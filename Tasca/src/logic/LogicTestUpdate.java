@@ -13,6 +13,7 @@ import storage.AllTasks;
 public class LogicTestUpdate {
 
 	@Test
+	//test if update is implemented correctly start time < end time.
 	public void testUpdateTask() {
 		Logic.initStorage(new AllTasks());
 		
@@ -38,6 +39,7 @@ public class LogicTestUpdate {
 	}
 	
 	@Test
+	//test if update is implemented correctly end time < stars time yields in correct result.
 	public void test2UpdateTask() {
 		Logic.initStorage(new AllTasks());
 		

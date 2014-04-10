@@ -12,6 +12,7 @@ import storage.AllTasks;
 public class LogicTestDelete {
 
 	@Test
+	//delete last task
 	public void testDeleteTask() {
 		Logic.initStorage(new AllTasks());
 		
@@ -28,6 +29,7 @@ public class LogicTestDelete {
 	}
 
 	@Test
+	//delete first task, index = 0
 	public void testDelete2Task() {
 		Logic.initStorage(new AllTasks());
 		
@@ -44,6 +46,7 @@ public class LogicTestDelete {
 	}
 	
 	@Test
+	//deleting invalid task out of range
 	public void testDelete3Task() {
 		Logic.initStorage(new AllTasks());
 		
@@ -60,6 +63,7 @@ public class LogicTestDelete {
 	}
 	
 	@Test
+	//deleting a negative task number
 	public void testDelete4Task() {
 		Logic.initStorage(new AllTasks());
 		

@@ -13,6 +13,7 @@ import storage.AllTasks;
 public class LogicTestDeleteSearch {
 
 	@Test
+	//deleting all task related that is a substring.
 	public void testDeleteSearch() {
 		
 		AllTasks storage = new AllTasks();
@@ -40,6 +41,7 @@ public class LogicTestDeleteSearch {
 	}
 
 	@Test
+	//test if negative usercommmand is issued, task is not deleted.
 	public void testDeleteSearch2() {
 		
 		AllTasks storage = new AllTasks();
