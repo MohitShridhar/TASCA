@@ -59,14 +59,14 @@ public class Interpreter {
     
     // Exception Messages:
     private static final String INVALID_COMMAND_TYPE = "Invalid command type";
-    private static final String EXCEPTION_EMPTY_ARGUMENT = "Cannot accept empty parameter argument";
+    private static final String EXCEPTION_EMPTY_ARGUMENT = "please enter parameters ie. -start..";
     private static final String EXCEPTION_DUPLICATE_PARAMETERS = "Duplicate parameters found";
-    private static final String INVALID_START_TIME = "Invalid start time";
-    private static final String INVALID_END_TIME = "Invalid end time";
-    private static final String INVALID_REMINDER_TIME = "Invalid remind time";
-    private static final String INVALID_PRIORITY_REF = "Invalid priority reference";
-    private static final String INVALID_FOLDER_REF = "Invalid folder reference";
-    private static final String INVALID_TASK_ID = "Invalid task id reference";
+    private static final String INVALID_START_TIME = "Insert a valid start time";
+    private static final String INVALID_END_TIME = "Insert a valid end time";
+    private static final String INVALID_REMINDER_TIME = "Insert a valid remind time";
+    private static final String INVALID_PRIORITY_REF = "-pri low/medium/high";
+    private static final String INVALID_FOLDER_REF = "Check that folder exists";
+    private static final String INVALID_TASK_ID = "No task id found. Enter valid id.";
     private static final String INVALID_PARAMETER_TYPE = "Invalid parameter type";
     private static final String INVALID_COMMAND_ARGUMENT = "The description for this command cannot be empty";
     private static final String ERROR_DATABASE_DUPLICATE_PARA = "Duplicate keywords were found in the 'parameter' database for \"%1$s\"";

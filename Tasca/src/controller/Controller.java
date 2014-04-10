@@ -23,9 +23,9 @@ import storage.UndoRedo;
 public class Controller {
 	private static final String MESSAGE_EXPORT_SUCCESSFUL = "All events were successfully exported to ";
 	private static final String MESSAGE_IMPORT_SUCCESSFUL = "All events were successfully imported from ";
-	private static final String MESSAGE_TASK_ADDED = "The event has been added";
+	private static final String MESSAGE_TASK_ADDED = "%s has been added";
 	private static final String MESSAGE_TASK_DELETED = "The event has been deleted.";
-	private static final String MESSAGE_TASK_MODIFIED = "The event has been modified";
+	private static final String MESSAGE_TASK_MODIFIED = "%s has been modified";
 	private static final String MESSAGE_DISPLAY_TODAY = "All events for today are being displayed";
 	private static final String MESSAGE_DISPLAY_TOMORROW = "All events for tomorrow are being displayed";
 	private static final String MESSAGE_DISPLAY_WEEK = "All events for the week are being displayed";
@@ -199,7 +199,10 @@ public class Controller {
 
 		case "ADD":
 			undoRedo.addUndo(allTasks);
-			systemMessage.setSystemMessage(MESSAGE_TASK_ADDED);
+			
+			String taskTitle = command.getParameters().getDescription();
+			
+			systemMessage.setSystemMessage(String.format(MESSAGE_TASK_ADDED, taskTitle));
 			execute_add(command, isThereReminder, startTime);
 			updateDisplayGUI(systemMessage.getDisplayStatus());
 			break;
@@ -212,8 +215,11 @@ public class Controller {
 
 		case "MODIFY":
 			undoRedo.addUndo(allTasks);
-			systemMessage.setSystemMessage(MESSAGE_TASK_MODIFIED);
-			execute_modify(command, isThereReminder);
+			
+			String taskDesc = command.getParameters().getDescription();
+			
+			systemMessage.setSystemMessage(String.format(MESSAGE_TASK_MODIFIED, taskDesc));
+			execute_modify(command, isThereReminder); 
 			updateDisplayGUI(systemMessage.getDisplayStatus());
 			break;
 
