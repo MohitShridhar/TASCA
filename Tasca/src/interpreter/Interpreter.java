@@ -24,6 +24,7 @@ import controller.Controller;
 
 public class Interpreter {
     
+    private static final String EXCEPTION_ADDING_REMINDER_TO_FLOATING_TASK = "This is a non-timed task. If you want to add a reminder, please also specify start/end time";
     // Config keys:
     private static final String KEY_QUIT = "quit";
     private static final String KEY_IMPORT = "import";
@@ -58,17 +59,17 @@ public class Interpreter {
     private static final String KEY_START_TIME = "startTime";
     
     // Exception Messages:
-    private static final String INVALID_COMMAND_TYPE = "Invalid command type";
-    private static final String EXCEPTION_EMPTY_ARGUMENT = "please enter parameters ie. -start..";
-    private static final String EXCEPTION_DUPLICATE_PARAMETERS = "Duplicate parameters found";
-    private static final String INVALID_START_TIME = "Insert a valid start time";
-    private static final String INVALID_END_TIME = "Insert a valid end time";
-    private static final String INVALID_REMINDER_TIME = "Insert a valid remind time";
-    private static final String INVALID_PRIORITY_REF = "-pri low/medium/high";
-    private static final String INVALID_FOLDER_REF = "Check that folder exists";
-    private static final String INVALID_TASK_ID = "No task id found. Enter valid id.";
-    private static final String INVALID_PARAMETER_TYPE = "Invalid parameter type";
-    private static final String INVALID_COMMAND_ARGUMENT = "The description for this command cannot be empty";
+    private static final String INVALID_COMMAND_TYPE = "Make sure that the first word is a valid command";
+    private static final String EXCEPTION_EMPTY_ARGUMENT = "\"-%1$s\" is empty, please provide more info";
+    private static final String EXCEPTION_DUPLICATE_PARAMETERS = "You have specified \"-%1$s\" more than once; it's confusing";
+    private static final String INVALID_START_TIME = "Is the Start Time correct? Eg: tues, 19 May 2015 13:45, 05/19/2015, tonight, 10 min from now etc.";
+    private static final String INVALID_END_TIME = "Is the End Time correct? Eg: tues, 19 May 2015 13:45, 05/19/2015, tonight, 10 min from now etc.";
+    private static final String INVALID_REMINDER_TIME = "Is the Remind Time correct? Eg: tues, 19 May 2015 13:45, 05/19/2015, tonight, 10 min from now etc.";
+    private static final String INVALID_PRIORITY_REF = "Is the priority high OR med OR low OR none (default)?";
+    private static final String INVALID_FOLDER_REF = "Make sure that the name of the folder actually exists above";
+    private static final String INVALID_TASK_ID = "Can't find Task Number '%1$s', check that it actually exists";
+    private static final String INVALID_PARAMETER_TYPE = "What is \"-%1$s\"? Please correct the parameter name";
+    private static final String INVALID_COMMAND_ARGUMENT = "You must added a description after \"%1$s\"";
     private static final String ERROR_DATABASE_DUPLICATE_PARA = "Duplicate keywords were found in the 'parameter' database for \"%1$s\"";
     private static final String ERROR_DATABASE_DUPLICATE_COMMAND = "Duplicate keywords were found in the 'command' database for \"%1$s\"";
     private static final String EXCEPTION_EMPTY_LOCATION = "Initiated location parameter cannot have a empty argument";
@@ -76,7 +77,7 @@ public class Interpreter {
     private static final String EXCEPTION_EMPTY_KEYWORD_IN_DATABASE = "The database contains empty synonym(s) in \"%1$s\"";
     private static final String EXCEPTION_KEYWORD_MULTIPLE_WORDS = "The synonym(s) for \"%1$s\" have to be single words";
     private static final String EXCEPTION_END_TIME_BEFORE_START_TIME = "Please check that 'start time' occurs chronologically before 'end time'";
-    private static final String EXCEPTION_ID_NOT_SPECIFIED = "Please specify the ID of the task";
+    private static final String EXCEPTION_ID_NOT_SPECIFIED = "Please specify the Task Number of the task";
     
     /* DEPRECIATED:
     private static final String EXCEPTION_NO_END_TIME_SPECIFIED = "You must specify 'end time' since you have specified 'start time' OR just specify 'end time'";
@@ -90,6 +91,7 @@ public class Interpreter {
     
     // Other exceptions:
     private static final int EXCEPTION_NON_EXISTENT_ID = -1;
+    private static int floatingTaskGuiRef;
     public final static Logger logger = Controller.getLogger();
     
     // Hash maps:
@@ -453,17 +455,38 @@ public class Interpreter {
 	}
 	*/
 	
-	if ((currentParameters.contains(ParameterType.END_TIME) && currentParameters.contains(ParameterType.START_TIME)) && command.getParameters().getStartTime().after(command.getParameters().getEndTime())) {
+	if (isStartEndNotChronological()) {
 	    logger.log(Level.WARNING, EXCEPTION_END_TIME_BEFORE_START_TIME);
 	    throw new IllegalArgumentException(EXCEPTION_END_TIME_BEFORE_START_TIME);
 	}
 	
 	
-	if (needsId(command.getCommandType()) && !currentParameters.contains(ParameterType.TASK_ID)) {
+	if (hasNoTaskId()) {
 	    logger.log(Level.WARNING, EXCEPTION_ID_NOT_SPECIFIED);
 	    throw new IllegalArgumentException(EXCEPTION_ID_NOT_SPECIFIED);
 	}
 	
+	if (addingReminderToFloatingTask()) {
+	    
+	    logger.log(Level.WARNING, EXCEPTION_ADDING_REMINDER_TO_FLOATING_TASK);
+	    throw new IllegalArgumentException(EXCEPTION_ADDING_REMINDER_TO_FLOATING_TASK);
+	}
+	
+    }
+
+
+    private boolean addingReminderToFloatingTask() {	
+	return command.getCommandType() == CommandType.MODIFY && isGuiIdEnabled && isFloatingTask(command.getParameters().getGuiIdRef()) && currentParameters.contains(ParameterType.REMINDER_TIME) && !(currentParameters.contains(ParameterType.START_TIME) || currentParameters.contains(ParameterType.END_TIME));
+    }
+
+
+    private boolean hasNoTaskId() {
+	return needsId(command.getCommandType()) && !currentParameters.contains(ParameterType.TASK_ID);
+    }
+
+
+    private boolean isStartEndNotChronological() {
+	return (currentParameters.contains(ParameterType.END_TIME) && currentParameters.contains(ParameterType.START_TIME)) && command.getParameters().getStartTime().after(command.getParameters().getEndTime());
     }
     
     private void updateCurrFolderReference() {
@@ -493,8 +516,8 @@ public class Interpreter {
         CommandFeedback feedback = command.setDescription(commandArgument);
         
         if (needsDescription(interpretCommand(getFirstWord(input))) && feedback == CommandFeedback.EMPTY_DESCRIPTION) {
-            logger.log(Level.WARNING, INVALID_COMMAND_ARGUMENT);
-            throw new IllegalArgumentException(INVALID_COMMAND_ARGUMENT);
+            logger.log(Level.WARNING, String.format(INVALID_COMMAND_ARGUMENT, getFirstWord(input)));
+            throw new IllegalArgumentException(String.format(INVALID_COMMAND_ARGUMENT, getFirstWord(input)));
         }
                 
     }
@@ -542,12 +565,12 @@ public class Interpreter {
             
             
             ParameterType parameterType = interpretParameter(paraTypeString);
-            checkForParameterExceptions(paraArgument, parameterType);
+            checkForParameterExceptions(paraTypeString, paraArgument, parameterType);
             
             CommandFeedback feedback = processParameter(parameterType, paraArgument);
-            isParameterArgumentValid(feedback);
+            isParameterArgumentValid(paraArgument, feedback);
             
-            checkIfParameterExists(parameterType); 
+            checkIfParameterExists(paraTypeString, parameterType); 
         }
         
     }
@@ -559,30 +582,30 @@ public class Interpreter {
     }
 
 
-    public void checkForParameterExceptions(String paraArgument,
+    public void checkForParameterExceptions(String paraTypeString, String paraArgument,
 	    ParameterType parameterType) {
 	if (parameterType == ParameterType.INVALID) {
-	    logger.log(Level.WARNING, INVALID_PARAMETER_TYPE);
-	    throw new IllegalArgumentException(INVALID_PARAMETER_TYPE);
+	    logger.log(Level.WARNING, String.format(INVALID_PARAMETER_TYPE, paraTypeString));
+	    throw new IllegalArgumentException(String.format(INVALID_PARAMETER_TYPE, paraTypeString));
 	}
 	
 	if (paraArgument.isEmpty()) {
-	    logger.log(Level.WARNING, EXCEPTION_EMPTY_ARGUMENT);
-	    throw new IllegalArgumentException(EXCEPTION_EMPTY_ARGUMENT);
+	    logger.log(Level.WARNING, String.format(EXCEPTION_EMPTY_ARGUMENT, paraTypeString));
+	    throw new IllegalArgumentException(String.format(EXCEPTION_EMPTY_ARGUMENT, paraTypeString));
 	}
     }
 
 
-    public void checkIfParameterExists(ParameterType parameterType) throws IllegalArgumentException {
+    public void checkIfParameterExists(String paraTypeString, ParameterType parameterType) throws IllegalArgumentException {
 	if (currentParameters.contains(parameterType)) {
-	    logger.log(Level.WARNING, EXCEPTION_DUPLICATE_PARAMETERS);
-            throw new IllegalArgumentException(EXCEPTION_DUPLICATE_PARAMETERS);
+	    logger.log(Level.WARNING, String.format(EXCEPTION_DUPLICATE_PARAMETERS, paraTypeString));
+            throw new IllegalArgumentException(String.format(EXCEPTION_DUPLICATE_PARAMETERS, paraTypeString));
         }
 	
         currentParameters.add(parameterType);
     }
     
-    private void isParameterArgumentValid (CommandFeedback feedback) throws InvalidParameterException {
+    private void isParameterArgumentValid (String paraArgument, CommandFeedback feedback) throws InvalidParameterException {
         switch (feedback) {
         case EMPTY_DESCRIPTION:
             logger.log(Level.WARNING, EXCEPTION_EMPTY_DESCRIPTION);
@@ -606,8 +629,8 @@ public class Interpreter {
             logger.log(Level.WARNING, INVALID_FOLDER_REF);
             throw new InvalidParameterException(INVALID_FOLDER_REF);
         case INVALID_TASK_ID:
-            logger.log(Level.WARNING, INVALID_TASK_ID);
-            throw new InvalidParameterException(INVALID_TASK_ID);           
+            logger.log(Level.WARNING, String.format(INVALID_TASK_ID, paraArgument));
+            throw new InvalidParameterException(String.format(INVALID_TASK_ID, paraArgument));           
         default:
             return;        
         }
@@ -699,6 +722,21 @@ public class Interpreter {
 	guiIdRef.clear();
     }
     
+    
+    public static void setFloatingTaskGuiRef(int startGuiIndex) {
+	
+	if (isGuiIdEnabled) {
+	    floatingTaskGuiRef = startGuiIndex;
+	}
+    }
+    
+    public static boolean isFloatingTask(int guiId) {
+	if (isGuiIdEnabled && guiId >= floatingTaskGuiRef) {
+	    return true;
+	}
+	
+	return false;
+    }
     
     public ParameterType interpretParameter(String parameterString) {
         if (!parameterKeywords.containsKey(parameterString)) {

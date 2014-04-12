@@ -23,7 +23,7 @@ public class AllTasksTest {
 		Task task1 = new Task(0,0,1,Calendar.getInstance(), Calendar.getInstance(), false ,false, false,"go home", "buy eggs");
 		Task task2 = new Task(0,0,1,Calendar.getInstance(), Calendar.getInstance(), false ,false, false,"bye yb", "nothing");
 		Task task3 = new Task(0,0,1,Calendar.getInstance(), Calendar.getInstance(), true ,false, false,"valentines", "buy flowers");
-		Reminder reminder = new Reminder(Calendar.getInstance(), task3);
+		TaskWithReminder reminder = new TaskWithReminder(Calendar.getInstance(), task3);
 		
 		allTasks.addTask(0, task1);
 		allTasks.addTask(0, task2);

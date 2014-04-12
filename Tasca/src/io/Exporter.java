@@ -23,7 +23,7 @@ import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Version;
 import net.fortuna.ical4j.util.UidGenerator;
 
-import storage.Reminder;
+import storage.TaskWithReminder;
 import storage.Task;
 import controller.Controller;
 
@@ -153,7 +153,7 @@ public class Exporter {
 
     public static net.fortuna.ical4j.model.Calendar readAndParseCurrentState() {
 	net.fortuna.ical4j.model.Calendar exportCal = initializeCalExporter();
-	LinkedList<Reminder> timedTask = controller.getCurrentSystemState().getTimedList();
+	LinkedList<TaskWithReminder> timedTask = controller.getCurrentSystemState().getTimedList();
 
 	int noOfTimedTasks = EMPTY_LIST;
 
@@ -196,7 +196,7 @@ public class Exporter {
     }
 
     public static int calToEvent(net.fortuna.ical4j.model.Calendar exportCal,
-	    LinkedList<Reminder> allTimedTasks, int noOfTimedTasks) {
+	    LinkedList<TaskWithReminder> allTimedTasks, int noOfTimedTasks) {
 	
 	for (int i=0; i<allTimedTasks.size(); i++) {
 	    noOfTimedTasks = addNewEvent(exportCal, allTimedTasks, noOfTimedTasks, i);	  
@@ -206,7 +206,7 @@ public class Exporter {
     }
 
     public static int addNewEvent(net.fortuna.ical4j.model.Calendar exportCal,
-	    LinkedList<Reminder> allTimedTasks, int noOfTimedTasks, int i) {
+	    LinkedList<TaskWithReminder> allTimedTasks, int noOfTimedTasks, int i) {
 	Task newTask = allTimedTasks.get(i).getTask();
 	VEvent newEvent;
 

@@ -52,7 +52,7 @@ import javax.swing.text.StyleConstants;
 import junit.framework.Assert;
 
 import storage.FloatingTask;
-import storage.Reminder;
+import storage.TaskWithReminder;
 import controller.Controller;
 
 
@@ -262,10 +262,10 @@ public class MainInterface {
     }
 
 
-    private static LinkedList<Reminder> folderSortTimedTasks() {
+    private static LinkedList<TaskWithReminder> folderSortTimedTasks() {
 
-	LinkedList<Reminder> original = getController().getCurrentSystemState().getTimedList();
-	LinkedList<Reminder> folderSortedList = new LinkedList<Reminder>();
+	LinkedList<TaskWithReminder> original = getController().getCurrentSystemState().getTimedList();
+	LinkedList<TaskWithReminder> folderSortedList = new LinkedList<TaskWithReminder>();
 
 	for (int i=0; i<original.size(); i++) {
 	    if (isCurrentFolder(getReminderFolder(original, i))) {
@@ -276,7 +276,7 @@ public class MainInterface {
 	return folderSortedList;
     }
 
-    private static FolderName getReminderFolder(LinkedList<Reminder> original, int index) {
+    private static FolderName getReminderFolder(LinkedList<TaskWithReminder> original, int index) {
 	return cfg.getFolderId(original.get(index).getTask().getFolder());
     }
 
@@ -311,7 +311,7 @@ public class MainInterface {
     public static void updateTaskDisplay() {
 	int currentScrollPos = getVeriticalScrollPos();
 
-	LinkedList<Reminder> folderSortedTimedTasks = folderSortTimedTasks(); 
+	LinkedList<TaskWithReminder> folderSortedTimedTasks = folderSortTimedTasks(); 
 	LinkedList<FloatingTask> folderSortedFloatingTasks = folderSortFloatingTasks();
 
 	if (isListEmpty(folderSortedTimedTasks, folderSortedFloatingTasks)) {
@@ -324,10 +324,17 @@ public class MainInterface {
 
 	JPanel displayPanel = initDisplayPanel(folderSortedTimedTasks, folderSortedFloatingTasks); 
 	rebuildItemList(currentScrollPos, folderSortedTimedTasks,folderSortedFloatingTasks, displayPanel);
+	refreshColorFilter();
+    }
+
+    private static void refreshColorFilter() {
+	if (!textPane.getText().isEmpty() && !textPane.getText().equals(MESSAGE_WELCOME)) {
+		colorFilter.checkForInterpreterExceptions(textPane.getText());
+	}
     }
 
     private static void rebuildItemList(int scrollPos,
-	    LinkedList<Reminder> folderSortedTimedTasks,
+	    LinkedList<TaskWithReminder> folderSortedTimedTasks,
 	    LinkedList<FloatingTask> folderSortedFloatingTasks,
 	    JPanel displayPanel) {
 
@@ -343,7 +350,7 @@ public class MainInterface {
 	getSystemStatusMessage().setText(getController().getSystemMessageString());
     }
 
-    private static JPanel initDisplayPanel(LinkedList<Reminder> folderSortedTimedTasks, LinkedList<FloatingTask> folderSortedFloatingTasks) {
+    private static JPanel initDisplayPanel(LinkedList<TaskWithReminder> folderSortedTimedTasks, LinkedList<FloatingTask> folderSortedFloatingTasks) {
 
 	JPanel displayPanel = new JPanel(new GridLayout(folderSortedTimedTasks.size() + folderSortedFloatingTasks.size(), 0, 0, VERTICAL_GAP_BETWEEN_ITEMS));
 	displayPanel.setBackground(COLOR_UI_BACKGROUND);
@@ -374,7 +381,7 @@ public class MainInterface {
 	for (int i = 0; i < folderSortedFloatingTasks.size(); i++) {
 	    TaskItem taskBar = new TaskItem(textPane, getController(), computeFloatingTaskGuiId(numOfTimedTasks, i), interpreter);
 	    taskBar.loadFloatingTaskDetails(folderSortedFloatingTasks.get(i), computeFloatingTaskGuiId(numOfTimedTasks, i));
-
+	    
 	    Interpreter.addGuiId(computeFloatingTaskGuiId(numOfTimedTasks, i), folderSortedFloatingTasks.get(i).getTaskID());
 	    loadTaskItemProperties(displayPanel, taskBar);
 	}
@@ -392,7 +399,8 @@ public class MainInterface {
     }
 
     private static int addTimedTasks(
-	    LinkedList<Reminder> folderSortedTimedTasks, JPanel displayPanel) {
+	    LinkedList<TaskWithReminder> folderSortedTimedTasks, JPanel displayPanel) {
+	
 	int i;
 	for (i=0; i < folderSortedTimedTasks.size(); i++) {
 	    TaskItem taskBar = new TaskItem(textPane, getController(), computeTimedTaskGuiId(i), interpreter);
@@ -401,6 +409,9 @@ public class MainInterface {
 	    Interpreter.addGuiId(computeTimedTaskGuiId(i), folderSortedTimedTasks.get(i).getTask().getTaskID());
 	    loadTaskItemProperties(displayPanel, taskBar);
 	}
+	
+	Interpreter.setFloatingTaskGuiRef(i+1);
+	
 	return i;
     }
 
@@ -409,7 +420,7 @@ public class MainInterface {
     }
 
     private static boolean isListEmpty(
-	    LinkedList<Reminder> folderSortedTimedTasks,
+	    LinkedList<TaskWithReminder> folderSortedTimedTasks,
 	    LinkedList<FloatingTask> folderSortedFloatingTasks) {
 	return folderSortedTimedTasks.size() + folderSortedFloatingTasks.size() == 0;
     }
@@ -657,6 +668,7 @@ public class MainInterface {
 	    taskPane.getVerticalScrollBar().setValue((taskPane.getVerticalScrollBar().getValue()) + VIEWPORT_HEIGHT_DISPLAY_PANE);
 	}
 
+	refreshColorFilter();
     }
 
     private static void executeFolderLeftSwitch() {

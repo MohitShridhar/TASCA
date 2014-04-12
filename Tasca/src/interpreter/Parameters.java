@@ -33,7 +33,7 @@ public class Parameters {
     private static Config cfg = new Config(); 
     
     private String description, location, folder;
-    private Integer priority, taskId;
+    private Integer priority, taskId, guiIdRef = -1;
     private Calendar startTime, endTime, remindTime, recurEndTime;
     
     Parser parser;    
@@ -139,6 +139,7 @@ public class Parameters {
 	
         if (Interpreter.checkIsGuiIdEnabled()) {
             this.taskId = Interpreter.getRealId(id);
+            this.guiIdRef = id;
         } else {
             this.taskId = id;
         }
@@ -146,6 +147,10 @@ public class Parameters {
         return CommandFeedback.SUCCESSFUL_OPERATION;
     }
     
+    
+    public int getGuiIdRef(){
+	return guiIdRef;
+    }
     
     public Calendar getStartTime() {
         return startTime;

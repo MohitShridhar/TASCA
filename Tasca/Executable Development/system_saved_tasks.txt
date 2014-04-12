@@ -1,64 +1,28 @@
-0 0 3 2014 3 3 11 27 2014 3 10 11 27 false false false tues
-new location
-1 1 1 2014 3 3 11 34 2014 3 10 11 26 false false false aijwdkawd
+2 0 0 2014 3 11 23 28 2014 3 18 12 0 true false false CG2271 assignment
 NIL
-0 2 0 2014 3 3 16 0 2014 3 3 17 0 false true false cs2103
+2014 3 17 23 28
+2 1 2 2014 3 11 23 29 2014 3 13 23 29 false false false Peter Hope + Kuang Email
 NIL
-4 3 2 2014 3 3 19 57 2014 3 10 19 57 false false false awkjdawd TASK FOR PERSONAL AHHAHAA
+3 2 2 2014 3 11 23 31 2014 3 18 23 31 false true false progress bar to task items
 NIL
-0 4 2 2014 3 3 19 58 2014 3 10 19 58 false false false THIS TaSK HERE MOHIT LOOK HERE DEFAULT
-new location added
-1 5 0 2014 3 3 21 27 2014 3 3 21 27 false true false new task THAT ENDS IN 5 sec
+3 3 1 2014 3 11 23 32 2014 3 12 23 32 false false false fix 5th march bug
 NIL
-1 6 0 2014 3 4 16 13 2014 3 5 16 13 false true false submit report
+3 4 1 2014 3 11 23 34 2014 3 14 23 34 true false false demo video
 NIL
-1 7 0 2014 3 4 23 42 2014 3 10 23 42 false false false submit V0.5
-wtf
-0 8 1 2014 3 4 23 45 2014 3 10 23 45 false true false new task not floating
-new location added to not
-2 9 3 2014 3 5 21 46 2014 3 10 21 46 false true false new task for personal
+2014 3 12 23 34
+3 5 1 2014 3 11 23 45 2014 3 14 23 45 true false false submit v0.5 report
+home & COM
+2014 3 13 0 45
+1 6 3 2014 3 15 23 24 2014 3 16 23 24 true false false pick groceries
+green store
+2014 3 14 23 24
+1 7 2 2014 3 11 23 25 2014 4 11 23 25 false false false pack bags for summer trip
 NIL
-1 10 1 2014 3 7 23 14 2014 3 13 23 14 false false false sunday with remind time
-location for sunday
-0 11 1 2014 3 8 12 41 2014 3 10 12 41 true false false new task quickly
-new location
-2014 3 10 12 41
-1 12 0 2014 3 8 13 24 2014 3 10 13 24 false false false qkjwdn
+3 8 0 2014 3 16 23 48 2014 3 18 23 48 true false false create .app and .exe files
+COM & home
+2014 3 14 23 49
+3 9 0 2014 3 17 23 33 2014 3 19 23 33 false false false plan final presentation
 NIL
-5 13 0 2014 3 8 13 59 2014 3 10 13 59 false true false adD new task for cs2103
-NIL
-5 14 0 2014 3 8 14 11 2014 3 10 14 11 false false false fixed the bugg
-NIL
-5 15 1 2014 3 8 15 31 2014 3 10 15 31 false false false akjndw
-new location
-1 16 0 2014 3 8 15 55 2014 3 10 15 55 false true false this task hahah
-new location
-0 17 1 2014 3 8 16 10 2014 3 10 16 10 false false false awkjd
-new location
-1 18 1 2014 3 8 20 4 2014 3 8 20 14 false true false new task ends in 10 min
-NIL
-1 19 1 2014 3 8 20 42 2014 3 10 20 42 false false false ajwdk
-new location
-1 20 0 2014 3 8 21 3 2014 3 10 21 3 false true false newtask
-new location
-1 21 2 2014 3 8 22 34 2014 3 10 22 34 false false false NEW TAKS FOR NUS
-nue
-4 22 0 2014 3 8 22 41 2014 3 10 22 41 true false false ajwkda
-NIL
-2014 3 10 22 41
-3 23 1 2014 3 9 10 2 2014 3 10 10 2 false false false akwjdawd
-new location
-5 24 0 2014 3 9 10 20 2014 3 10 10 20 false false false OTHERS HAHAHA
-NIL
-5 25 0 2014 3 9 10 20 2014 3 10 10 20 false false false akjsda
-NIL
-5 26 0 2014 3 9 10 20 2014 3 10 10 20 false false false new task starts On sunday
-NIL
-5 27 0 2014 3 9 10 21 2014 3 10 10 21 false false false ENDS ON THURS
-NIL
-3 28 0 2014 3 10 22 52 2014 3 15 22 52 false false false old task
-NIL
-1 29 0 2014 3 10 23 13 2014 3 13 23 13 false false false new task
-NIL
-4 30 1 2014 3 8 22 39 2014 3 10 22 39 false false false akjwdn
-new location
+2 10 1 2014 3 18 23 30 2014 3 19 23 30 true false false EE2024 exam revision
+central lib
+2014 3 18 13 31

@@ -77,7 +77,8 @@ public class InputColorFilter extends DocumentFilter {
     private static Map<CommandType, Color> commandColors = new HashMap<CommandType, Color>();
     private static Map<ParameterType, Color> parameterColors = new HashMap<ParameterType, Color>();
     private String userInputString = null;
-   
+    
+    private Boolean isParseSuccessful = false;   
     
     static {
 	
@@ -177,7 +178,7 @@ public class InputColorFilter extends DocumentFilter {
     private void processUserAction() {
 	userInputString = getUserInput();
 
-	if (userInputString != null) {
+	if (userInputString != null && isParseSuccessful) {
 	    boolean quit = false;
 	    quit = executeCommand();
 	    processNextAction(quit);
@@ -306,8 +307,9 @@ public class InputColorFilter extends DocumentFilter {
         }
     }
 
-    private Boolean checkForInterpreterExceptions(String allText) {
-	Boolean isParseSuccessful;
+    public Boolean checkForInterpreterExceptions(String allText) {
+	isParseSuccessful = false;
+	
 	try {
 	    interpreter.processUserInput(allText);
 	    

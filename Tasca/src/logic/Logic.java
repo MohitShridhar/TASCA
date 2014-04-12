@@ -6,7 +6,7 @@ import io.Importer;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import controller.SystemMessage;
+import controller.CurrentSystemState;
 import storage.*;
 
 public class Logic {
@@ -19,7 +19,7 @@ public class Logic {
 	private static String MESSAGE_DELETE_SEARCH = "Do you want to delete all search results? (Y/N) ";
 
 	private static AllTasks _storage;
-	private static SystemMessage systemMessage;
+	private static CurrentSystemState systemMessage;
 
 	public static void export(String savePath) {
 		new Exporter(savePath); // TODO: implement singleton
@@ -37,7 +37,7 @@ public class Logic {
 		return;
 	}
 
-	public static void initSystemMessage(SystemMessage sysMsg) {
+	public static void initSystemMessage(CurrentSystemState sysMsg) {
 		systemMessage = sysMsg;
 	}
 	
@@ -91,14 +91,14 @@ public class Logic {
 
 			isTaskAdded = _storage.addTask(count, task);
 
-			Reminder taskReminder = null;
+			TaskWithReminder taskReminder = null;
 
 			if (task.getIsThereReminder()) {
 
 				Calendar reminderTime = Calendar.getInstance();
 				reminderTime.setTime(reminder);
 
-				taskReminder = new Reminder(reminderTime, task);
+				taskReminder = new TaskWithReminder(reminderTime, task);
 
 				count = 0;
 
@@ -144,7 +144,7 @@ public class Logic {
 		return isTaskDeleted;
 	}
 
-	public static void displayTask(int index, LinkedList<Reminder> list,
+	public static void displayTask(int index, LinkedList<TaskWithReminder> list,
 			LinkedList<FloatingTask> list2) {
 
 		int totalNumOfTasks = _storage.getSize();
@@ -152,7 +152,7 @@ public class Logic {
 
 			if (index < totalNumOfTasks) {
 				Task task = _storage.getTask(index);
-				list.add(new Reminder(null, task));
+				list.add(new TaskWithReminder(null, task));
 				int indexOfReminder = _storage
 						.searchForCorrespondingReminder(task);
 
@@ -217,7 +217,7 @@ public class Logic {
 	//@author A0094655U
 	public static void displayAllTasks() {
 		int totalNumOfTasks = _storage.getSize();
-		LinkedList<Reminder> list = new LinkedList<Reminder>();
+		LinkedList<TaskWithReminder> list = new LinkedList<TaskWithReminder>();
 		LinkedList<FloatingTask> list2 = new LinkedList<FloatingTask>();
 		for (int count = 0; count < totalNumOfTasks; count++) {
 			displayTask(count, list, list2);
@@ -230,7 +230,7 @@ public class Logic {
 	public static void displayTasksAtPeriod(Date startDateSpecified,
 			Date endDateSpecified) {
 		int totalNumOfTasks = _storage.getTaskSize();
-		LinkedList<Reminder> list = new LinkedList<Reminder>();
+		LinkedList<TaskWithReminder> list = new LinkedList<TaskWithReminder>();
 		LinkedList<FloatingTask> list2 = new LinkedList<FloatingTask>();
 
 		Date startTime, endTime;
@@ -266,7 +266,7 @@ public class Logic {
 	//@author A0094655U
 	public static int searchTask(String searchString) {
 		int totalNumOfTasks = _storage.getSize(), count = 0;
-		LinkedList<Reminder> list = new LinkedList<Reminder>();
+		LinkedList<TaskWithReminder> list = new LinkedList<TaskWithReminder>();
 		LinkedList<FloatingTask> list2 = new LinkedList<FloatingTask>();
 		for (int index = 0; index < totalNumOfTasks; index++) {
 			String taskTitle;
@@ -492,7 +492,7 @@ public class Logic {
 
 	public static void displayAll() {
 		int count = 0;
-		LinkedList<Reminder> list = new LinkedList<Reminder>();
+		LinkedList<TaskWithReminder> list = new LinkedList<TaskWithReminder>();
 		LinkedList<FloatingTask> list2 = new LinkedList<FloatingTask>();
 		while (count < _storage.getSize()) {
 			displayTask(count, list, list2);
@@ -509,7 +509,7 @@ public class Logic {
 	 */
 	public static void displayAllFloat() {
 		int count = _storage.getTaskSize();
-		LinkedList<Reminder> list = new LinkedList<Reminder>();
+		LinkedList<TaskWithReminder> list = new LinkedList<TaskWithReminder>();
 		LinkedList<FloatingTask> list2 = new LinkedList<FloatingTask>();
 		while (count < _storage.getSize()) {
 			displayTask(count, list, list2);

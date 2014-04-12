@@ -9,17 +9,17 @@ import org.junit.Test;
 
 import storage.AllTasks;
 import storage.Task;
-import controller.SystemMessage;
+import controller.CurrentSystemState;
 
 public class LogicTest {
 	AllTasks test ;
-	SystemMessage systemMessage;
+	CurrentSystemState systemMessage;
 
 	//boundry case when index given is negative
 	@Test
 	public void testDeleteTask() {
 		test = new AllTasks();
-	    systemMessage = new SystemMessage();
+	    systemMessage = new CurrentSystemState();
 		Calendar taskDate = Calendar.getInstance();
 		Task task1 = new Task(0,0,1,taskDate, taskDate, false ,false, false,"Last day of School", "National University of Singapore");
 		Task task2 = new Task(0,0,1,taskDate, taskDate, false ,false, false,"Holiday to Australia", "Changi Airport");
@@ -35,7 +35,7 @@ public class LogicTest {
 	@Test
 	public void testDeleteTask2() {
 		test = new AllTasks();
-		systemMessage = new SystemMessage();
+		systemMessage = new CurrentSystemState();
 		Calendar taskDate = Calendar.getInstance();
 		Task task1 = new Task(0,0,1,taskDate, taskDate, false ,false, false,"Last day of School", "National University of Singapore");
 		Task task2 = new Task(0,0,1,taskDate, taskDate, false ,false, false,"Holiday to Australia", "Changi Airport");

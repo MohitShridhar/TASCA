@@ -2,10 +2,10 @@ package storage;
 
 public class UndoRedoNode {
 	private Task oldTask, newTask;
-	private Reminder oldReminder, newReminder;
+	private TaskWithReminder oldReminder, newReminder;
 	private String command;
 	
-	public UndoRedoNode (Task oldTask, Reminder oldReminder, Task newTask, Reminder newReminder,String command) {
+	public UndoRedoNode (Task oldTask, TaskWithReminder oldReminder, Task newTask, TaskWithReminder newReminder,String command) {
 		this.oldTask = oldTask;
 		this.newTask = newTask;
 		this.oldReminder = oldReminder;
@@ -22,11 +22,11 @@ public class UndoRedoNode {
 		return newTask;
 	}
 	
-	public Reminder getOldReminder () {
+	public TaskWithReminder getOldReminder () {
 		return oldReminder;
 	}
 	
-	public Reminder getNewReminder () {
+	public TaskWithReminder getNewReminder () {
 		return newReminder;
 	}
 	

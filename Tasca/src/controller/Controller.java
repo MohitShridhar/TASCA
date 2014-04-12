@@ -23,16 +23,16 @@ import storage.UndoRedo;
 public class Controller {
 	private static final String MESSAGE_EXPORT_SUCCESSFUL = "All events were successfully exported to ";
 	private static final String MESSAGE_IMPORT_SUCCESSFUL = "All events were successfully imported from ";
-	private static final String MESSAGE_TASK_ADDED = "%s has been added";
+	private static final String MESSAGE_TASK_ADDED = "\"%s\" has been added";
 	private static final String MESSAGE_TASK_DELETED = "The event has been deleted.";
-	private static final String MESSAGE_TASK_MODIFIED = "%s has been modified";
+	private static final String MESSAGE_TASK_MODIFIED = "\"%s\" has been modified";
 	private static final String MESSAGE_DISPLAY_TODAY = "All events for today are being displayed";
 	private static final String MESSAGE_DISPLAY_TOMORROW = "All events for tomorrow are being displayed";
 	private static final String MESSAGE_DISPLAY_WEEK = "All events for the week are being displayed";
 	private static final String MESSAGE_DISPLAY_FLOATING = "All events without time are being displayed";
 	private static final String MESSAGE_DISPLAY_PERIOD = "All events for the given period are being displayed";
 	private static final String MESSAGE_DISPLAY_ALL = "All events are being displayed";
-	private static final String MESSAGE_SEARCH = "Search completed";
+	private static final String MESSAGE_SEARCH = "Search results for \"%s\"";
 	private static final String MESSAGE_PROVIDE_TASK_ID = "Please provide event ID to be deleted";
 	private static final String MESSAGE_MARK = "The task is now marked as done";
 	private static final String MESSAGE_UNMARK = "The task is now marked as not done";
@@ -59,7 +59,7 @@ public class Controller {
 	private AllTasks allTasks;
 	private UndoRedo undoRedo = UndoRedo.getInstance();
 	private Scanner myScanner = new Scanner(System.in);
-	private SystemMessage systemMessage = new SystemMessage();
+	private CurrentSystemState systemState = new CurrentSystemState();
 
 	public static Handler handler;
 	public static Logger logger = Logger.getLogger("TASCA Log");
@@ -70,11 +70,11 @@ public class Controller {
 	public Controller() {
 		initialiseTasks();
 		Logic.initStorage(allTasks);
-		Logic.initSystemMessage(systemMessage);
+		Logic.initSystemMessage(systemState);
 		Interpreter newInt = new Interpreter();
 		this.executeCommands(newInt
 				.getDefaultCommandSyn(CommandType.DISPLAY_ALL));
-		systemMessage.setFloatingList(allTasks.getFloatingList());
+		systemState.setFloatingList(allTasks.getFloatingList());
 		try {
 			handler = new FileHandler("Tasca Log.txt");
 		} catch (Exception e) {
@@ -102,12 +102,12 @@ public class Controller {
 	}
 
 	public String getSystemMessageString() {
-		return systemMessage.getSystemMessage();
+		return systemState.getSystemMessage();
 	}
 
-	public SystemMessage getCurrentSystemState() {
-		systemMessage.sortForGUI();
-		return systemMessage;
+	public CurrentSystemState getCurrentSystemState() {
+		systemState.sortForGUI();
+		return systemState;
 	}
 
 	public boolean executeCommands(String input) {
@@ -158,7 +158,7 @@ public class Controller {
 	public void mutexAdd(LinkedList<String> input) {
 		int total = input.size(), count = 0;
 		undoRedo.addUndo(allTasks);
-		systemMessage.setSystemMessage(MESSAGE_IMPORT);
+		systemState.setSystemMessage(MESSAGE_IMPORT);
 
 		while (count < total) {
 			boolean isThereReminder = true;
@@ -178,7 +178,7 @@ public class Controller {
 			}
 		}
 		
-		updateDisplayGUI(systemMessage.getDisplayStatus());
+		updateDisplayGUI(systemState.getDisplayStatus());
 
 	}
 
@@ -202,14 +202,14 @@ public class Controller {
 			
 			String taskTitle = command.getParameters().getDescription();
 			
-			systemMessage.setSystemMessage(String.format(MESSAGE_TASK_ADDED, taskTitle));
+			systemState.setSystemMessage(String.format(MESSAGE_TASK_ADDED, taskTitle));
 			execute_add(command, isThereReminder, startTime);
-			updateDisplayGUI(systemMessage.getDisplayStatus());
+			updateDisplayGUI(systemState.getDisplayStatus());
 			break;
 
 		case "DELETE":
 			undoRedo.addUndo(allTasks);
-			systemMessage.setSystemMessage(MESSAGE_TASK_DELETED);
+			systemState.setSystemMessage(MESSAGE_TASK_DELETED);
 			execute_delete(command);
 			break;
 
@@ -218,68 +218,68 @@ public class Controller {
 			
 			String taskDesc = command.getParameters().getDescription();
 			
-			systemMessage.setSystemMessage(String.format(MESSAGE_TASK_MODIFIED, taskDesc));
+			systemState.setSystemMessage(String.format(MESSAGE_TASK_MODIFIED, taskDesc));
 			execute_modify(command, isThereReminder); 
-			updateDisplayGUI(systemMessage.getDisplayStatus());
+			updateDisplayGUI(systemState.getDisplayStatus());
 			break;
 
 		case "DISPLAY_TODAY":
 			Logic.displayToday();
-			systemMessage.setSystemMessage(MESSAGE_DISPLAY_TODAY);
-			systemMessage.setDisplayStatus(STATUS_TODAY);
+			systemState.setSystemMessage(MESSAGE_DISPLAY_TODAY);
+			systemState.setDisplayStatus(STATUS_TODAY);
 			break;
 
 		case "MARK":
 			undoRedo.addUndo(allTasks);
-			systemMessage.setSystemMessage(MESSAGE_MARK);
+			systemState.setSystemMessage(MESSAGE_MARK);
 			Logic.taskIsDone(Integer.parseInt(command.getParameters()
 					.getTaskId()));
-			updateDisplayGUI(systemMessage.getDisplayStatus());
+			updateDisplayGUI(systemState.getDisplayStatus());
 			break;
 
 		case "UNMARK":
 			undoRedo.addUndo(allTasks);
-			systemMessage.setSystemMessage(MESSAGE_UNMARK);
+			systemState.setSystemMessage(MESSAGE_UNMARK);
 			Logic.taskIsNotDone(Integer.parseInt(command.getParameters()
 					.getTaskId()));
-			updateDisplayGUI(systemMessage.getDisplayStatus());
+			updateDisplayGUI(systemState.getDisplayStatus());
 			break;
 
 		case "SEARCH":
-			systemMessage.setSystemMessage(MESSAGE_SEARCH);
+			systemState.setSystemMessage(String.format(MESSAGE_SEARCH, command.getParameters().getDescription()));
 			Logic.searchTask(command.getParameters().getDescription());
-			systemMessage.setDisplayStatus(STATUS_PERIOD);
+			systemState.setDisplayStatus(STATUS_PERIOD);
 			break;
 
 		case "DISPLAY_TOMORROW":
-			systemMessage.setSystemMessage(MESSAGE_DISPLAY_TOMORROW);
+			systemState.setSystemMessage(MESSAGE_DISPLAY_TOMORROW);
 			Logic.displayTomorrow();
-			systemMessage.setDisplayStatus(STATUS_TOMORROW);
+			systemState.setDisplayStatus(STATUS_TOMORROW);
 			break;
 
 		case "DISPLAY_WEEK":
-			systemMessage.setSystemMessage(MESSAGE_DISPLAY_WEEK);
+			systemState.setSystemMessage(MESSAGE_DISPLAY_WEEK);
 			Logic.displayWeek();
-			systemMessage.setDisplayStatus(STATUS_WEEK);
+			systemState.setDisplayStatus(STATUS_WEEK);
 			break;
 
 		case "DISPLAY_ALL":
-			systemMessage.setSystemMessage(MESSAGE_DISPLAY_ALL);
+			systemState.setSystemMessage(MESSAGE_DISPLAY_ALL);
 			Logic.displayAll();
-			systemMessage.setDisplayStatus(STATUS_ALL);
+			systemState.setDisplayStatus(STATUS_ALL);
 			break;
 
 		case "DISPLAY_ALL_FLOAT":
-			systemMessage.setSystemMessage(MESSAGE_DISPLAY_FLOATING);
+			systemState.setSystemMessage(MESSAGE_DISPLAY_FLOATING);
 			Logic.displayAllFloat();
-			systemMessage.setDisplayStatus(STATUS_DISPLAY_FLOAT);
+			systemState.setDisplayStatus(STATUS_DISPLAY_FLOAT);
 			break;
 
 		case "DISPLAY_IN_TIME":
-			systemMessage.setSystemMessage(MESSAGE_DISPLAY_PERIOD);
+			systemState.setSystemMessage(MESSAGE_DISPLAY_PERIOD);
 			Logic.displayTasksAtPeriod(command.getParameters().getStartTime()
 					.getTime(), command.getParameters().getEndTime().getTime());
-			systemMessage.setDisplayStatus(STATUS_PERIOD);
+			systemState.setDisplayStatus(STATUS_PERIOD);
 			break;
 
 		case "QUIT":
@@ -289,27 +289,27 @@ public class Controller {
 
 		case "DELETE_ALL_COMPLETED":
 			undoRedo.addUndo(allTasks);
-			systemMessage.setSystemMessage(MESSAGE_DELETE_COMPLETED);
+			systemState.setSystemMessage(MESSAGE_DELETE_COMPLETED);
 			Logic.deleteAlldone();
-			updateDisplayGUI(systemMessage.getDisplayStatus());
+			updateDisplayGUI(systemState.getDisplayStatus());
 			break;
 
 		case "UNDO":
-			systemMessage.setSystemMessage(MESSAGE_UNDO);
+			systemState.setSystemMessage(MESSAGE_UNDO);
 			if (!undoRedo.isUndoEmpty()) {
 				allTasks = undoRedo.undo(allTasks);
 				Logic.initStorage(allTasks);
 			}
-			updateDisplayGUI(systemMessage.getDisplayStatus());
+			updateDisplayGUI(systemState.getDisplayStatus());
 			break;
 
 		case "REDO":
-			systemMessage.setSystemMessage(MESSAGE_REDO);
+			systemState.setSystemMessage(MESSAGE_REDO);
 			if (!undoRedo.isRedoEmpty()) {
 				allTasks = undoRedo.redo(allTasks);
 				Logic.initStorage(allTasks);
 			}
-			updateDisplayGUI(systemMessage.getDisplayStatus());
+			updateDisplayGUI(systemState.getDisplayStatus());
 			break;
 
 		case "EXPORT":
@@ -349,17 +349,17 @@ public class Controller {
 				Logic.clearFolder(0);
 			}
 
-			systemMessage.setSystemMessage(MESSAGE_CLEAR);
-			updateDisplayGUI(systemMessage.getDisplayStatus());
+			systemState.setSystemMessage(MESSAGE_CLEAR);
+			updateDisplayGUI(systemState.getDisplayStatus());
 			break;
 
 		default:
-			systemMessage.setSystemMessage(MESSAGE_INVALID_COMMAND);
+			systemState.setSystemMessage(MESSAGE_INVALID_COMMAND);
 			break;
 
 		}
 
-		System.out.printf("%s\n", systemMessage.getSystemMessage());
+		System.out.printf("%s\n", systemState.getSystemMessage());
 
 		return quit;
 	}
@@ -528,17 +528,17 @@ public class Controller {
 			if (command.getParameters().getTaskId() != null) {
 				Logic.deleteTask(Integer.parseInt(command.getParameters()
 						.getTaskId()));
-				updateDisplayGUI(systemMessage.getDisplayStatus());
+				updateDisplayGUI(systemState.getDisplayStatus());
 			} else {
-				systemMessage.setSystemMessage(MESSAGE_DELETE_SEARCH);
+				systemState.setSystemMessage(MESSAGE_DELETE_SEARCH);
 				Logic.searchTask(command.getParameters().getDescription());
-				systemMessage.setDisplayStatus(STATUS_PERIOD);
+				systemState.setDisplayStatus(STATUS_PERIOD);
 
 			}
 		} catch (Exception e) {
-			systemMessage.setSystemMessage(MESSAGE_DELETE_SEARCH);
+			systemState.setSystemMessage(MESSAGE_DELETE_SEARCH);
 			Logic.searchTask(command.getParameters().getDescription());
-			systemMessage.setDisplayStatus(STATUS_PERIOD);
+			systemState.setDisplayStatus(STATUS_PERIOD);
 		}
 	}
 
@@ -565,7 +565,7 @@ public class Controller {
 		if (displayStatus == STATUS_PERIOD) {
 
 			Logic.displayAll();
-			systemMessage.setDisplayStatus(STATUS_ALL);
+			systemState.setDisplayStatus(STATUS_ALL);
 		}
 		if (displayStatus == STATUS_DISPLAY_FLOAT) {
 			Logic.displayAllFloat();
@@ -582,7 +582,7 @@ public class Controller {
 	}
 
 	public int getDisplayStatus() {
-		return systemMessage.getDisplayStatus();
+		return systemState.getDisplayStatus();
 	}
 
 	public AllTasks getAllTask() {

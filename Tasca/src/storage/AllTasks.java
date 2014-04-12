@@ -19,13 +19,13 @@ public class AllTasks {
         private LinkedList<Task> allTasks;
         private Calendar currentTime;
         private Task currentTask;
-        private LinkedList<Reminder> allReminders;
-        private Reminder currentReminder;
+        private LinkedList<TaskWithReminder> allReminders;
+        private TaskWithReminder currentReminder;
         private LinkedList<FloatingTask> allFloatingTasks;
 
         public AllTasks() {
                 allTasks = new LinkedList<Task>();
-                allReminders = new LinkedList<Reminder>();
+                allReminders = new LinkedList<TaskWithReminder>();
                 allFloatingTasks = new LinkedList<FloatingTask>();
                 return;
         }
@@ -84,7 +84,7 @@ public class AllTasks {
                                                 fileScanner.nextInt());
 
                                 allReminders
-                                                .add(new Reminder(reminderTime, allTasks.getLast()));
+                                                .add(new TaskWithReminder(reminderTime, allTasks.getLast()));
                                 fileScanner.nextLine();
                         }
                 }
@@ -224,12 +224,12 @@ public class AllTasks {
         }
 
         private void sortReminders() {
-                LinkedList<Reminder> temp = new LinkedList<Reminder>();
+                LinkedList<TaskWithReminder> temp = new LinkedList<TaskWithReminder>();
                 int numOfReminders = this.getReminderSize();
 
                 while (numOfReminders != 0) {
                         int count = 1, index = 0;
-                        Reminder smallest = allReminders.get(0);
+                        TaskWithReminder smallest = allReminders.get(0);
 
                         while (count < numOfReminders) {
                                 Date next = allReminders.get(count).getReminderTime().getTime();
@@ -300,11 +300,11 @@ public class AllTasks {
                 return true;
         }
 
-        public Reminder getReminder(int index) {
+        public TaskWithReminder getReminder(int index) {
                 return allReminders.get(index);
         }
 
-        public boolean addReminder(int index, Reminder reminder) {
+        public boolean addReminder(int index, TaskWithReminder reminder) {
                 allReminders.add(index, reminder);
                 sortReminders();
                 return true;
@@ -449,7 +449,7 @@ public class AllTasks {
 
         }
 
-        public Reminder getCurrentReminder() {
+        public TaskWithReminder getCurrentReminder() {
                 if (setCurrentReminder()) {
                         return currentReminder;
                 } else {

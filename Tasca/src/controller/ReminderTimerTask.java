@@ -5,7 +5,7 @@ import java.util.Calendar;
 import java.util.TimerTask;
 
 import storage.AllTasks;
-import storage.Reminder;
+import storage.TaskWithReminder;
 import storage.Task;
 
 /**
@@ -17,7 +17,7 @@ public class ReminderTimerTask extends TimerTask {
 	private Controller controller;
 
 	public void run() {
-		Reminder currentReminder = allTasks.getCurrentReminder();
+		TaskWithReminder currentReminder = allTasks.getCurrentReminder();
 
 		int count = 0, total = allTasks.getTaskSize();
 		Calendar temp = Calendar.getInstance();

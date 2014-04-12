@@ -1,46 +1,18 @@
-3 31 0 false akjwdawkjda
+1 11 0 false clean macbook screen (it's been years!)
 NIL
-0 32 0 false awkdjawd new Taskmda
+1 12 0 false buy "Wolf of Wall Street" bluray
 NIL
-1 33 0 false new task
-new location man!
-1 34 0 false akjd
+2 13 1 false NI ELVIS simulation for EE2031
 NIL
-0 35 3 false akwdakwd
+2 14 0 false contact HCL lab
 NIL
-0 36 3 false new task for WORK
-new location
-1 37 1 false new task
-new locationdawd ad
-0 38 1 false new description for id 18
-new location added to id 18
-1 39 0 false new blank task
+3 15 3 false refactor class names
 NIL
-1 40 0 false new blank hahah
+3 16 0 false more exception handling for interpreter
 NIL
-1 41 0 false akjwdakwjdnaw
+3 17 0 false create reminder pop function
 NIL
-4 42 0 false ajwkdajwd
+3 18 0 false create v0.5 gDocs file
 NIL
-5 43 0 false fixed the bug 2
-NIL
-3 44 0 false new task for work
-new location added
-3 45 0 true akwjdaw dakwjdnawkjdna
-new location
-1 46 0 false jknanwd
-NIL
-5 47 0 false new task for cs2103
-new location
-4 48 0 false awdjkd akjwdawk da
-new location
-0 49 1 false new task for home
-NIL
-2 50 3 false hehe
-NIL
-2 51 0 true new task for personal
-NIL
-5 52 0 false new tsak for cs2103 ahahaha
-NIL
-1 53 0 false this WAS PREvious checked
+4 19 0 false change NUSNET password
 NIL
