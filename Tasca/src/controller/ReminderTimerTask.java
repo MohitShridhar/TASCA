@@ -1,8 +1,13 @@
 package controller;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimerTask;
+
+import ro.lmn.maven.dmn.NotifierFactory;
+import ro.lmn.maven.dmn.api.NotificationType;
+import ro.lmn.maven.dmn.api.Notifier;
 
 import storage.AllTasks;
 import storage.TaskWithReminder;
@@ -13,8 +18,12 @@ import storage.Task;
  * @Matric A0097416X
  */
 public class ReminderTimerTask extends TimerTask {
+	private static final String NOTIFICATION_TITLE = "REMINDER";
 	private AllTasks allTasks;
 	private Controller controller;
+	
+        private NotifierFactory notifierFactory = new NotifierFactory();
+        private Notifier notifier = notifierFactory.getNotifier();
 
 	public void run() {
 		TaskWithReminder currentReminder = allTasks.getCurrentReminder();
@@ -32,7 +41,16 @@ public class ReminderTimerTask extends TimerTask {
 		if (currentReminder == null) {
 			return;
 		} else {
+		    	
 			Task task = currentReminder.getTask();
+			
+			// OS Notification:			
+		        try {
+			    notifier.notify(NOTIFICATION_TITLE, task.getTaskTitle(), NotificationType.SUCCESS);
+			} catch (IOException e) {
+			    e.printStackTrace();
+			}
+			
 
 			SimpleDateFormat display = new SimpleDateFormat(
 					"E yyyy.MM.dd 'at' hh:mm:ss a zzz");
