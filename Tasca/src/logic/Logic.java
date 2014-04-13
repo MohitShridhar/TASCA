@@ -22,14 +22,14 @@ public class Logic {
 	private static CurrentSystemState systemMessage;
 
 	public static void export(String savePath) {
-		new Exporter(savePath); 
+		new Exporter(savePath);
 	}
 
 	public static void importFile(String filePath) {
-		new Importer(filePath); 
+		new Importer(filePath);
 	}
-	
-	//@author A0094655U
+
+	// @author A0094655U
 	public static void initStorage(AllTasks alltasks) {
 		_storage = alltasks;
 
@@ -39,13 +39,13 @@ public class Logic {
 	public static void initSystemMessage(CurrentSystemState sysMsg) {
 		systemMessage = sysMsg;
 	}
-	
-	//@author A0094655U
+
+	// @author A0094655U
 	public static AllTasks getStorage() {
 		return _storage;
 	}
-	
-	//@author A0094655U
+
+	// @author A0094655U
 	public static boolean addTask(int folder, int priority, Date start,
 			Date end, boolean isThereReminder, boolean isTaskDone,
 			boolean isAllDayEvent, String title, String location, Date reminder) {
@@ -143,8 +143,8 @@ public class Logic {
 		return isTaskDeleted;
 	}
 
-	public static void displayTask(int index, LinkedList<TaskWithReminder> list,
-			LinkedList<FloatingTask> list2) {
+	public static void displayTask(int index,
+			LinkedList<TaskWithReminder> list, LinkedList<FloatingTask> list2) {
 
 		int totalNumOfTasks = _storage.getSize();
 		if (index < _storage.getTaskSize()) {
@@ -212,8 +212,8 @@ public class Logic {
 			}
 		}
 	}
-	
-	//@author A0094655U
+
+	// @author A0094655U
 	public static void displayAllTasks() {
 		int totalNumOfTasks = _storage.getSize();
 		LinkedList<TaskWithReminder> list = new LinkedList<TaskWithReminder>();
@@ -224,8 +224,8 @@ public class Logic {
 		systemMessage.setTimedList(list);
 		systemMessage.setFloatingList(_storage.getFloatingList());
 	}
-	
-	//@author A0094655U
+
+	// @author A0094655U
 	public static void displayTasksAtPeriod(Date startDateSpecified,
 			Date endDateSpecified) {
 		int totalNumOfTasks = _storage.getTaskSize();
@@ -252,8 +252,8 @@ public class Logic {
 		systemMessage.setTimedList(list);
 		systemMessage.setFloatingList(list2);
 	}
-	
-	//@author A0094655U
+
+	// @author A0094655U
 	public static void displayTasksAtDate(Date dateSpecified) {
 		Calendar endDate = Calendar.getInstance();
 		endDate.setTime(dateSpecified);
@@ -261,8 +261,8 @@ public class Logic {
 		endDate.set(Calendar.MINUTE, 59);
 		displayTasksAtPeriod(dateSpecified, endDate.getTime());
 	}
-	
-	//@author A0094655U
+
+	// @author A0094655U
 	public static int searchTask(String searchString) {
 		int totalNumOfTasks = _storage.getSize(), count = 0;
 		LinkedList<TaskWithReminder> list = new LinkedList<TaskWithReminder>();
@@ -316,8 +316,8 @@ public class Logic {
 		}
 		System.out.printf("%d Tasks have been done and deleted", count);
 	}
-	
-	//@author A0094655U
+
+	// @author A0094655U
 	public static String getUserInput(Scanner input) {
 		// Scanner input = new Scanner(System.in);
 		String result = input.nextLine();
@@ -347,11 +347,10 @@ public class Logic {
 		}
 	}
 
-	
 	/**
-	 *@author A0097416X
+	 * @author A0097416X
 	 */
-	//this method updates a timed task accordingly
+	// this method updates a timed task accordingly
 	public static boolean updateTask(int folder, String indexString,
 			String priority, Calendar start, Calendar end,
 			boolean isThereReminder, String title, String location,
@@ -416,7 +415,7 @@ public class Logic {
 				if (start == null) {
 					start = Calendar.getInstance();
 				}
-				if (end  == null){
+				if (end == null) {
 					end.setTime(start.getTime());
 					end.add(Calendar.DAY_OF_YEAR, 1);
 				}
@@ -435,11 +434,11 @@ public class Logic {
 		return isTaskUpdated;
 
 	}
-	
+
 	/**
 	 * @author A0097416X
 	 */
-	//this method is used to SOLELY add floating tasks
+	// this method is used to SOLELY add floating tasks
 	public static boolean addFloatingTask(int folder, int priority,
 			boolean isTaskDone, String title, String location) {
 		int dummyID = 0;
@@ -449,10 +448,11 @@ public class Logic {
 		return true;
 
 	}
+
 	/**
 	 * @author A0097416X
 	 */
-	//this method modifies a current floating task accordingly
+	// this method modifies a current floating task accordingly
 	public static void updateFloatingTask(int folder, String indexString,
 			String priority, String title, String location)
 			throws IndexOutOfBoundsException {
@@ -512,7 +512,8 @@ public class Logic {
 	/**
 	 * @author A0097416X
 	 */
-	//this method displays all the floating tasks only(updates the systemMessage)
+	// this method displays all the floating tasks only(updates the
+	// systemMessage)
 	public static void displayAllFloat() {
 		int count = _storage.getTaskSize();
 		LinkedList<TaskWithReminder> list = new LinkedList<TaskWithReminder>();
@@ -528,7 +529,7 @@ public class Logic {
 	/**
 	 * @author A0097416X
 	 */
-	//this method clears all timed task and floating task of the folder 
+	// this method clears all timed task and floating task of the folder
 	public static void clearFolder(int folder) {
 		int count = 0;
 
@@ -551,11 +552,11 @@ public class Logic {
 	}
 
 	/**
-	 *
+	 * 
 	 * 
 	 * @author A0097416X
 	 */
-	//this method displays all tasks for that particular week
+	// this method displays all tasks for that particular week
 	public static void displayWeek() {
 		Calendar monday = Calendar.getInstance();
 		monday.add(Calendar.DAY_OF_WEEK,
@@ -567,16 +568,24 @@ public class Logic {
 		displayTasksAtPeriod(monday.getTime(), sunday.getTime());
 		return;
 	}
-	
-	//@author A0094655U
+
+	public static void displayNow() {
+		Calendar start = Calendar.getInstance();
+		Calendar end = start;
+		end.add(Calendar.MINUTE, 1);
+		displayTasksAtPeriod(start.getTime(), end.getTime());
+		return;
+	}
+
+	// @author A0094655U
 	public static void displayToday() {
 		Calendar today = Calendar.getInstance();
 		today.set(Calendar.HOUR_OF_DAY, 0);
 		today.set(Calendar.MINUTE, 0);
 		displayTasksAtDate(today.getTime());
 	}
-	
-	//@author A0094655U
+
+	// @author A0094655U
 	public static void displayTomorrow() {
 		// long tomorrowInMillis = System.currentTimeMillis()
 		// + CONSTANT_MILLISECONDS_IN_A_DAY;
@@ -603,7 +612,7 @@ public class Logic {
 		}
 
 	}
-	
+
 	public static boolean taskIsNotDone(int index) {
 		int totalNumOfTasks = _storage.getSize();
 		if (index < totalNumOfTasks && index >= 0) {
@@ -618,8 +627,8 @@ public class Logic {
 			return false;
 		}
 	}
-	
-	//@author A0094655U
+
+	// @author A0094655U
 	private static boolean isInString(String mainString, String subString) {
 		if (subString.trim().length() == 0) {
 			return false;

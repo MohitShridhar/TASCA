@@ -31,6 +31,7 @@ public class Controller {
 	private static final String MESSAGE_DISPLAY_FLOATING = "All events without time are being displayed";
 	private static final String MESSAGE_DISPLAY_PERIOD = "All events for the given period are being displayed";
 	private static final String MESSAGE_DISPLAY_ALL = "All events are being displayed";
+	private static final String MESSAGE_DISPLAY_NOW = "Current tasks are being displayed";
 	private static final String MESSAGE_SEARCH = "Search results for \"%s\"";
 	private static final String MESSAGE_PROVIDE_TASK_ID = "Please provide event ID to be deleted";
 	private static final String MESSAGE_MARK = "The task is now marked as done";
@@ -281,6 +282,12 @@ public class Controller {
 			systemState.setSystemMessage(MESSAGE_DISPLAY_PERIOD);
 			Logic.displayTasksAtPeriod(command.getParameters().getStartTime()
 					.getTime(), command.getParameters().getEndTime().getTime());
+			systemState.setDisplayStatus(STATUS_PERIOD);
+			break;
+			
+		case "DISPLAY_NOW":
+			systemState.setSystemMessage(MESSAGE_DISPLAY_NOW);
+			Logic.displayNow();
 			systemState.setDisplayStatus(STATUS_PERIOD);
 			break;
 
