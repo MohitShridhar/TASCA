@@ -3,9 +3,9 @@ package storage;
 import interpreter.FolderName;
 
 /**
- * @author Narinderpal Singh Dhillon
- * @Matric A0097416X
+ * @author A0097416X
  */
+//this is a floating task node
 public class FloatingTask {
 
 	private int taskID, priority;

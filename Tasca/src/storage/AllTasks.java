@@ -12,9 +12,14 @@ import java.util.Scanner;
 import java.util.Date;
 
 /**
- * @author Narinderpal Singh Dhillon
- * @Matric A0097416X
+ * @author A0097416X
  */
+
+//this class stores all floating and timed tasks in different lists. The
+//reminders of a specific task is also stored and handled separately in another
+//list
+//The class also handles current reminders which is used by the
+//remindertimertask to display the right reminder
 public class AllTasks {
         private LinkedList<Task> allTasks;
         private Calendar currentTime;
@@ -273,7 +278,7 @@ public class AllTasks {
                 this.updateFloatingTaskID();
                 return true;
         }
-
+      //this method returns the index in the rmeinders list of the task 
         public int searchForCorrespondingReminder(Task task) {
                 int counter = 0;
                 int index = -1;
@@ -326,7 +331,7 @@ public class AllTasks {
         public boolean isValidTaskId(int index) {
                 return index < allTasks.size() && index >= 0;
         }
-
+      //this method sets the current time
         private void setCurrentTime() {
                 Calendar current = Calendar.getInstance();
                 currentTime = current;
@@ -395,7 +400,7 @@ public class AllTasks {
                 }
 
         }
-
+      //this method is called to remove all reminders that ahave already passed but have not been deleted and 
         public boolean clearAllMissedReminders() {
                 int counter = 0, index = -1;
 
@@ -417,7 +422,7 @@ public class AllTasks {
                 }
                 return true;
         }
-
+      //this method sets the current reminder to be shown
         private boolean setCurrentReminder() {
                 int counter = 0, index = -1;
 
@@ -466,7 +471,7 @@ public class AllTasks {
                 updateFloatingTaskID();
                 return true;
         }
-
+      //this method updates all the ids of floating tasks
         private void updateFloatingTaskID() {
                 int count = 0;
                 int timedTasksSize = this.getTaskSize();

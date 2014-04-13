@@ -4,9 +4,10 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 /**
- * @author Narinderpal Singh Dhillon
- * @Matric A0097416X
+ * @author A0097416X
  */
+
+//this class handles and tracks all the comamnds that are executed. It provides undo and redo capabilities
 public class UndoRedo {
 	private static UndoRedo instance= null;
 	private static Stack <AllTasks> undo;

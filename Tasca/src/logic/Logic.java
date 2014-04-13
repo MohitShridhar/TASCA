@@ -22,12 +22,11 @@ public class Logic {
 	private static CurrentSystemState systemMessage;
 
 	public static void export(String savePath) {
-		new Exporter(savePath); // TODO: implement singleton
+		new Exporter(savePath); 
 	}
 
 	public static void importFile(String filePath) {
-		new Importer(filePath); // TODO: implement singleton + be
-								// consistent with exporter
+		new Importer(filePath); 
 	}
 	
 	//@author A0094655U
@@ -350,9 +349,9 @@ public class Logic {
 
 	
 	/**
-	 * @author Narinderpal Singh Dhillon
-	 * @Matric A0097416X
+	 *@author A0097416X
 	 */
+	//this method updates a timed task accordingly
 	public static boolean updateTask(int folder, String indexString,
 			String priority, Calendar start, Calendar end,
 			boolean isThereReminder, String title, String location,
@@ -417,6 +416,13 @@ public class Logic {
 				if (start == null) {
 					start = Calendar.getInstance();
 				}
+				if (end  == null){
+					end.setTime(start.getTime());
+					end.add(Calendar.DAY_OF_YEAR, 1);
+				}
+				if (folder == -1) {
+					folder = _storage.getTask(index).getFolder();
+				}
 				isTaskDeleted = deleteTask(index);
 				isTaskAdded = addTask(folder, priorityInt, start.getTime(),
 						end.getTime(), isThereReminder, isTaskDone,
@@ -431,9 +437,9 @@ public class Logic {
 	}
 	
 	/**
-	 * @author Narinderpal Singh Dhillon
-	 * @Matric A0097416X
+	 * @author A0097416X
 	 */
+	//this method is used to SOLELY add floating tasks
 	public static boolean addFloatingTask(int folder, int priority,
 			boolean isTaskDone, String title, String location) {
 		int dummyID = 0;
@@ -444,9 +450,9 @@ public class Logic {
 
 	}
 	/**
-	 * @author Narinderpal Singh Dhillon
-	 * @Matric A0097416X
+	 * @author A0097416X
 	 */
+	//this method modifies a current floating task accordingly
 	public static void updateFloatingTask(int folder, String indexString,
 			String priority, String title, String location)
 			throws IndexOutOfBoundsException {
@@ -504,9 +510,9 @@ public class Logic {
 	}
 
 	/**
-	 * @author Narinderpal Singh Dhillon
-	 * @Matric A0097416X
+	 * @author A0097416X
 	 */
+	//this method displays all the floating tasks only(updates the systemMessage)
 	public static void displayAllFloat() {
 		int count = _storage.getTaskSize();
 		LinkedList<TaskWithReminder> list = new LinkedList<TaskWithReminder>();
@@ -520,9 +526,9 @@ public class Logic {
 	}
 
 	/**
-	 * @author Narinderpal Singh Dhillon
-	 * @Matric A0097416X
+	 * @author A0097416X
 	 */
+	//this method clears all timed task and floating task of the folder 
 	public static void clearFolder(int folder) {
 		int count = 0;
 
@@ -545,11 +551,11 @@ public class Logic {
 	}
 
 	/**
-	 * Controller:
+	 *
 	 * 
-	 * @author Narinderpal Singh Dhillon
-	 * @Matric A0097416X
+	 * @author A0097416X
 	 */
+	//this method displays all tasks for that particular week
 	public static void displayWeek() {
 		Calendar monday = Calendar.getInstance();
 		monday.add(Calendar.DAY_OF_WEEK,

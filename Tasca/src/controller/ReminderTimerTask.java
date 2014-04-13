@@ -14,16 +14,16 @@ import storage.TaskWithReminder;
 import storage.Task;
 
 /**
- * @author Narinderpal Singh Dhillon
- * @Matric A0097416X
+ * @author A0097416X
  */
+//This class is used to periodically check and display any reminders every 5 seconds. Also it checks if a task end time is passed and updates it as task done if it is
 public class ReminderTimerTask extends TimerTask {
 	private static final String NOTIFICATION_TITLE = "REMINDER";
 	private AllTasks allTasks;
 	private Controller controller;
-	
-        private NotifierFactory notifierFactory = new NotifierFactory();
-        private Notifier notifier = notifierFactory.getNotifier();
+
+	private NotifierFactory notifierFactory = new NotifierFactory();
+	private Notifier notifier = notifierFactory.getNotifier();
 
 	public void run() {
 		TaskWithReminder currentReminder = allTasks.getCurrentReminder();
@@ -41,16 +41,17 @@ public class ReminderTimerTask extends TimerTask {
 		if (currentReminder == null) {
 			return;
 		} else {
-		    	
+
 			Task task = currentReminder.getTask();
-			
-			// OS Notification:			
-		        try {
-			    notifier.notify(NOTIFICATION_TITLE, task.getTaskTitle(), NotificationType.SUCCESS);
-			} catch (IOException e) {
-			    e.printStackTrace();
+
+			// OS Notification:
+			try {
+				notifier.notify(NOTIFICATION_TITLE, task.getTaskTitle(),
+						NotificationType.SUCCESS);
+				notifier.wait(2000000);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			
 
 			SimpleDateFormat display = new SimpleDateFormat(
 					"E yyyy.MM.dd 'at' hh:mm:ss a zzz");
@@ -82,6 +83,7 @@ public class ReminderTimerTask extends TimerTask {
 					.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
 			System.out
 					.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			controller.getCurrentSystemState().setSystemMessage(task.getTaskTitle());
 		}
 
 		return;

@@ -4,9 +4,9 @@ import interpreter.FolderName;
 
 import java.util.Calendar;
 /**
- * @author Narinderpal Singh Dhillon
- * @Matric A0097416X
+ * @author A0097416X
  */
+//this is the timed task node
 public class Task {
 	private int taskID, priority;
 	int folder;
@@ -17,7 +17,6 @@ public class Task {
 	private String taskTitle;
 	private String location;
 
-	// Note for NARIN: The convention used for NLP: if a parameter is not specified then it's NULL. 
 	
 	public Task (int folder, int taskID, int priority, Calendar startTime, Calendar endTime, boolean isThereReminder, boolean isTaskDone, 
 			boolean isAllDayEvent, String taskTitle, String remarks) {

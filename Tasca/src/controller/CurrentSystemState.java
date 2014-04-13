@@ -6,9 +6,11 @@ import storage.TaskWithReminder;
 import storage.FloatingTask;
 
 /**
- * @author Narinderpal Singh Dhillon
- * @Matric A0097416X
+ *@author A0097416X
  */
+
+//this class acts as a bridge between the gui and the rest of the system in terms of sending the gui what to display and what message to display from what has occured
+//the gui will only communicate through this special class to get its updates
 public class CurrentSystemState {
 	private String message;
 	private LinkedList<TaskWithReminder> timedTaskList;
@@ -50,7 +52,7 @@ public class CurrentSystemState {
 		this.displayStatus = temp;
 		return;
 	}
-	
+	//this method sorts the tasks to be displayed so that the tasks that are done will always be at the bottom of the list
 	public void sortForGUI () {
 		int count = 0 , total = timedTaskList.size();
 		

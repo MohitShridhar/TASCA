@@ -1,8 +1,7 @@
 /**
  * Controller:
  * 
- * @author Narinderpal Singh Dhillon
- * @Matric A0097416X
+ * @author A0097416X
  */
 package controller;
 
@@ -66,7 +65,7 @@ public class Controller {
 
 	private Timer systemTimer;
 	private ReminderTimerTask reminderTimerTask;
-
+	// this is the contructor for the controller. It initialises storage, logic, systemMessage, timer tasks  and loads the data from file
 	public Controller() {
 		initialiseTasks();
 		Logic.initStorage(allTasks);
@@ -109,7 +108,7 @@ public class Controller {
 		systemState.sortForGUI();
 		return systemState;
 	}
-
+	//this method is calle dupon by the gui with the command string as input for the controller to execute the commands
 	public boolean executeCommands(String input) {
 		Interpreter newInt = new Interpreter();
 
@@ -129,7 +128,7 @@ public class Controller {
 		}
 
 	}
-
+	//this method is special method used by the gui to specially execute certain tasks for a particular folder only
 	public boolean executeCommands(String input, String currFolder) {
 		Interpreter newInt = new Interpreter();
 
@@ -154,7 +153,7 @@ public class Controller {
 		}
 		return;
 	}
-
+	//this method is a special batch add method for importing the files from ics. this prevents multiple undo nodes being stacked per task add
 	public void mutexAdd(LinkedList<String> input) {
 		int total = input.size(), count = 0;
 		undoRedo.addUndo(allTasks);
@@ -177,11 +176,11 @@ public class Controller {
 				System.out.println("Exception - " + eI + "\n");
 			}
 		}
-		
+
 		updateDisplayGUI(systemState.getDisplayStatus());
 
 	}
-
+	//execute logic is called to determine which logic function to be called to execute the command
 	private boolean executeLogic(Command command) {
 		boolean isThereReminder = true, quit = false;
 		Calendar startTime = Calendar.getInstance();
@@ -199,10 +198,11 @@ public class Controller {
 
 		case "ADD":
 			undoRedo.addUndo(allTasks);
-			
+
 			String taskTitle = command.getParameters().getDescription();
-			
-			systemState.setSystemMessage(String.format(MESSAGE_TASK_ADDED, taskTitle));
+
+			systemState.setSystemMessage(String.format(MESSAGE_TASK_ADDED,
+					taskTitle));
 			execute_add(command, isThereReminder, startTime);
 			updateDisplayGUI(systemState.getDisplayStatus());
 			break;
@@ -215,11 +215,12 @@ public class Controller {
 
 		case "MODIFY":
 			undoRedo.addUndo(allTasks);
-			
+
 			String taskDesc = command.getParameters().getDescription();
-			
-			systemState.setSystemMessage(String.format(MESSAGE_TASK_MODIFIED, taskDesc));
-			execute_modify(command, isThereReminder); 
+
+			systemState.setSystemMessage(String.format(MESSAGE_TASK_MODIFIED,
+					taskDesc));
+			execute_modify(command, isThereReminder);
 			updateDisplayGUI(systemState.getDisplayStatus());
 			break;
 
@@ -246,7 +247,8 @@ public class Controller {
 			break;
 
 		case "SEARCH":
-			systemState.setSystemMessage(String.format(MESSAGE_SEARCH, command.getParameters().getDescription()));
+			systemState.setSystemMessage(String.format(MESSAGE_SEARCH, command
+					.getParameters().getDescription()));
 			Logic.searchTask(command.getParameters().getDescription());
 			systemState.setDisplayStatus(STATUS_PERIOD);
 			break;
@@ -346,6 +348,8 @@ public class Controller {
 				Logic.clearFolder(5);
 			}
 			if (typedFolder.equals("DEFAULT")) {
+				// if(new Config().getFolderId("DEFAULT").toString().equals(")
+				// Logic.clearFolder();
 				Logic.clearFolder(0);
 			}
 
@@ -391,9 +395,12 @@ public class Controller {
 			folder = -1;
 		}
 		try {
-			if (command.getParameters().getEndTime() != null) {
+			if (command.getParameters().getEndTime() != null
+					|| command.getParameters().getStartTime() != null) {
 				throw new IllegalArgumentException();
-			} else {
+			}
+
+			else {
 				Logic.updateFloatingTask(folder, command.getParameters()
 						.getTaskId(), command.getParameters().getPriority(),
 						command.getParameters().getDescription(), command
@@ -450,7 +457,7 @@ public class Controller {
 
 		}
 	}
-
+	//this method is called when the command id to modify a task. this handles the nulls returned from the interpreter before being passed to logic
 	private boolean checkForNulls(Command command, boolean isThereReminder,
 			Calendar startTime) {
 		if (command.getParameters().getRemindTime() == null) {
@@ -476,7 +483,7 @@ public class Controller {
 		}
 		return isThereReminder;
 	}
-
+	//this method is for adding time bound tasks
 	private void execute_add_timedTask(Command command,
 			boolean isThereReminder, Calendar startTime, int priority,
 			int folder) {
@@ -507,19 +514,25 @@ public class Controller {
 
 	private void execute_modifyTimedTask(int folder, Command command,
 			boolean isThereReminder, Calendar startTime) {
+		Calendar endTime = null;
 		try {
+			if (command.getParameters().getStartTime() != null) {
+				startTime = command.getParameters().getStartTime();
+			}
+			if (command.getParameters().getEndTime() != null) {
+				endTime = command.getParameters().getEndTime();
+			}
+			
 			Logic.updateTask(folder, command.getParameters().getTaskId(),
-					command.getParameters().getPriority(), startTime, command
-							.getParameters().getEndTime(), isThereReminder,
-					command.getParameters().getDescription(), command
-							.getParameters().getLocation(), command
+					command.getParameters().getPriority(), startTime, endTime,
+					isThereReminder, command.getParameters().getDescription(),
+					command.getParameters().getLocation(), command
 							.getParameters().getRemindTime().getTime());
 		} catch (Exception e) {
 			Logic.updateTask(folder, command.getParameters().getTaskId(),
-					command.getParameters().getPriority(), startTime, command
-							.getParameters().getEndTime(), isThereReminder,
-					command.getParameters().getDescription(), command
-							.getParameters().getLocation(), null);
+					command.getParameters().getPriority(), startTime, endTime,
+					isThereReminder, command.getParameters().getDescription(),
+					command.getParameters().getLocation(), null);
 		}
 	}
 
@@ -541,7 +554,7 @@ public class Controller {
 			systemState.setDisplayStatus(STATUS_PERIOD);
 		}
 	}
-
+	//this method is called to update the gui everytime a command is executed. this update sthe systemMessage
 	public void updateDisplayGUI(int displayStatus) {
 		if (displayStatus == STATUS_ALL) {
 			Logic.displayAll();
