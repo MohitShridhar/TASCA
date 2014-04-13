@@ -538,7 +538,7 @@ public class MainInterface {
     private static void setMainFrameBackground(final JFrame frame) {
 	JLabel mainFrameBackground = new JLabel(IMAGE_UI_BACKGROUND);
 	mainFrameBackground.setBackground(Color.BLACK);
-	mainFrameBackground.setBounds(BOUNDS_MAIN_FRAME);
+	mainFrameBackground.setBounds(BOUNDS_MAIN_FRAME);	
 	frame.getContentPane().add(mainFrameBackground);
     }
 
@@ -957,15 +957,16 @@ public class MainInterface {
     }
 
     private static void loadFrameSettings() {
-	mainFrame = new JFrame(TITLELESS_JFRAME);
+        mainFrame = new JFrame(TITLELESS_JFRAME);
 
-	mainFrame.setBackground(COLOR_UI_BACKGROUND);
-	mainFrame.getContentPane().setLayout(null);
-	mainFrame.setUndecorated(true); 
-	mainFrame.setSize(DIMENSIONS_MAIN_FRAME);
-	mainFrame.setResizable(false); 
-	mainFrame.setLocationRelativeTo(null); 
-	mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.setBackground(COLOR_UI_BACKGROUND);
+        mainFrame.getContentPane().setLayout(null);
+        mainFrame.setUndecorated(true); 
+        mainFrame.setSize(DIMENSIONS_MAIN_FRAME);
+        mainFrame.setResizable(false); 
+        mainFrame.setLocationRelativeTo(null); 
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	
     }
 
     private static void initiateSettingsPane(final JFrame frame) {

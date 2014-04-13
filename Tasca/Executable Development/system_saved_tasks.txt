@@ -5,28 +5,22 @@ NIL
 NIL
 3 2 2 2014 3 11 23 31 2014 3 18 23 31 false true false progress bar to task items
 NIL
-3 3 1 2014 3 11 23 32 2014 3 12 23 32 false false false fix 5th march bug
+3 3 1 2014 3 11 23 32 2014 3 12 23 32 false true false fix 5th march bug
 NIL
-3 4 1 2014 3 11 23 34 2014 3 14 23 34 true false false demo video
+3 4 1 2014 3 11 23 34 2014 3 14 23 34 false false false demo video
 NIL
-2014 3 12 23 34
-3 5 1 2014 3 11 23 45 2014 3 14 23 45 true false false submit v0.5 report
+3 5 1 2014 3 11 23 45 2014 3 14 23 45 false false false submit v0.5 report
 home & COM
-2014 3 13 0 45
 1 6 2 2014 3 11 23 25 2014 4 11 23 25 false false false pack bags for summer trip
 NIL
-5 7 0 2014 3 12 14 54 2014 3 17 14 54 false false false nekad
-NIL
-5 8 0 2014 3 15 15 3 2014 3 16 15 3 false false false new description
-NIL
-1 9 1 2014 3 15 23 24 2014 3 16 23 24 true false false pick groceries
+1 7 1 2014 3 15 23 24 2014 3 16 23 24 true false false pick up groceries
 green store
 2014 3 14 23 24
-3 10 0 2014 3 16 23 48 2014 3 18 23 48 true false false create .app and .exe files
+3 8 0 2014 3 16 23 48 2014 3 18 23 48 true false false NI ELVIS simulation for EE2031
 COM & home
-2014 3 14 23 49
-3 11 0 2014 3 17 23 33 2014 3 19 23 33 false false false plan final presentation
-NIL
-2 12 1 2014 3 18 23 30 2014 3 19 23 30 true false false EE2024 exam revision
+2014 3 17 22 21
+2 9 1 2014 3 18 23 30 2014 3 19 23 30 true false false EE2024 exam revision
 central lib
 2014 3 18 13 31
+3 10 0 2014 3 17 23 33 2014 3 19 23 33 false false false plan final presentation
+new location

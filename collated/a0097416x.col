@@ -1,0 +1,1908 @@
+//@author: a0097416x
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\controller\Controller.java
+	 */
+
+ */
+package controller;
+
+import interpreter.*;
+
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.io.FileNotFoundException;
+import java.util.logging.Level;
+import java.util.*;
+
+import logic.Logic;
+import storage.AllTasks;
+import storage.UndoRedo;
+
+public class Controller {
+	private static final String MESSAGE_EXPORT_SUCCESSFUL = "All events were successfully exported to ";
+	private static final String MESSAGE_IMPORT_SUCCESSFUL = "All events were successfully imported from ";
+	private static final String MESSAGE_TASK_ADDED = "\"%s\" has been added";
+	private static final String MESSAGE_TASK_DELETED = "The event has been deleted.";
+	private static final String MESSAGE_TASK_MODIFIED = "\"%s\" has been modified";
+	private static final String MESSAGE_DISPLAY_TODAY = "All events for today are being displayed";
+	private static final String MESSAGE_DISPLAY_TOMORROW = "All events for tomorrow are being displayed";
+	private static final String MESSAGE_DISPLAY_WEEK = "All events for the week are being displayed";
+	private static final String MESSAGE_DISPLAY_FLOATING = "All events without time are being displayed";
+	private static final String MESSAGE_DISPLAY_PERIOD = "All events for the given period are being displayed";
+	private static final String MESSAGE_DISPLAY_ALL = "All events are being displayed";
+	private static final String MESSAGE_DISPLAY_NOW = "Current tasks are being displayed";
+	private static final String MESSAGE_SEARCH = "Search results for \"%s\"";
+	private static final String MESSAGE_PROVIDE_TASK_ID = "Please provide event ID to be deleted";
+	private static final String MESSAGE_MARK = "The task is now marked as done";
+	private static final String MESSAGE_UNMARK = "The task is now marked as not done";
+	private static final String MESSAGE_DELETE_COMPLETED = "All completed tasks are now deleted";
+	private static final String MESSAGE_UNDO = "Undo successful";
+	private static final String MESSAGE_REDO = "Redo successful";
+	private static final String MESSAGE_CLEAR = "All events have been cleared";
+	private static final String MESSAGE_IMPORT = "Import successful";
+	private static final String MESSAGE_DELETE_SEARCH = "Please select the task to delete";
+
+	private static final long SYSTEM_TIMER_TASK_PERIOD = 5000;
+	private static final int STATUS_ALL = 0;
+	private static final int STATUS_TODAY = 1;
+	private static final int STATUS_TOMORROW = 2;
+	private static final int STATUS_WEEK = 3;
+	private static final int STATUS_MONTH = 4;
+	private static final int STATUS_PERIOD = 5;
+	private static final int STATUS_DISPLAY_FLOAT = 6;
+
+	private String MESSAGE_FILE_NOT_FOUND = "The system files could not be loaded.";
+	private String MESSAGE_INVALID_COMMAND = "The command given was invalid.";
+	private String MESSAGE_PROVIDE_END_TIME = "Please provide end time for time bounded tasks.";
+
+	private AllTasks allTasks;
+	private UndoRedo undoRedo = UndoRedo.getInstance();
+	private Scanner myScanner = new Scanner(System.in);
+	private CurrentSystemState systemState = new CurrentSystemState();
+
+	public static Handler handler;
+	public static Logger logger = Logger.getLogger("TASCA Log");
+
+	private Timer systemTimer;
+	private ReminderTimerTask reminderTimerTask;
+	// this is the contructor for the controller. It initialises storage, logic, systemMessage, timer tasks  and loads the data from file
+	public Controller() {
+		initialiseTasks();
+		Logic.initStorage(allTasks);
+		Logic.initSystemMessage(systemState);
+		Interpreter newInt = new Interpreter();
+		this.executeCommands(newInt
+				.getDefaultCommandSyn(CommandType.DISPLAY_ALL));
+		systemState.setFloatingList(allTasks.getFloatingList());
+		try {
+			handler = new FileHandler("Tasca Log.txt");
+		} catch (Exception e) {
+
+		}
+		SimpleFormatter formatter = new SimpleFormatter();
+		handler.setFormatter(formatter);
+		logger.addHandler(handler);
+		return;
+	}
+
+	private void initialiseTasks() {
+		allTasks = new AllTasks();
+		systemTimer = new Timer(true);
+		try {
+			allTasks.loadData();
+		} catch (FileNotFoundException e) {
+			System.out.printf("%s\n", MESSAGE_FILE_NOT_FOUND);
+		}
+		allTasks.clearAllMissedReminders();
+		reminderTimerTask = new ReminderTimerTask(allTasks, this);
+		systemTimer.scheduleAtFixedRate(reminderTimerTask,
+				SYSTEM_TIMER_TASK_PERIOD, SYSTEM_TIMER_TASK_PERIOD);
+		return;
+	}
+
+	public String getSystemMessageString() {
+		return systemState.getSystemMessage();
+	}
+
+	public CurrentSystemState getCurrentSystemState() {
+		systemState.sortForGUI();
+		return systemState;
+	}
+	//this method is calle dupon by the gui with the command string as input for the controller to execute the commands
+	public boolean executeCommands(String input) {
+		Interpreter newInt = new Interpreter();
+
+		try {
+			newInt.processUserInput(input);
+			Command command = newInt.getCommandAndPara();
+			assert (command.getCommandType() != null);
+			getLogger().setLevel(Level.SEVERE); // Warnings, Info, Fine etc.
+												// will be ignored for
+												// debugging. Re-enable in final
+												// release
+			// getLogger().addHandler(handler);
+			return executeLogic(command);
+		} catch (IllegalArgumentException eI) {
+			System.out.println("Exception - " + eI + "\n");
+			return false;
+		}
+
+	}
+	//this method is special method used by the gui to specially execute certain tasks for a particular folder only
+	public boolean executeCommands(String input, String currFolder) {
+		Interpreter newInt = new Interpreter();
+
+		try {
+			newInt.setCurrentFolder(currFolder);
+			newInt.processUserInput(input);
+			Command command = newInt.getCommandAndPara();
+			assert (command.getCommandType() != null);
+			return executeLogic(command);
+		} catch (IllegalArgumentException eI) {
+			System.out.println("Exception - " + eI + "\n");
+			return false;
+		}
+
+	}
+
+	private void executeQuit() {
+		try {
+			allTasks.saveData();
+		} catch (FileNotFoundException e) {
+			System.out.printf("%s", MESSAGE_FILE_NOT_FOUND);
+		}
+		return;
+	}
+	//this method is a special batch add method for importing the files from ics. this prevents multiple undo nodes being stacked per task add
+	public void mutexAdd(LinkedList<String> input) {
+		int total = input.size(), count = 0;
+		undoRedo.addUndo(allTasks);
+		systemState.setSystemMessage(MESSAGE_IMPORT);
+
+		while (count < total) {
+			boolean isThereReminder = true;
+			Calendar startTime = Calendar.getInstance();
+			Interpreter newInt = new Interpreter();
+
+			try {
+				newInt.processUserInput(input.get(count));
+				Command command = newInt.getCommandAndPara();
+				isThereReminder = checkForNulls(command, isThereReminder,
+						startTime);
+
+				execute_add(command, isThereReminder, startTime);
+				count++;
+			} catch (IllegalArgumentException eI) {
+				System.out.println("Exception - " + eI + "\n");
+			}
+		}
+
+		updateDisplayGUI(systemState.getDisplayStatus());
+
+	}
+	//execute logic is called to determine which logic function to be called to execute the command
+	private boolean executeLogic(Command command) {
+		boolean isThereReminder = true, quit = false;
+		Calendar startTime = Calendar.getInstance();
+
+		if (!command.getCommandType().name().equals("MODIFY")) {
+			isThereReminder = checkForNulls(command, isThereReminder, startTime);
+		} else {
+			startTime = null;
+			if (command.getParameters().getRemindTime() == null) {
+				isThereReminder = false;
+			}
+		}
+
+		switch (command.getCommandType().name()) {
+
+		case "ADD":
+			undoRedo.addUndo(allTasks);
+
+			String taskTitle = command.getParameters().getDescription();
+
+			systemState.setSystemMessage(String.format(MESSAGE_TASK_ADDED,
+					taskTitle));
+			execute_add(command, isThereReminder, startTime);
+			updateDisplayGUI(systemState.getDisplayStatus());
+			break;
+
+		case "DELETE":
+			undoRedo.addUndo(allTasks);
+			systemState.setSystemMessage(MESSAGE_TASK_DELETED);
+			execute_delete(command);
+			break;
+
+		case "MODIFY":
+			undoRedo.addUndo(allTasks);
+
+			String taskDesc = command.getParameters().getDescription();
+
+			systemState.setSystemMessage(String.format(MESSAGE_TASK_MODIFIED,
+					taskDesc));
+			execute_modify(command, isThereReminder);
+			updateDisplayGUI(systemState.getDisplayStatus());
+			break;
+
+		case "DISPLAY_TODAY":
+			Logic.displayToday();
+			systemState.setSystemMessage(MESSAGE_DISPLAY_TODAY);
+			systemState.setDisplayStatus(STATUS_TODAY);
+			break;
+
+		case "MARK":
+			undoRedo.addUndo(allTasks);
+			systemState.setSystemMessage(MESSAGE_MARK);
+			Logic.taskIsDone(Integer.parseInt(command.getParameters()
+					.getTaskId()));
+			updateDisplayGUI(systemState.getDisplayStatus());
+			break;
+
+		case "UNMARK":
+			undoRedo.addUndo(allTasks);
+			systemState.setSystemMessage(MESSAGE_UNMARK);
+			Logic.taskIsNotDone(Integer.parseInt(command.getParameters()
+					.getTaskId()));
+			updateDisplayGUI(systemState.getDisplayStatus());
+			break;
+
+		case "SEARCH":
+			systemState.setSystemMessage(String.format(MESSAGE_SEARCH, command
+					.getParameters().getDescription()));
+			Logic.searchTask(command.getParameters().getDescription());
+			systemState.setDisplayStatus(STATUS_PERIOD);
+			break;
+
+		case "DISPLAY_TOMORROW":
+			systemState.setSystemMessage(MESSAGE_DISPLAY_TOMORROW);
+			Logic.displayTomorrow();
+			systemState.setDisplayStatus(STATUS_TOMORROW);
+			break;
+
+		case "DISPLAY_WEEK":
+			systemState.setSystemMessage(MESSAGE_DISPLAY_WEEK);
+			Logic.displayWeek();
+			systemState.setDisplayStatus(STATUS_WEEK);
+			break;
+
+		case "DISPLAY_ALL":
+			systemState.setSystemMessage(MESSAGE_DISPLAY_ALL);
+			Logic.displayAll();
+			systemState.setDisplayStatus(STATUS_ALL);
+			break;
+
+		case "DISPLAY_ALL_FLOAT":
+			systemState.setSystemMessage(MESSAGE_DISPLAY_FLOATING);
+			Logic.displayAllFloat();
+			systemState.setDisplayStatus(STATUS_DISPLAY_FLOAT);
+			break;
+
+		case "DISPLAY_IN_TIME":
+			systemState.setSystemMessage(MESSAGE_DISPLAY_PERIOD);
+			Logic.displayTasksAtPeriod(command.getParameters().getStartTime()
+					.getTime(), command.getParameters().getEndTime().getTime());
+			systemState.setDisplayStatus(STATUS_PERIOD);
+			break;
+			
+		case "DISPLAY_NOW":
+			systemState.setSystemMessage(MESSAGE_DISPLAY_NOW);
+			Logic.displayNow();
+			systemState.setDisplayStatus(STATUS_PERIOD);
+			break;
+
+		case "QUIT":
+			executeQuit();
+			quit = true;
+			break;
+
+		case "DELETE_ALL_COMPLETED":
+			undoRedo.addUndo(allTasks);
+			systemState.setSystemMessage(MESSAGE_DELETE_COMPLETED);
+			Logic.deleteAlldone();
+			updateDisplayGUI(systemState.getDisplayStatus());
+			break;
+
+		case "UNDO":
+			systemState.setSystemMessage(MESSAGE_UNDO);
+			if (!undoRedo.isUndoEmpty()) {
+				allTasks = undoRedo.undo(allTasks);
+				Logic.initStorage(allTasks);
+			}
+			updateDisplayGUI(systemState.getDisplayStatus());
+			break;
+
+		case "REDO":
+			systemState.setSystemMessage(MESSAGE_REDO);
+			if (!undoRedo.isRedoEmpty()) {
+				allTasks = undoRedo.redo(allTasks);
+				Logic.initStorage(allTasks);
+			}
+			updateDisplayGUI(systemState.getDisplayStatus());
+			break;
+
+		case "EXPORT":
+			String savePath = command.getParameters().getDescription();
+			Logic.export(savePath);
+			System.out.println(MESSAGE_EXPORT_SUCCESSFUL + savePath);
+			break;
+
+		case "IMPORT":
+			undoRedo.addUndo(allTasks);
+			String filePath = command.getParameters().getDescription();
+			Logic.importFile(filePath);
+			System.out.println(MESSAGE_IMPORT_SUCCESSFUL + filePath);
+			break;
+
+		case "CLEAR":
+			undoRedo.addUndo(allTasks);
+
+			String typedFolder = new Config().getFolderId(
+					command.getParameters().getFolder()).toString();
+			if (typedFolder.equals("FOLDER1")) {
+				Logic.clearFolder(1);
+			}
+			if (typedFolder.equals("FOLDER2")) {
+				Logic.clearFolder(2);
+			}
+			if (typedFolder.equals("FOLDER3")) {
+				Logic.clearFolder(3);
+			}
+			if (typedFolder.equals("FOLDER4")) {
+				Logic.clearFolder(4);
+			}
+			if (typedFolder.equals("FOLDER5")) {
+				Logic.clearFolder(5);
+			}
+			if (typedFolder.equals("DEFAULT")) {
+				// if(new Config().getFolderId("DEFAULT").toString().equals(")
+				// Logic.clearFolder();
+				Logic.clearFolder(0);
+			}
+
+			systemState.setSystemMessage(MESSAGE_CLEAR);
+			updateDisplayGUI(systemState.getDisplayStatus());
+			break;
+
+		default:
+			systemState.setSystemMessage(MESSAGE_INVALID_COMMAND);
+			break;
+
+		}
+
+		System.out.printf("%s\n", systemState.getSystemMessage());
+
+		return quit;
+	}
+
+	private void execute_modify(Command command, boolean isThereReminder) {
+		int folder = -1;
+		try {
+			String typedFolder = new Config().getFolderId(
+					command.getParameters().getFolder()).toString();
+			if (typedFolder.equals("FOLDER1")) {
+				folder = 1;
+			}
+			if (typedFolder.equals("FOLDER2")) {
+				folder = 2;
+			}
+			if (typedFolder.equals("FOLDER3")) {
+				folder = 3;
+			}
+			if (typedFolder.equals("FOLDER4")) {
+				folder = 4;
+			}
+			if (typedFolder.equals("FOLDER5")) {
+				folder = 5;
+			}
+			if (typedFolder.equals("DEFAULT")) {
+				folder = 0;
+			}
+		} catch (NullPointerException e) {
+			folder = -1;
+		}
+		try {
+			if (command.getParameters().getEndTime() != null
+					|| command.getParameters().getStartTime() != null) {
+				throw new IllegalArgumentException();
+			}
+
+			else {
+				Logic.updateFloatingTask(folder, command.getParameters()
+						.getTaskId(), command.getParameters().getPriority(),
+						command.getParameters().getDescription(), command
+								.getParameters().getLocation());
+			}
+		} catch (Exception e) {
+			execute_modifyTimedTask(folder, command, isThereReminder, command
+					.getParameters().getStartTime());
+		}
+	}
+
+	private void execute_add(Command command, boolean isThereReminder,
+			Calendar startTime) {
+		int priority, folder = -1;
+
+		if (command.getParameters().getPriority() == "null") {
+			priority = 0;
+		} else {
+			priority = Integer.parseInt(command.getParameters().getPriority());
+		}
+		try {
+			String typedFolder = new Config().getFolderId(
+					command.getParameters().getFolder()).toString();
+			if (typedFolder.equals("FOLDER1")) {
+				folder = 1;
+			}
+			if (typedFolder.equals("FOLDER2")) {
+				folder = 2;
+			}
+			if (typedFolder.equals("FOLDER3")) {
+				folder = 3;
+			}
+			if (typedFolder.equals("FOLDER4")) {
+				folder = 4;
+			}
+			if (typedFolder.equals("FOLDER5")) {
+				folder = 5;
+			}
+			if (typedFolder.equals("DEFAULT")) {
+				folder = 0;
+			}
+		} catch (NullPointerException e) {
+			folder = 0;
+		}
+		if (command.getParameters().getStartTime() == null
+				&& command.getParameters().getEndTime() == null) {
+			Logic.addFloatingTask(folder, priority, false, command
+					.getParameters().getDescription(), command.getParameters()
+					.getLocation());
+		} else {
+
+			execute_add_timedTask(command, isThereReminder, startTime,
+					priority, folder);
+
+		}
+	}
+	//this method is called when the command id to modify a task. this handles the nulls returned from the interpreter before being passed to logic
+	private boolean checkForNulls(Command command, boolean isThereReminder,
+			Calendar startTime) {
+		if (command.getParameters().getRemindTime() == null) {
+			isThereReminder = false;
+		}
+		if (command.getParameters().getLocation() == null) {
+			command.getParameters().setLocation("NIL");
+		}
+
+		if (command.getParameters().getFolder() == null) {
+			command.setFolder("default");
+		}
+		if (command.getParameters().getStartTime() == null
+				&& command.getParameters().getEndTime() != null) {
+			startTime = Calendar.getInstance();
+		} else {
+			if (command.getParameters().getStartTime() != null
+					&& command.getParameters().getEndTime() != null) {
+
+				startTime.setTime(command.getParameters().getStartTime()
+						.getTime());
+			}
+		}
+		return isThereReminder;
+	}
+	//this method is for adding time bound tasks
+	private void execute_add_timedTask(Command command,
+			boolean isThereReminder, Calendar startTime, int priority,
+			int folder) {
+		Calendar endTime = Calendar.getInstance();
+
+		if (command.getParameters().getStartTime() != null
+				&& command.getParameters().getEndTime() == null) {
+			startTime.setTime(command.getParameters().getStartTime().getTime());
+			endTime.setTime(command.getParameters().getStartTime().getTime());
+			endTime.add(Calendar.DAY_OF_YEAR, 1);
+		} else {
+			endTime = command.getParameters().getEndTime();
+		}
+		if (isThereReminder) {
+
+			Logic.addTask(folder, priority, startTime.getTime(), endTime
+					.getTime(), isThereReminder, false, false, command
+					.getParameters().getDescription(), command.getParameters()
+					.getLocation(), command.getParameters().getRemindTime()
+					.getTime());
+		} else {
+			Logic.addTask(folder, priority, startTime.getTime(), endTime
+					.getTime(), isThereReminder, false, false, command
+					.getParameters().getDescription(), command.getParameters()
+					.getLocation(), null);
+		}
+	}
+
+	private void execute_modifyTimedTask(int folder, Command command,
+			boolean isThereReminder, Calendar startTime) {
+		Calendar endTime = null;
+		try {
+			if (command.getParameters().getStartTime() != null) {
+				startTime = command.getParameters().getStartTime();
+			}
+			if (command.getParameters().getEndTime() != null) {
+				endTime = command.getParameters().getEndTime();
+			}
+			
+			Logic.updateTask(folder, command.getParameters().getTaskId(),
+					command.getParameters().getPriority(), startTime, endTime,
+					isThereReminder, command.getParameters().getDescription(),
+					command.getParameters().getLocation(), command
+							.getParameters().getRemindTime().getTime());
+		} catch (Exception e) {
+			Logic.updateTask(folder, command.getParameters().getTaskId(),
+					command.getParameters().getPriority(), startTime, endTime,
+					isThereReminder, command.getParameters().getDescription(),
+					command.getParameters().getLocation(), null);
+		}
+	}
+
+	private void execute_delete(Command command) {
+		try {
+			if (command.getParameters().getTaskId() != null) {
+				Logic.deleteTask(Integer.parseInt(command.getParameters()
+						.getTaskId()));
+				updateDisplayGUI(systemState.getDisplayStatus());
+			} else {
+				systemState.setSystemMessage(MESSAGE_DELETE_SEARCH);
+				Logic.searchTask(command.getParameters().getDescription());
+				systemState.setDisplayStatus(STATUS_PERIOD);
+
+			}
+		} catch (Exception e) {
+			systemState.setSystemMessage(MESSAGE_DELETE_SEARCH);
+			Logic.searchTask(command.getParameters().getDescription());
+			systemState.setDisplayStatus(STATUS_PERIOD);
+		}
+	}
+	//this method is called to update the gui everytime a command is executed. this update sthe systemMessage
+	public void updateDisplayGUI(int displayStatus) {
+		if (displayStatus == STATUS_ALL) {
+			Logic.displayAll();
+
+		}
+		if (displayStatus == STATUS_TODAY) {
+
+			Logic.displayToday();
+		}
+		if (displayStatus == STATUS_TOMORROW) {
+
+			Logic.displayTomorrow();
+		}
+		if (displayStatus == STATUS_WEEK) {
+
+			Logic.displayWeek();
+		}
+		if (displayStatus == STATUS_MONTH) {
+
+		}
+		if (displayStatus == STATUS_PERIOD) {
+
+			Logic.displayAll();
+			systemState.setDisplayStatus(STATUS_ALL);
+		}
+		if (displayStatus == STATUS_DISPLAY_FLOAT) {
+			Logic.displayAllFloat();
+		}
+		return;
+	}
+
+	public static Logger getLogger() {
+		return logger;
+	}
+
+	public static void setLogger(Logger logger) {
+		Controller.logger = logger;
+	}
+
+	public int getDisplayStatus() {
+		return systemState.getDisplayStatus();
+	}
+
+	public AllTasks getAllTask() {
+		return allTasks;
+	}
+
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\controller\Controller.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\controller\CurrentSystemState.java
+	 */
+
+ */
+
+//this class acts as a bridge between the gui and the rest of the system in terms of sending the gui what to display and what message to display from what has occured
+//the gui will only communicate through this special class to get its updates
+public class CurrentSystemState {
+	private String message;
+	private LinkedList<TaskWithReminder> timedTaskList;
+	private LinkedList<FloatingTask> floatingTaskList;
+	private int displayStatus = 0;
+	
+	public void setSystemMessage (String message) {
+		this.message = message;
+		return;
+	}
+	
+	public String getSystemMessage () {
+		return message;
+	}
+	
+	public void setTimedList (LinkedList<TaskWithReminder> list){
+		this.timedTaskList = list;
+		return;
+	}
+	
+	public LinkedList<TaskWithReminder> getTimedList (){
+		return timedTaskList;
+	}
+	
+	public LinkedList<FloatingTask> getFloatingList (){
+		return floatingTaskList;
+	}
+	
+	public void setFloatingList (LinkedList<FloatingTask> list) {
+		this.floatingTaskList = list;
+		return;
+	}
+	
+	public int getDisplayStatus () {
+		return displayStatus;
+	}
+	
+	public void setDisplayStatus(int temp){
+		this.displayStatus = temp;
+		return;
+	}
+	//this method sorts the tasks to be displayed so that the tasks that are done will always be at the bottom of the list
+	public void sortForGUI () {
+		int count = 0 , total = timedTaskList.size();
+		
+		LinkedList<TaskWithReminder> temp = new LinkedList<TaskWithReminder>();
+		LinkedList<FloatingTask> temp2 = new LinkedList<FloatingTask>();
+		while (count < total){
+			if (timedTaskList.get(count).getTask().getIsTaskDone() == false){
+				temp.add(timedTaskList.get(count));
+			}
+			count ++;
+		}
+		count = 0;
+		
+		while (count < total){
+			if (timedTaskList.get(count).getTask().getIsTaskDone() == true){
+				temp.add(timedTaskList.get(count));
+			}
+			count ++;
+		}
+		
+		count = 0;
+		total = floatingTaskList.size();
+		while (count < total){
+			if (floatingTaskList.get(count).getIsTaskDone() == false){
+				temp2.add(floatingTaskList.get(count));
+			}
+			count ++;
+		}
+		
+		count = 0;
+		while (count < total){
+			if (floatingTaskList.get(count).getIsTaskDone() == true){
+				temp2.add(floatingTaskList.get(count));
+			}
+			count ++;
+		}
+		this.timedTaskList = temp;
+		this.floatingTaskList = temp2;
+	}
+
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\controller\CurrentSystemState.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\controller\ReminderTimerTask.java
+	 */
+
+ */
+//This class is used to periodically check and display any reminders every 5 seconds. Also it checks if a task end time is passed and updates it as task done if it is
+public class ReminderTimerTask extends TimerTask {
+	private static final String NOTIFICATION_TITLE = "REMINDER";
+	private AllTasks allTasks;
+	private Controller controller;
+
+	private NotifierFactory notifierFactory = new NotifierFactory();
+	private Notifier notifier = notifierFactory.getNotifier();
+
+	public void run() {
+		TaskWithReminder currentReminder = allTasks.getCurrentReminder();
+
+		int count = 0, total = allTasks.getTaskSize();
+		Calendar temp = Calendar.getInstance();
+		while (count < total) {
+			Task task = allTasks.getTask(count);
+			if (task.getEndTime().getTime().before(temp.getTime())) {
+				allTasks.getTask(count).setIsTaskDone(true);
+			}
+			count++;
+		}
+		controller.updateDisplayGUI(controller.getDisplayStatus());
+		if (currentReminder == null) {
+			return;
+		} else {
+
+			Task task = currentReminder.getTask();
+
+			// OS Notification:
+			try {
+				notifier.notify(NOTIFICATION_TITLE, task.getTaskTitle(),
+						NotificationType.SUCCESS);
+				notifier.wait(2000000);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			SimpleDateFormat display = new SimpleDateFormat(
+					"E yyyy.MM.dd 'at' hh:mm:ss a zzz");
+			System.out
+					.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			System.out
+					.printf("*-*-*-*-*-*-*-*-*-*-*-*-!!!REMINDER!!!!-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			System.out
+					.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			System.out.println("id: " + task.getTaskID());
+			System.out.println("priority: " + task.getPriority());
+			System.out.println("start: "
+					+ display.format(task.getStartTime().getTime()));
+			System.out.println("end: "
+					+ display.format(task.getEndTime().getTime()));
+			System.out.println("title: " + task.getTaskTitle());
+			try {
+				System.out.println("location: " + task.getLocation());
+			} catch (Exception e1) {
+				System.out.println("location: NIL");
+			}
+			System.out.printf("Is Task Done: ");
+			System.out.println((task.getIsTaskDone()) ? "YES" : "NO");
+			System.out.printf("Is All Day Event: ");
+			System.out.println((task.getIsAllDayEvent()) ? "YES" : "NO");
+			System.out
+					.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			System.out
+					.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			System.out
+					.printf("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+			controller.getCurrentSystemState().setSystemMessage(task.getTaskTitle());
+		}
+
+		return;
+	}
+
+	public ReminderTimerTask(AllTasks allTasks, Controller controller) {
+		this.allTasks = allTasks;
+		this.controller = controller;
+		return;
+	}
+
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\controller\ReminderTimerTask.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+	 */
+
+	 */
+	// this method updates a timed task accordingly
+	public static boolean updateTask(int folder, String indexString,
+			String priority, Calendar start, Calendar end,
+			boolean isThereReminder, String title, String location,
+			Date reminder) {
+
+		boolean isTaskUpdated = false, isTaskDeleted = false, isTaskAdded = false;
+		int priorityInt, index = Integer.parseInt(indexString);
+		if (_storage.isValidTaskId(index)) {
+			boolean isTaskDone = _storage.getTask(index).getIsTaskDone(), isAllDayEvent = _storage
+					.getTask(index).getIsAllDayEvent();
+
+			if (priority == "null") {
+				priorityInt = _storage.getTask(index).getPriority();
+			} else {
+				priorityInt = Integer.parseInt(priority);
+			}
+			if (start == null) {
+				start = Calendar.getInstance();
+				start.setTime(_storage.getTask(index).getStartTime().getTime());
+			}
+			if (end == null) {
+				end = Calendar.getInstance();
+				end.setTime(_storage.getTask(index).getEndTime().getTime());
+			}
+			if (title == null) {
+				title = _storage.getTask(index).getTaskTitle();
+			}
+			if (location == null) {
+				location = _storage.getTask(index).getLocation();
+			}
+			if (reminder == null) {
+				if (_storage.getTask(index).getIsThereReminder()) {
+					int temp = _storage.searchForCorrespondingReminder(_storage
+							.getTask(index));
+					reminder = _storage.getReminder(temp).getReminderTime()
+							.getTime();
+					isThereReminder = true;
+				}
+			}
+			if (folder == -1) {
+				folder = _storage.getTask(index).getFolder();
+			}
+			isTaskDeleted = deleteTask(index);
+			isTaskAdded = addTask(folder, priorityInt, start.getTime(),
+					end.getTime(), isThereReminder, isTaskDone, isAllDayEvent,
+					title, location, reminder);
+		} else {
+			if (index < _storage.getSize()) {
+				boolean isTaskDone = false;
+				boolean isAllDayEvent = false;
+				if (priority == "null") {
+					priorityInt = _storage.getFloatingTask(index).getPriority();
+				} else {
+					priorityInt = Integer.parseInt(priority);
+				}
+				if (title == null) {
+					title = _storage.getFloatingTask(index).getTaskTitle();
+				}
+				if (location == null) {
+					location = _storage.getFloatingTask(index).getLocation();
+				}
+				if (start == null) {
+					start = Calendar.getInstance();
+				}
+				if (end == null) {
+					end.setTime(start.getTime());
+					end.add(Calendar.DAY_OF_YEAR, 1);
+				}
+				if (folder == -1) {
+					folder = _storage.getTask(index).getFolder();
+				}
+				isTaskDeleted = deleteTask(index);
+				isTaskAdded = addTask(folder, priorityInt, start.getTime(),
+						end.getTime(), isThereReminder, isTaskDone,
+						isAllDayEvent, title, location, reminder);
+			} else {
+				systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
+			}
+		}
+		isTaskUpdated = isTaskDeleted && isTaskAdded;
+		return isTaskUpdated;
+
+	}
+
+	/**
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+	 */
+
+	 */
+	// this method is used to SOLELY add floating tasks
+	public static boolean addFloatingTask(int folder, int priority,
+			boolean isTaskDone, String title, String location) {
+		int dummyID = 0;
+		FloatingTask temp = new FloatingTask(folder, dummyID, priority,
+				isTaskDone, title, location);
+		_storage.addFloatingTask(temp);
+		return true;
+
+	}
+
+	/**
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+	 */
+
+	 */
+	// this method modifies a current floating task accordingly
+	public static void updateFloatingTask(int folder, String indexString,
+			String priority, String title, String location)
+			throws IndexOutOfBoundsException {
+
+		int priorityInt, index = Integer.parseInt(indexString);
+
+		if (index < _storage.getTaskSize()) {
+			throw new IndexOutOfBoundsException();
+		} else {
+
+			if (index < _storage.getSize() && index >= _storage.getTaskSize()) {
+				boolean isTaskDone = _storage.getFloatingTask(index)
+						.getIsTaskDone();
+
+				if (priority == "null") {
+					priorityInt = _storage.getFloatingTask(index).getPriority();
+				} else {
+					priorityInt = Integer.parseInt(priority);
+				}
+				if (title == null) {
+					title = _storage.getFloatingTask(index).getTaskTitle();
+				}
+				if (location == null) {
+					location = _storage.getFloatingTask(index).getLocation();
+				}
+				if (folder == -1) {
+					folder = _storage.getFloatingTask(index).getFolder();
+				}
+
+				_storage.getFloatingTask(index).setFolder(folder);
+				_storage.getFloatingTask(index).setPriority(priorityInt);
+				_storage.getFloatingTask(index).setLocation(location);
+				_storage.getFloatingTask(index).setTaskTitle(title);
+				_storage.getFloatingTask(index).setIsTaskDone(isTaskDone);
+
+				return;
+
+			} else {
+				systemMessage.setSystemMessage(MESSAGE_TASK_INDEX_INVALID);
+			}
+		}
+	}
+
+	public static void displayAll() {
+		int count = 0;
+		LinkedList<TaskWithReminder> list = new LinkedList<TaskWithReminder>();
+		LinkedList<FloatingTask> list2 = new LinkedList<FloatingTask>();
+		while (count < _storage.getSize()) {
+			displayTask(count, list, list2);
+			count = count + 1;
+		}
+		systemMessage.setTimedList(list);
+		systemMessage.setFloatingList(_storage.getFloatingList());
+		return;
+	}
+
+	/**
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+	 */
+
+	 */
+	// this method displays all the floating tasks only(updates the
+	// systemMessage)
+	public static void displayAllFloat() {
+		int count = _storage.getTaskSize();
+		LinkedList<TaskWithReminder> list = new LinkedList<TaskWithReminder>();
+		LinkedList<FloatingTask> list2 = new LinkedList<FloatingTask>();
+		while (count < _storage.getSize()) {
+			displayTask(count, list, list2);
+			count = count + 1;
+		}
+		systemMessage.setTimedList(list);
+		systemMessage.setFloatingList(_storage.getFloatingList());
+	}
+
+	/**
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+	 */
+
+	 */
+	// this method clears all timed task and floating task of the folder
+	public static void clearFolder(int folder) {
+		int count = 0;
+
+		while (count < _storage.getSize()) {
+			if (count < _storage.getTaskSize()) {
+				if (_storage.getTask(count).getFolder() == folder) {
+					deleteTask(count);
+				} else {
+					count++;
+				}
+			} else {
+				if (_storage.getFloatingTask(count).getFolder() == folder) {
+					deleteTask(count);
+				} else {
+					count++;
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * 
+	 * 
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+	 */
+
+	 */
+	// this method displays all tasks for that particular week
+	public static void displayWeek() {
+		Calendar monday = Calendar.getInstance();
+		monday.add(Calendar.DAY_OF_WEEK,
+				monday.getFirstDayOfWeek() - monday.get(Calendar.DAY_OF_WEEK));
+
+		Calendar sunday = (Calendar) monday.clone();
+		sunday.add(Calendar.DAY_OF_WEEK, 6);
+
+		displayTasksAtPeriod(monday.getTime(), sunday.getTime());
+		return;
+	}
+
+	public static void displayNow() {
+		Calendar start = Calendar.getInstance();
+		Calendar end = start;
+		end.add(Calendar.MINUTE, 1);
+		displayTasksAtPeriod(start.getTime(), end.getTime());
+		return;
+	}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\storage\AllTasks.java
+	 */
+
+ */
+
+//this class stores all floating and timed tasks in different lists. The
+//reminders of a specific task is also stored and handled separately in another
+//list
+//The class also handles current reminders which is used by the
+//remindertimertask to display the right reminder
+public class AllTasks {
+        private LinkedList<Task> allTasks;
+        private Calendar currentTime;
+        private Task currentTask;
+        private LinkedList<TaskWithReminder> allReminders;
+        private TaskWithReminder currentReminder;
+        private LinkedList<FloatingTask> allFloatingTasks;
+
+        public AllTasks() {
+                allTasks = new LinkedList<Task>();
+                allReminders = new LinkedList<TaskWithReminder>();
+                allFloatingTasks = new LinkedList<FloatingTask>();
+                return;
+        }
+
+        public void loadData() throws FileNotFoundException {
+                loadTasks();
+                loadFloatingTasks();
+                return;
+        }
+
+        private void loadFloatingTasks() throws FileNotFoundException {
+                FileInputStream fStream = new FileInputStream(
+                                "system_saved_floatingTasks.txt");
+                Scanner fileScanner = new Scanner(fStream);
+
+                while (fileScanner.hasNext()) {
+                        int folder = fileScanner.nextInt();
+                        int taskID = fileScanner.nextInt();
+                        int priority = fileScanner.nextInt();
+
+                        allFloatingTasks.add(new FloatingTask(folder, taskID, priority,
+                                        fileScanner.nextBoolean(), eliminateFrontSpace(fileScanner
+                                                        .nextLine()), fileScanner.nextLine()));
+                }
+                fileScanner.close();
+
+        }
+
+        private void loadTasks() throws FileNotFoundException {
+                FileInputStream fStream = new FileInputStream("system_saved_tasks.txt");
+                Scanner fileScanner = new Scanner(fStream);
+
+                while (fileScanner.hasNext()) {
+                        int folder = fileScanner.nextInt();
+                        int taskID = fileScanner.nextInt();
+                        int priority = fileScanner.nextInt();
+
+                        Calendar startTime = Calendar.getInstance();
+                        startTime.set(fileScanner.nextInt(), fileScanner.nextInt(),
+                                        fileScanner.nextInt(), fileScanner.nextInt(),
+                                        fileScanner.nextInt());
+
+                        Calendar endTime = Calendar.getInstance();
+                        endTime.set(fileScanner.nextInt(), fileScanner.nextInt(),
+                                        fileScanner.nextInt(), fileScanner.nextInt(),
+                                        fileScanner.nextInt());
+
+                        allTasks.add(new Task(folder, taskID, priority, startTime, endTime,
+                                        fileScanner.nextBoolean(), fileScanner.nextBoolean(),
+                                        fileScanner.nextBoolean(), eliminateFrontSpace(fileScanner
+                                                        .nextLine()), fileScanner.nextLine()));
+                        if (allTasks.getLast().getIsThereReminder() == true) {
+                                Calendar reminderTime = Calendar.getInstance();
+                                reminderTime.set(fileScanner.nextInt(), fileScanner.nextInt(),
+                                                fileScanner.nextInt(), fileScanner.nextInt(),
+                                                fileScanner.nextInt());
+
+                                allReminders
+                                                .add(new TaskWithReminder(reminderTime, allTasks.getLast()));
+                                fileScanner.nextLine();
+                        }
+                }
+                fileScanner.close();
+                this.sortReminders();
+        }
+
+        public void saveData() throws FileNotFoundException {
+                saveTasks();
+                saveFloatingTasks();
+                return;
+        }
+
+        private void saveFloatingTasks() {
+                int counter = this.getTaskSize();
+                int lastTaskID = this.getTaskSize() + this.getFloatingTaskSize();
+                int index = 0;
+                FileOutputStream out;
+                PrintStream prt;
+
+                try {
+                        out = new FileOutputStream("system_saved_floatingTasks.txt");
+                        prt = new PrintStream(out);
+                        if (lastTaskID == 0) {
+                                prt.printf(" ");
+                        } else {
+
+                                while (counter < lastTaskID) {
+                                        prt.printf("%d %d %d %b %s", allFloatingTasks.get(index)
+                                                        .getFolder(), counter, allFloatingTasks.get(index)
+                                                        .getPriority(), allFloatingTasks.get(index)
+                                                        .getIsTaskDone(),
+
+                                        allFloatingTasks.get(index).getTaskTitle());
+                                        prt.println();
+                                        prt.printf("%s", allFloatingTasks.get(index).getLocation());
+                                        prt.println();
+
+                                        counter = counter + 1;
+                                        index = index + 1;
+                                }
+                        }
+                        prt.close();
+                } catch (Exception e) {
+                        System.out.println("Write error");
+                }
+
+        }
+
+        private void saveTasks() {
+                int counter = 0;
+                FileOutputStream out;
+                PrintStream prt;
+
+                try {
+
+                        out = new FileOutputStream("system_saved_tasks.txt");
+                        prt = new PrintStream(out);
+                        if (allTasks.size() == 0) {
+                                prt.printf(" ");
+                        } else {
+
+                                while (isValidTaskId(counter)) {
+                                        prt.printf(
+                                                        "%d %d %d %d %d %d %d %d %d %d %d %d %d %b %b %b %s",
+                                                        allTasks.get(counter).getFolder(),
+                                                        counter,
+                                                        allTasks.get(counter).getPriority(),
+                                                        allTasks.get(counter).getStartTime()
+                                                                        .get(Calendar.YEAR),
+                                                        allTasks.get(counter).getStartTime()
+                                                                        .get(Calendar.MONTH),
+                                                        allTasks.get(counter).getStartTime()
+                                                                        .get(Calendar.DAY_OF_MONTH),
+                                                        allTasks.get(counter).getStartTime()
+                                                                        .get(Calendar.HOUR_OF_DAY),
+                                                        allTasks.get(counter).getStartTime()
+                                                                        .get(Calendar.MINUTE),
+                                                        allTasks.get(counter).getEndTime()
+                                                                        .get(Calendar.YEAR),
+                                                        allTasks.get(counter).getEndTime()
+                                                                        .get(Calendar.MONTH),
+                                                        allTasks.get(counter).getEndTime()
+                                                                        .get(Calendar.DAY_OF_MONTH),
+                                                        allTasks.get(counter).getEndTime()
+                                                                        .get(Calendar.HOUR_OF_DAY),
+                                                        allTasks.get(counter).getEndTime()
+                                                                        .get(Calendar.MINUTE), allTasks
+                                                                        .get(counter).getIsThereReminder(),
+                                                        allTasks.get(counter).getIsTaskDone(), allTasks
+                                                                        .get(counter).getIsAllDayEvent(), allTasks
+                                                                        .get(counter).getTaskTitle());
+                                        prt.println();
+                                        prt.printf("%s", allTasks.get(counter).getLocation());
+                                        prt.println();
+
+                                        if (allTasks.get(counter).getIsThereReminder()) {
+                                                prt.printf(
+                                                                "%d %d %d %d %d",
+                                                                allReminders
+                                                                                .get(this
+                                                                                                .searchForCorrespondingReminder(allTasks
+                                                                                                                .get(counter)))
+                                                                                .getReminderTime().get(Calendar.YEAR),
+                                                                allReminders
+                                                                                .get(this
+                                                                                                .searchForCorrespondingReminder(allTasks
+                                                                                                                .get(counter)))
+                                                                                .getReminderTime().get(Calendar.MONTH),
+                                                                allReminders
+                                                                                .get(this
+                                                                                                .searchForCorrespondingReminder(allTasks
+                                                                                                                .get(counter)))
+                                                                                .getReminderTime()
+                                                                                .get(Calendar.DAY_OF_MONTH),
+                                                                allReminders
+                                                                                .get(this
+                                                                                                .searchForCorrespondingReminder(allTasks
+                                                                                                                .get(counter)))
+                                                                                .getReminderTime()
+                                                                                .get(Calendar.HOUR_OF_DAY),
+                                                                allReminders
+                                                                                .get(this
+                                                                                                .searchForCorrespondingReminder(allTasks
+                                                                                                                .get(counter)))
+                                                                                .getReminderTime().get(Calendar.MINUTE));
+                                                prt.println();
+
+                                        }
+                                        counter = counter + 1;
+                                }
+                        }
+                        prt.close();
+                } catch (Exception e) {
+                        System.out.println("Write error");
+                }
+        }
+
+        private void sortReminders() {
+                LinkedList<TaskWithReminder> temp = new LinkedList<TaskWithReminder>();
+                int numOfReminders = this.getReminderSize();
+
+                while (numOfReminders != 0) {
+                        int count = 1, index = 0;
+                        TaskWithReminder smallest = allReminders.get(0);
+
+                        while (count < numOfReminders) {
+                                Date next = allReminders.get(count).getReminderTime().getTime();
+                                if (smallest.getReminderTime().getTime().after(next)) {
+                                        smallest = allReminders.get(count);
+                                        index = count;
+                                }
+                                count++;
+                        }
+                        temp.add(smallest);
+                        allReminders.remove(index);
+                        numOfReminders--;
+                }
+                allReminders = temp;
+                return;
+        }
+
+        public String eliminateFrontSpace(String input) {
+                return input.substring(1);
+        }
+
+        public int getSize() {
+                return allTasks.size() + allFloatingTasks.size();
+        }
+
+        public int getTaskSize() {
+                return allTasks.size();
+        }
+
+        public int getReminderSize() {
+                return allReminders.size();
+        }
+
+        public Task getTask(int index) {
+                return allTasks.get(index);
+        }
+
+        public boolean deleteTask(int index) {
+                allTasks.remove(index);
+                updateTaskID(index);
+                this.updateFloatingTaskID();
+                return true;
+        }
+      //this method returns the index in the rmeinders list of the task 
+        public int searchForCorrespondingReminder(Task task) {
+                int counter = 0;
+                int index = -1;
+                while (counter < allReminders.size()) {
+                        if (allReminders.get(counter).getTask() == task) {
+                                index = counter;
+                                counter = allReminders.size();
+                        }
+                        counter = counter + 1;
+                }
+                return index;
+
+        }
+
+        public boolean deleteReminder(Task task) {
+                allReminders.remove(searchForCorrespondingReminder(task));
+                return true;
+        }
+
+        public boolean addTask(int index, Task task) {
+                allTasks.add(index, task);
+                updateTaskID(index);
+                this.updateFloatingTaskID();
+                return true;
+        }
+
+        public TaskWithReminder getReminder(int index) {
+                return allReminders.get(index);
+        }
+
+        public boolean addReminder(int index, TaskWithReminder reminder) {
+                allReminders.add(index, reminder);
+                sortReminders();
+                return true;
+        }
+
+        public boolean deleteReminder(int index) {
+                allReminders.remove(index);
+                return true;
+        }
+
+        private void updateTaskID(int index) {
+                while (isValidTaskId(index)) {
+                        allTasks.get(index).setTaskID(index);
+                        index = index + 1;
+                }
+                return;
+        }
+
+        public boolean isValidTaskId(int index) {
+                return index < allTasks.size() && index >= 0;
+        }
+      //this method sets the current time
+        private void setCurrentTime() {
+                Calendar current = Calendar.getInstance();
+                currentTime = current;
+                return;
+        }
+
+        private boolean setCurrentTask() {
+                int counter = 0;
+                boolean check = true;
+
+                setCurrentTime();
+                while (isValidTaskId(counter) && check) {
+                        if (currentTime.get(Calendar.YEAR) <= allTasks.get(counter)
+                                        .getStartTime().get(Calendar.YEAR)) {
+                                check = false;
+                                counter = counter - 1;
+                        }
+                        counter = counter + 1;
+                }
+
+                check = true;
+                while (isValidTaskId(counter) && check) {
+                        if (currentTime.get(Calendar.MONTH) <= allTasks.get(counter)
+                                        .getStartTime().get(Calendar.MONTH)) {
+                                check = false;
+                                counter = counter - 1;
+                        }
+                        counter = counter + 1;
+                }
+
+                check = true;
+                while (isValidTaskId(counter) && check) {
+                        if (currentTime.get(Calendar.DAY_OF_MONTH) <= allTasks.get(counter)
+                                        .getStartTime().get(Calendar.DAY_OF_MONTH)) {
+                                check = false;
+                                counter = counter - 1;
+                        }
+                        counter = counter + 1;
+                }
+
+                check = true;
+                while (isValidTaskId(counter) && check) {
+                        if (currentTime.get(Calendar.HOUR_OF_DAY) <= allTasks.get(counter)
+                                        .getStartTime().get(Calendar.HOUR_OF_DAY)) {
+                                check = false;
+                                counter = counter - 1;
+                        }
+                        counter = counter + 1;
+                }
+
+                check = true;
+                while (isValidTaskId(counter) && check) {
+                        if (currentTime.get(Calendar.MINUTE) <= allTasks.get(counter)
+                                        .getStartTime().get(Calendar.MINUTE)) {
+                                check = false;
+                                counter = counter - 1;
+                        }
+                        counter = counter + 1;
+                }
+
+                if (counter >= allTasks.size()) {
+                        currentTask = null;
+                        return false;
+                } else {
+                        return true;
+                }
+
+        }
+      //this method is called to remove all reminders that ahave already passed but have not been deleted and 
+        public boolean clearAllMissedReminders() {
+                int counter = 0, index = -1;
+
+                setCurrentTime();
+                while (counter < allReminders.size()) {
+                        if (currentTime.getTime().after(
+                                        allReminders.get(counter).getReminderTime().getTime())) {
+                                index = counter;
+                        }
+                        counter = counter + 1;
+                }
+                counter = 0;
+
+                while (counter <= index && allReminders.size() != 0) {
+                        currentReminder = allReminders.get(0);
+                        currentReminder.getTask().setIsThereReminder(false);
+                        allReminders.remove(0);
+                        counter = counter + 1;
+                }
+                return true;
+        }
+      //this method sets the current reminder to be shown
+        private boolean setCurrentReminder() {
+                int counter = 0, index = -1;
+
+                setCurrentTime();
+                while (counter < allReminders.size()) {
+                        if (currentTime.getTime().after(
+                                        allReminders.get(counter).getReminderTime().getTime())) {
+                                index = counter;
+                        }
+                        counter = counter + 1;
+                }
+                if (index == -1) {
+                        currentReminder = null;
+                        return false;
+                } else {
+                        currentReminder = allReminders.get(index);
+                        currentReminder.getTask().setIsThereReminder(false);
+                        allReminders.remove(index);
+                        return true;
+                }
+        }
+
+        public Task getCurrentTask() {
+                if (setCurrentTask()) {
+                        return currentTask;
+                } else {
+                        return null;
+                }
+
+        }
+
+        public TaskWithReminder getCurrentReminder() {
+                if (setCurrentReminder()) {
+                        return currentReminder;
+                } else {
+                        return null;
+                }
+        }
+
+        public int getFloatingTaskSize() {
+                return allFloatingTasks.size();
+        }
+
+        public boolean addFloatingTask(FloatingTask node) {
+                allFloatingTasks.add(node);
+                updateFloatingTaskID();
+                return true;
+        }
+      //this method updates all the ids of floating tasks
+        private void updateFloatingTaskID() {
+                int count = 0;
+                int timedTasksSize = this.getTaskSize();
+                int floatingTaskSize = this.getFloatingTaskSize();
+                while (count < floatingTaskSize) {
+                        allFloatingTasks.get(count).setTaskID(timedTasksSize + count);
+                        count = count + 1;
+                }
+                return;
+        }
+
+        public FloatingTask getFloatingTask(int index) {
+                return allFloatingTasks.get(index - this.getTaskSize());
+        }
+
+        public boolean deleteFloatingTask(int index) {
+                allFloatingTasks.remove(index - this.getTaskSize());
+                this.updateFloatingTaskID();
+                return true;
+        }
+        
+        public LinkedList<Task> getTimedList () {
+                return allTasks;
+        }
+        
+        public LinkedList<FloatingTask> getFloatingList () {
+                return allFloatingTasks;
+        }
+
+}
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\storage\AllTasks.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\storage\FloatingTask.java
+	 */
+
+ */
+//this is a floating task node
+public class FloatingTask {
+
+	private int taskID, priority;
+
+	int folder;
+	
+	private boolean isTaskDone;
+	private String taskTitle;
+	private String location;
+
+	// Note for NARIN: The convention used for NLP: if a parameter is not
+	// specified then it's NULL.
+
+	public FloatingTask(int folder, int taskID, int priority,
+			boolean isTaskDone,  String taskTitle,
+			String location) {
+		this.folder = folder;
+		this.taskID = taskID;
+		this.priority = priority;
+
+		this.isTaskDone = isTaskDone;
+
+		this.taskTitle = taskTitle;
+		this.location = location;
+	}
+
+	public int getPriority() {
+		return priority;
+	}
+
+	
+
+	public boolean getIsTaskDone() {
+		return isTaskDone;
+	}
+
+	
+
+	public String getTaskTitle() {
+		return taskTitle;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public int getTaskID() {
+		return taskID;
+	}
+	
+	public int getFolder() {
+		return folder;
+	}
+	
+	public void setFolder(int folder) {
+		this.folder = folder;
+		return;
+	}
+
+	public void setPriority(int priority) {
+		this.priority = priority;
+		return;
+	}
+
+	public void setTaskID(int taskID) {
+		this.taskID = taskID;
+		return;
+	}
+
+	
+
+	public void setIsTaskDone(boolean isTaskDone) {
+		this.isTaskDone = isTaskDone;
+		return;
+	}
+
+
+	public void setTaskTitle(String taskTitle) {
+		this.taskTitle = taskTitle;
+		return;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+		return;
+	}
+
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\storage\FloatingTask.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\storage\Task.java
+	 */
+
+ */
+//this is the timed task node
+public class Task {
+	private int taskID, priority;
+	int folder;
+	private Calendar startTime, endTime;
+	private boolean isThereReminder;
+	private boolean isTaskDone;
+	private boolean isAllDayEvent;
+	private String taskTitle;
+	private String location;
+
+	
+	public Task (int folder, int taskID, int priority, Calendar startTime, Calendar endTime, boolean isThereReminder, boolean isTaskDone, 
+			boolean isAllDayEvent, String taskTitle, String remarks) {
+		this.folder = folder;
+		this.taskID = taskID;
+		this.priority = priority;
+		
+		this.startTime = startTime;
+		this.endTime = endTime;
+		
+		this.isThereReminder = isThereReminder;
+		this.isAllDayEvent = isAllDayEvent;
+		this.isTaskDone = isTaskDone;
+		
+		this.taskTitle = taskTitle;
+		this.location = remarks;
+	}
+	
+	public int getPriority() {
+		return priority;
+	}
+	
+
+	public Calendar getStartTime() {
+		return startTime;
+	}
+	
+	public Calendar getEndTime() {
+		return endTime;
+	}
+	
+	public boolean getIsThereReminder() {
+		return isThereReminder;
+	}
+	
+	public boolean getIsTaskDone() {
+		return isTaskDone;
+	}
+	
+	public boolean getIsAllDayEvent() {
+		return isAllDayEvent;
+	}
+	
+	public String getTaskTitle() {
+		return taskTitle;
+	}
+	
+	public String getLocation() {
+		return location;
+	}
+	
+	public int getTaskID() {
+		return taskID;
+	}
+	
+	public int getFolder() {
+		return folder;
+	}
+	
+	public void setFolder(int folder) {
+		this.folder = folder;
+		return;
+	}
+	
+	public void setPriority(int priority) {
+		this.priority = priority;
+		return;
+	}
+	
+	public void setTaskID(int taskID) {
+		this.taskID = taskID;
+		return;
+	}
+	
+	public void setStartTime(Calendar startTime) {
+		this.startTime = startTime;
+		return;
+	}
+	
+	public void setEndTime(Calendar endTime) {
+		this.endTime = endTime;
+		return;
+	}
+	
+	public void setIsThereReminder(boolean isThereReminder) {
+		this.isThereReminder = isThereReminder;
+		return;
+	}
+	
+	public void setIsTaskDone(boolean isTaskDone) {
+		this.isTaskDone = isTaskDone;
+		return;
+	}
+	
+	public void setIsAllDayEvent(boolean isAllDayEvent) {
+		this.isAllDayEvent = isAllDayEvent;
+		return;
+	}
+	
+	public void setTaskTitle(String taskTitle) {
+		this.taskTitle = taskTitle;
+		return;
+	}
+	
+	public void setLocation(String location) {
+		this.location = location;
+		return;
+	}
+
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\storage\Task.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\storage\UndoRedo.java
+	 */
+
+ */
+
+//this class handles and tracks all the comamnds that are executed. It provides undo and redo capabilities
+public class UndoRedo {
+	private static UndoRedo instance= null;
+	private static Stack <AllTasks> undo;
+	private static Stack <AllTasks> redo;
+	
+	private UndoRedo () {
+		instance = this;
+		undo =  new Stack<AllTasks>();
+		redo = new Stack<AllTasks>();
+	}
+	
+	public static UndoRedo getInstance () {
+		if (instance == null){
+			return new UndoRedo();
+		} else {
+			return instance;
+		}
+	}
+	
+	public void addUndo ( AllTasks node) {
+		AllTasks newNode = new AllTasks();
+		try{
+		node.saveData();
+		newNode.loadData();
+		} catch (FileNotFoundException e){
+			
+		}
+		undo.push(newNode);
+		redo = new Stack<AllTasks>();
+		return;
+	}
+	
+	public AllTasks undo (AllTasks node){
+		if(!undo.empty()){
+		redo.push(node);
+		return undo.pop();
+		} else {
+			return null;
+		}
+	}
+	
+	public AllTasks redo (AllTasks node) {
+		if(redo.empty()){
+			return null;
+		}else {
+			undo.push(node);
+			return redo.pop();
+		}
+	}
+	public boolean isUndoEmpty () {
+		if (undo.empty()){
+			return true;
+		}else {
+			return false;
+		}
+	}
+	public boolean isRedoEmpty () {
+		if (redo.empty()){
+			return true;
+		}else {
+			return false;
+		}
+	}
+
+}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\storage\UndoRedo.java
+
+
+
+
+
