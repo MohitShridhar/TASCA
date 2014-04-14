@@ -2046,37 +2046,37 @@ public class SettingsPane extends JFrame {
     private ArrayList<KeywordItem> paraKeywordItems = new ArrayList<KeywordItem>();
 
     private String[][] commandDatabase = new String[][]{
-	    {"Add","add","How to use <>"},
-	    {"Delete","delete","How to use <>"},
-	    {"Clear Completed","clearCompleted","How to use <>"},
-	    {"Clear", "clear","How to use <>"},
-	    {"Modify", "modify","How to use <>"},
-	    {"Mark", "mark","How to use <>"},
-	    {"Unmark", "unmark","How to use <>"},
-	    {"Search", "search","How to use <>"},
-	    {"Now", "now","How to use <>"},
-	    {"Today", "today","How to use <>"},
-	    {"Tomorrow", "tomorrow","How to use <>"},
-	    {"Week", "week","How to use <>"},
-	    {"Month", "month","How to use <>"},
-	    {"Undo", "undo","How to use <>"},
-	    {"Redo", "redo","How to use <>"},
-	    {"Show All", "displayAll","How to use <>"},
-	    {"Non-Timed Tasks", "displayFloat","How to use <>"},
-	    {"Show in Time", "display","How to use <>"},
-	    {"Export", "export","How to use <>"},
-	    {"Import", "import","How to use <>"},
-	    {"Quit", "quit","How to use <>"}
+	    {"Add","add","<html>Create a new task<br> eg: add EE2031 assignment -start tues -end thurs -priority high -location home -remind wed -folder home &nbsp;<br>Note: all properties are optional</html>"},
+	    {"Delete","delete","<html> Remove a task <br> eg: delete assignment (if you are unsure about the item ID, search for the description) <br> delete -id 12 (if you know the ID) </html>"},
+	    {"Clear Completed","clearCompleted","<html> Remove all tasks which have been checked off </html>"},
+	    {"Clear", "clear","<html> Remove all tasks in the current folder </html>"},
+	    {"Modify", "modify","<html> Change the properties of an existing task <br> eg: modify new description for task -id 3 -pri med -loc new location -remind thurs ... &nbsp;</html>"},
+	    {"Mark", "mark","<html> Check off a completed task </html>"},
+	    {"Unmark", "unmark","<html> Uncheck a task if it wasn't actually completed </html>"},
+	    {"Search", "search","<html> Search for a task using its description <br> eg: search EE2024 </html>"},
+	    {"Now", "now","<html> Displays all tasks you should be currently doing </html>"},
+	    {"Today", "today","<html> Displays all tasks that start or end today </html>"},
+	    {"Tomorrow", "tomorrow","<html> Displays all tasks for tomorrow </html>"},
+	    {"Week", "week","<html> Displays all tasks for the week </html>"},
+	    {"Month", "month","<html> Displays all tasks for the month </html>"},
+	    {"Undo", "undo","<html> Undo the previous action </html>"},
+	    {"Redo", "redo","<html> Redo the next action </html>"},
+	    {"Show All", "displayAll","<html>  Displays all tasks pertaining to the current folder </html>"},
+	    {"Non-Timed Tasks", "displayFloat","<html> Displayes all non-timed tasks pertaining to the current folder </html>"},
+	    {"Show in Time", "display","<html> Displays all tasks between the specified start and end time <br> eg: display -start tues -end thurs </html>"},
+	    {"Export", "export","<html> Export all tasks to an ICS file at the specified filepath <br> eg: export /Users/MohitSridhar/Tasca_Export_Folder </html>"},
+	    {"Import", "import","<html> Import all tasks from an ICS file <br> eg: import /Users/MohitSridhar/Tasca_Export_Folder/Tasca_Tasks.ics </html>"},
+	    {"Quit", "quit","<html> Exit the application </html>"}
     };
     
     private String[][] parameterDatabase = new String[][] {
-	    {"Start Time","startTime","How to use <>"},
-	    {"End Time", "endTime","How to use <>"},
-	    {"Reminder Time", "reminderTime","How to use <>"},
-	    {"Priority", "priority","How to use <>"},
-	    {"Location", "location","How to use <>"},
-	    {"Folder", "folder","How to use <>"},
-	    {"Task ID", "taskID","How to use <>"}
+	    {"Start Time","startTime","<html> 1978-01-28 | 1984/04/02 | 1/02/1980 2/28/79 (American date) <br> The 31st of April in the year 2008 | Fri, 21 Nov 1997 | Jan 21, '97 | Sun, Nov 21 | jan 1st | february twenty-eighth <br> next thursday | last tues <br> 10 min from now </html>"},
+	    {"End Time", "endTime","<html> 1978-01-28 | 1984/04/02 | 1/02/1980 2/28/79 (American date) <br> The 31st of April in the year 2008 | Fri, 21 Nov 1997 | Jan 21, '97 | Sun, Nov 21 | jan 1st | february twenty-eighth <br> next thursday | last tues <br> 10 min from now </html>"},
+	    {"Reminder Time", "reminderTime","<html> Set reminder time <br> 1978-01-28 | 1984/04/02 | 1/02/1980 2/28/79 (American date) <br> The 31st of April in the year 2008 | Fri, 21 Nov 1997 | Jan 21, '97 | Sun, Nov 21 | jan 1st | february twenty-eighth <br> next thursday | last tues <br> 10 min from now </html>"},
+	    {"Priority", "priority","<html> To specify the priority. It can have four states: high, low, medium or none </html>"},
+	    {"Location", "location","<html> To specify the location description </html>"},
+	    {"Folder", "folder","<html> To specify the folder name </html>"},
+	    {"Task ID", "taskID","<html> Number reference to the task <br> </html>"}
     };
     
     public SettingsPane(JFrame mainFrame, Interpreter interpreter, Config cfg) {
@@ -3888,7 +3888,7 @@ public class Interpreter {
     private static final String INVALID_FOLDER_REF = "Make sure that the name of the folder actually exists above";
     private static final String INVALID_TASK_ID = "Can't find Task Number '%1$s', check that it actually exists";
     private static final String INVALID_PARAMETER_TYPE = "What is \"-%1$s\"? Please correct the parameter name";
-    private static final String INVALID_COMMAND_ARGUMENT = "You must added a description after \"%1$s\"";
+    private static final String INVALID_COMMAND_ARGUMENT = "You must add a description after \"%1$s\"";
     private static final String ERROR_DATABASE_DUPLICATE_PARA = "Duplicate keywords were found in the 'parameter' database for \"%1$s\"";
     private static final String ERROR_DATABASE_DUPLICATE_COMMAND = "Duplicate keywords were found in the 'command' database for \"%1$s\"";
     private static final String EXCEPTION_EMPTY_LOCATION = "Initiated location parameter cannot have a empty argument";

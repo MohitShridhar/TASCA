@@ -288,7 +288,8 @@ public class Logic {
 		// systemMessage.setSystemMessage(MESSAGE_TASK_FOUND.format(count,searchString));
 		return count;
 	}
-
+	
+	//@author A0070408M
 	public static void deleteAlldone() {
 		int totalNumOfTasks = _storage.getSize();
 		int index = 0;
@@ -323,7 +324,8 @@ public class Logic {
 		String result = input.nextLine();
 		return result;
 	}
-
+	
+	//@author A0070408M
 	public static void deleteSearch(String searchString, Scanner sc) {
 		searchTask(searchString);
 

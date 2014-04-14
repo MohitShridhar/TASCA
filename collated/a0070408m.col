@@ -1,0 +1,76 @@
+//@author: a0070408m
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+	 */
+
+	public static void deleteAlldone() {
+		int totalNumOfTasks = _storage.getSize();
+		int index = 0;
+		int count = 0;
+		while (index < totalNumOfTasks) {
+			if (index < _storage.getTaskSize()) {
+				if (_storage.getTask(index).getIsTaskDone()) {
+					deleteTask(index);
+					totalNumOfTasks--;
+					count++;
+				} else {
+					index++;
+				}
+			} else {
+				if (_storage.getFloatingTask(index).getIsTaskDone()) {
+					deleteTask(index);
+					totalNumOfTasks--;
+					count++;
+				} else {
+					index++;
+				}
+
+			}
+
+		}
+		System.out.printf("%d Tasks have been done and deleted", count);
+	}
+
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+
+
+
+
+
+	/**
+	 * origin: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+	 */
+
+	public static void deleteSearch(String searchString, Scanner sc) {
+		searchTask(searchString);
+
+		String getResponse = getUserInput(sc);
+		// System.out.printf("%s", s);
+		if (getResponse.equals("Y")) {
+			int totalNumOfTasks = _storage.getSize();
+			for (int index = 0; index < totalNumOfTasks; index++) {
+				String taskTitle;
+				if (index < _storage.getTaskSize()) {
+					taskTitle = _storage.getTask(index).getTaskTitle();
+				} else {
+					taskTitle = _storage.getFloatingTask(index).getTaskTitle();
+				}
+				if (isInString(taskTitle, searchString)) {
+					deleteTask(index);
+					totalNumOfTasks--;
+				}
+			}
+			System.out.printf("All search results deleted.");
+		}
+	}
+
+	/**
+	// End of segment: Z:\Desktop\NUS\SEM4\CS1231\TASCA\Tasca\src\logic\Logic.java
+
+
+
+
+
