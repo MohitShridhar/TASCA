@@ -24,6 +24,7 @@ public class ReminderTimerTask extends TimerTask {
 
 	private NotifierFactory notifierFactory = new NotifierFactory();
 	private Notifier notifier = notifierFactory.getNotifier();
+	private static String OS = System.getProperty("os.name").toLowerCase();
 
 	public void run() {
 		TaskWithReminder currentReminder = allTasks.getCurrentReminder();
@@ -47,8 +48,8 @@ public class ReminderTimerTask extends TimerTask {
 			// OS Notification:
 			try {
 				notifier.notify(NOTIFICATION_TITLE, task.getTaskTitle(),
-						NotificationType.SUCCESS);
-				notifier.wait(2000000);
+					NotificationType.SUCCESS);
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -93,6 +94,12 @@ public class ReminderTimerTask extends TimerTask {
 		this.allTasks = allTasks;
 		this.controller = controller;
 		return;
+	}
+	
+	public static boolean isMac() {
+	    
+		return (OS.indexOf("mac") >= 0);
+
 	}
 
 }

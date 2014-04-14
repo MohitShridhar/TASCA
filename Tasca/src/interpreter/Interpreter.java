@@ -69,7 +69,7 @@ public class Interpreter {
     private static final String INVALID_FOLDER_REF = "Make sure that the name of the folder actually exists above";
     private static final String INVALID_TASK_ID = "Can't find Task Number '%1$s', check that it actually exists";
     private static final String INVALID_PARAMETER_TYPE = "What is \"-%1$s\"? Please correct the parameter name";
-    private static final String INVALID_COMMAND_ARGUMENT = "You must added a description after \"%1$s\"";
+    private static final String INVALID_COMMAND_ARGUMENT = "You must add a description after \"%1$s\"";
     private static final String ERROR_DATABASE_DUPLICATE_PARA = "Duplicate keywords were found in the 'parameter' database for \"%1$s\"";
     private static final String ERROR_DATABASE_DUPLICATE_COMMAND = "Duplicate keywords were found in the 'command' database for \"%1$s\"";
     private static final String EXCEPTION_EMPTY_LOCATION = "Initiated location parameter cannot have a empty argument";
