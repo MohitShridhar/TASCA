@@ -6,6 +6,7 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import controller.CurrentSystemState;
 import storage.AllTasks;
 
 //@author A0094655U
@@ -21,6 +22,7 @@ public class LogicTestSearch {
 		AllTasks storage = new AllTasks();
 		
 		Logic.initStorage(storage);
+		Logic.initSystemMessage(new CurrentSystemState());
 		
 		Date current = new Date();
 		Date start = current;

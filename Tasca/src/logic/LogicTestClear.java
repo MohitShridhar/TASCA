@@ -6,6 +6,7 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import controller.CurrentSystemState;
 import storage.AllTasks;
 
 //@author A0094655U
@@ -16,6 +17,7 @@ public class LogicTestClear {
 	public void testClearTask() {
 		AllTasks storage = new AllTasks();
 		Logic.initStorage(storage);
+		Logic.initSystemMessage(new CurrentSystemState());
 		
 		Date current = new Date();
 		Date start = current;
@@ -24,9 +26,9 @@ public class LogicTestClear {
 		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add function", "COM1", current);
 		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add2 function", "COM1", current);
 		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add3 function", "COM1", current);
-
 		assertTrue(Logic.getStorage().getSize() == 3);
-		Logic.clearFolder(0);
+
+		Logic.clearFolder(0); 
 		assertTrue(Logic.getStorage().getSize() == 0);		
 	}
 	

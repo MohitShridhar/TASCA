@@ -6,6 +6,7 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import controller.CurrentSystemState;
 import storage.AllTasks;
 
 //@author A0094655U
@@ -15,6 +16,7 @@ public class LogicTestDelete {
 	//delete last task
 	public void testDeleteTask() {
 		Logic.initStorage(new AllTasks());
+		Logic.initSystemMessage(new CurrentSystemState());
 		
 		Date current = new Date();
 		Date start = current;
@@ -25,6 +27,9 @@ public class LogicTestDelete {
 		Logic.addTask(0, 0, start, end, false, false, false, "Test logic add3 function", "COM1", current);
 		
 		boolean result = Logic.deleteTask(2);
+
+		System.out.printf("%d", Logic.getStorage().getSize());
+		
 		assertTrue(result);
 	}
 

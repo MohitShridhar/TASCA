@@ -7,6 +7,7 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import controller.CurrentSystemState;
 import storage.AllTasks;
 
 //@author A0094655U
@@ -16,6 +17,7 @@ public class LogicTestUpdate {
 	//test if update is implemented correctly start time < end time.
 	public void testUpdateTask() {
 		Logic.initStorage(new AllTasks());
+		Logic.initSystemMessage(new CurrentSystemState());
 		
 		Date current = new Date();
 		Date start = current;
