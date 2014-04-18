@@ -9,6 +9,7 @@ package interpreter;
 //@author A0105912N
 
 public class Command {
+    private static final String INVALID_TASK_ID = "'%s' is not a valid number";
     private CommandType command;
     private Parameters parameters;
 
@@ -51,7 +52,17 @@ public class Command {
     }
     
     public CommandFeedback setTaskId(String id) {
+	checkForValidId(id);
         return parameters.setTaskId(Integer.parseInt(id));
+    }
+
+
+    private void checkForValidId(String id) {
+	try {
+	    Integer.parseInt(id); 
+	} catch (NumberFormatException e) {
+	    throw new IllegalArgumentException(String.format(INVALID_TASK_ID, id));
+	}
     }
     
     public CommandFeedback setStartTime(String time) {

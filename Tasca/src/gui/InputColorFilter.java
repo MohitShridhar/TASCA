@@ -167,7 +167,7 @@ public class InputColorFilter extends DocumentFilter {
 	textPane.addKeyListener(new KeyAdapter() {
         	@Override
         	public void keyPressed(KeyEvent e) {
-        	    if (e.getKeyCode() == KeyEvent.VK_ENTER)
+        	    if (e.getKeyCode() == KeyEvent.VK_ENTER && !e.isControlDown() && !e.isShiftDown())
         	    {
         		processUserAction();
         	    }
@@ -317,12 +317,16 @@ public class InputColorFilter extends DocumentFilter {
 	    deactiveExceptionFeedbackBar();
 	    userInputString = allText;
 	    
+	    MainInterface.selectTaskItem(interpreter.getCommandAndPara().getParameters().getGuiIdRef());
+	    
 	} catch(IllegalArgumentException | RewriteEmptyStreamException e) {
 	    isParseSuccessful = false;
 	    activateExceptionFeedbackBar(e);
 	    
 	    logger.log(Level.WARNING, WARNING_PARSING_NOT_SUCCESSFUL);
 	}
+	
+	setInputBarBackground(isParseSuccessful, allText.isEmpty());
 	
 	return isParseSuccessful;
     }

@@ -171,13 +171,13 @@ public class SettingsPane extends JFrame {
     };
     
     private String[][] parameterDatabase = new String[][] {
-	    {"Start Time","startTime","<html> 1978-01-28 | 1984/04/02 | 1/02/1980 2/28/79 (American date) <br> The 31st of April in the year 2008 | Fri, 21 Nov 1997 | Jan 21, '97 | Sun, Nov 21 | jan 1st | february twenty-eighth <br> next thursday | last tues <br> 10 min from now </html>"},
-	    {"End Time", "endTime","<html> 1978-01-28 | 1984/04/02 | 1/02/1980 2/28/79 (American date) <br> The 31st of April in the year 2008 | Fri, 21 Nov 1997 | Jan 21, '97 | Sun, Nov 21 | jan 1st | february twenty-eighth <br> next thursday | last tues <br> 10 min from now </html>"},
-	    {"Reminder Time", "reminderTime","<html> Set reminder time <br> 1978-01-28 | 1984/04/02 | 1/02/1980 2/28/79 (American date) <br> The 31st of April in the year 2008 | Fri, 21 Nov 1997 | Jan 21, '97 | Sun, Nov 21 | jan 1st | february twenty-eighth <br> next thursday | last tues <br> 10 min from now </html>"},
-	    {"Priority", "priority","<html> To specify the priority. It can have four states: high, low, medium or none </html>"},
-	    {"Location", "location","<html> To specify the location description </html>"},
-	    {"Folder", "folder","<html> To specify the folder name </html>"},
-	    {"Task ID", "taskID","<html> Number reference to the task <br> </html>"}
+	    {"Start Time","startTime","<html> 1978-01-28 | 1984/04/02 | 1/02/1980 2/28/79 (American date) <br> The 31st of April in the year 2008 | Fri, 21 Nov 1997 | Jan 21, '97 | Sun, Nov 21 | jan 1st | february twenty-eighth <br> next thursday | last tues <br> 10 min from now<br> Shortcut: Ctrl + s </html>"},
+	    {"End Time", "endTime","<html> 1978-01-28 | 1984/04/02 | 1/02/1980 2/28/79 (American date) <br> The 31st of April in the year 2008 | Fri, 21 Nov 1997 | Jan 21, '97 | Sun, Nov 21 | jan 1st | february twenty-eighth <br> next thursday | last tues <br> 10 min from now <br> Shortcut: Ctrl + e </html>"},
+	    {"Reminder Time", "reminderTime","<html> Set reminder time <br> 1978-01-28 | 1984/04/02 | 1/02/1980 2/28/79 (American date) <br> The 31st of April in the year 2008 | Fri, 21 Nov 1997 | Jan 21, '97 | Sun, Nov 21 | jan 1st | february twenty-eighth <br> next thursday | last tues <br> 10 min from now <br> Shortcut: Ctrl + r </html>"},
+	    {"Priority", "priority","<html> To specify the priority. It can have four states: high, low, medium or none <br> Shortcut: Ctrl + p </html>"},
+	    {"Location", "location","<html> To specify the location description <br> Shortcut: Ctrl + l </html>"},
+	    {"Folder", "folder","<html> To specify the folder name <br> Shortcut: Ctrl + f </html>"},
+	    {"Task ID", "taskID","<html> Number reference to the task <br> Shortcut: Ctrl + i; </html>"}
     };
     
     public SettingsPane(JFrame mainFrame, Interpreter interpreter, Config cfg) {
@@ -195,6 +195,7 @@ public class SettingsPane extends JFrame {
 
     private void linkMainInterfaceComponents(Interpreter interpreter, Config cfg) {
 	MainInterface.getSettingsBtn().setEnabled(false);
+	MainInterface.setSettingsPaneActive(true);
 	
 	this.cfg = cfg;
 	this.interpreter = interpreter;
@@ -523,6 +524,7 @@ public class SettingsPane extends JFrame {
 
     private void executeQuit() {
 	MainInterface.getSettingsBtn().setEnabled(true);
+	MainInterface.setSettingsPaneActive(false);
 	
 	cfg = new Config();
 	interpreter = new Interpreter(true);

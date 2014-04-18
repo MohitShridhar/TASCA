@@ -24,6 +24,8 @@ import controller.Controller;
 
 public class Interpreter {
     
+    private static final char EMPTY_CHARACTER = ' ';
+    private static final int GUI_ID_NOT_INITIALIZED = -1;
     private static final String EXCEPTION_ADDING_REMINDER_TO_FLOATING_TASK = "This is a non-timed task. If you want to add a reminder, please also specify start/end time";
     // Config keys:
     private static final String KEY_QUIT = "quit";
@@ -90,7 +92,7 @@ public class Interpreter {
     private static final String INFO_SETTINGS_PANE_SAVING_CONFIG = "GUI Settings Pane saving Config file";
     
     // Other exceptions:
-    private static final int EXCEPTION_NON_EXISTENT_ID = -1;
+    private static final int EXCEPTION_NON_EXISTENT_ID = GUI_ID_NOT_INITIALIZED;
     private static int floatingTaskGuiRef;
     public final static Logger logger = Controller.getLogger();
     
@@ -111,6 +113,7 @@ public class Interpreter {
     private static final int FIRST_ARGUMENT = 0;
     
     private static boolean isGuiIdEnabled = false;
+    private boolean hasUserFinishedId = false; 
     
     /* Keyword Headers: Mapping Config file elements to Command & Parameter types */
     
@@ -571,10 +574,23 @@ public class Interpreter {
             isParameterArgumentValid(paraArgument, feedback);
             
             checkIfParameterExists(paraTypeString, parameterType); 
+            checkIfIdIsReady(parameterType, inputParameters[i].substring(paraTypeString.length()));
         }
         
     }
-
+    
+    private void checkIfIdIsReady(ParameterType parameterType, String paraArgument) {
+	
+	if (parameterType == ParameterType.TASK_ID && !hasTrailingSpace(paraArgument)) {
+	    setHasUserFinishedId(false);
+	} else {
+	    setHasUserFinishedId(true);
+	}
+    }
+    
+    private static boolean hasTrailingSpace(String text) {
+	return text.charAt(text.length() - 1) == EMPTY_CHARACTER;
+    }
 
     public String isolateArgument(String[] inputParameters, int i,
 	    String paraTypeString) {
@@ -738,6 +754,14 @@ public class Interpreter {
 	return false;
     }
     
+    public static int getGuiMapSize() {
+	if (isGuiIdEnabled) {
+	    return guiIdRef.size();
+	}
+	
+	return GUI_ID_NOT_INITIALIZED;	
+    }
+    
     public ParameterType interpretParameter(String parameterString) {
         if (!parameterKeywords.containsKey(parameterString)) {
             return ParameterType.INVALID;
@@ -765,5 +789,15 @@ public class Interpreter {
     
     public void setCurrentFolder(String currFolderName) {
 	currentFolder = currFolderName;
+    }
+
+
+    public boolean hasUserFinishedId() {
+	return hasUserFinishedId;
+    }
+
+
+    private void setHasUserFinishedId(boolean hasUserFinishedId) {	
+	this.hasUserFinishedId = hasUserFinishedId;
     }
 }

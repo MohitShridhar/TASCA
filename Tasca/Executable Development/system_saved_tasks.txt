@@ -1,26 +1,24 @@
-2 0 0 2014 3 11 23 28 2014 3 18 12 0 true false false CG2271 assignment
+1 0 2 2014 3 11 23 25 2014 4 11 23 25 false false false pack bags for summer trip
 NIL
-2014 3 17 23 28
-2 1 2 2014 3 11 23 29 2014 3 13 23 29 false true false Peter Hope + Kuang Email
+2 1 0 2014 3 11 23 28 2014 3 28 12 0 false false false CG2271 assignment
 NIL
-3 2 2 2014 3 11 23 31 2014 3 18 23 31 false false false progress bar to task items
+2 2 2 2014 3 11 23 29 2014 3 13 23 29 false true false Peter Hope + Kuang Email
 NIL
-3 3 1 2014 3 11 23 32 2014 3 12 23 32 false true false fix 5th march bug
+3 3 2 2014 3 11 23 31 2014 3 18 23 31 false false false progress bar to task items
 NIL
-3 4 1 2014 3 11 23 34 2014 3 14 23 34 false false false demo video
+3 4 1 2014 3 11 23 34 2014 3 14 23 34 false true false demo video
 NIL
-3 5 1 2014 3 11 23 45 2014 3 14 23 45 false false false submit v0.5 report
+3 5 1 2014 3 11 23 45 2014 3 14 23 45 false true false submit v0.5 report
 home & COM
-1 6 2 2014 3 11 23 25 2014 4 11 23 25 false false false pack bags for summer trip
-NIL
-1 7 1 2014 3 15 23 24 2014 3 16 23 24 true false false pick up groceries
+1 6 3 2014 3 15 23 24 2014 3 25 23 24 false false false pick up groceries
 green store
-2014 3 14 23 24
-3 8 0 2014 3 16 23 48 2014 3 18 23 48 true false false NI ELVIS simulation for EE2031
-COM & home
-2014 3 17 22 21
-2 9 1 2014 3 18 23 30 2014 3 19 23 30 true false false EE2024 exam revision
+3 7 0 2014 3 15 23 53 2014 3 19 23 33 true false false plan final presentation
+Central library
+2014 3 24 21 45
+5 8 0 2014 3 16 23 48 2014 3 18 23 48 false false false NI ELVIS simulation for EE2031
+Engin
+2 9 2 2014 3 18 23 30 2014 3 19 23 30 true false false EE2024 exam revision
 central lib
 2014 3 18 13 31
-3 10 0 2014 3 17 23 33 2014 3 19 23 33 false false false plan final presentation
-new location
+5 10 0 2014 3 17 0 1 2014 3 24 0 1 false false false change diagram (1Mega load)
+NIL

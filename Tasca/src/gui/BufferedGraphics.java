@@ -28,6 +28,7 @@ public class BufferedGraphics {
     private static final String FILEPATH_REMINDER_ICON = "/GUI Graphics/Task Item Reminder Icon.png";
     private static final String FILEPATH_UNCHECKED = "/GUI Graphics/Unchecked Icon.png";
     private static final String FILEPATH_CHECK_MARK = "/GUI Graphics/Task Item Check Mark.gif";
+    private static final String FILEPATH_TASK_HIGHLIGHTER = "/GUI Graphics/Task Highlighter.png";
     
     public final static Logger logger = Controller.getLogger();
     public static final String MESSAGE_GRAPHICS_LOAD_FAILED = "Could not load important graphics";
@@ -43,6 +44,7 @@ public class BufferedGraphics {
     private ImageIcon date;
     private ImageIcon info;
     private ImageIcon keywordItem;
+    private ImageIcon taskHighlighter;
     private Image track;
     private Image thumb;
     
@@ -74,6 +76,7 @@ public class BufferedGraphics {
 	setUnchecked(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_UNCHECKED)))));
 	setReminderIcon(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_REMINDER_ICON)))));
 	setDelete(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_DELETE_ICON)))));
+	setTaskHighlighter(new ImageIcon(ImageIO.read((MainInterface.class.getResource(FILEPATH_TASK_HIGHLIGHTER)))));
     }
 
     public void bufferSettingsPaneUi() throws IOException {
@@ -198,6 +201,14 @@ public class BufferedGraphics {
 
     private void setThumb(Image thumb) {
 	this.thumb = thumb;
+    }
+
+    public ImageIcon getTaskHighlighter() {
+	return taskHighlighter;
+    }
+
+    private void setTaskHighlighter(ImageIcon taskHighlighter) {
+	this.taskHighlighter = taskHighlighter;
     }
     
 }

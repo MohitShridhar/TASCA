@@ -50,7 +50,6 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
 import junit.framework.Assert;
-
 import storage.FloatingTask;
 import storage.TaskWithReminder;
 import controller.Controller;
@@ -58,8 +57,11 @@ import controller.Controller;
 
 //@author A0105912N
 public class MainInterface {
-   
-    private static final int INVALID_INPUT_HISTORY_REF = -1;
+
+    private static final int POSITION_INITIAL = 0;
+    private static final int FIRST_ITEM = 1;
+    private static final int INVALID_GUI_ID_REF = -1;
+    private static final int INVALID_INPUT_HISTORY_REF = INVALID_GUI_ID_REF;
     private static final int VERTICAL_GAP_BETWEEN_ITEMS = 13;
     private static final Color COLOR_UI_BACKGROUND = Color.decode("#272822");
     private static final int DISPLAY_PANE_MAX_HEIGHT = 262;
@@ -104,6 +106,8 @@ public class MainInterface {
     private static final Border SETTINGS_EMPTY_BORDER = BorderFactory.createEmptyBorder(0,0,0,0);
     private static final int VIEWPORT_HEIGHT_DISPLAY_PANE = 262;
     
+    private static boolean isSettingsPaneActive = false;
+    
     // Input bar & Input history:
     private static UserInputTextPane textPane;
     private static List<InputHistory.StateMemory> savedUserInput = new ArrayList<InputHistory.StateMemory>();
@@ -145,6 +149,11 @@ public class MainInterface {
     private static final int SCROLL_THUMB_WIDTH = 16;
     private static final int DELAY_KEY_PRESS = 170;
     
+    private static final int DEFAULT_SELECTED_TASK = 1;
+    private static final int DEFAULT_PREV_SELECTED_TASK = 0;
+    private static int selectedTaskGuiId = DEFAULT_SELECTED_TASK;
+    private static int prevSelectedTaskGuiId = DEFAULT_PREV_SELECTED_TASK;
+    
     // Component Dimensions/Locations:    
     private static final Rectangle BOUNDS_CLOSE_BUTTON = new Rectangle(862, 7, 17, 17);
     private static final Rectangle BOUNDS_LAYERED_PANE = new Rectangle(0, 0, 888, 342);
@@ -164,9 +173,12 @@ public class MainInterface {
     private static final Dimension DIMENSIONS_TASK_ITEM = new Dimension(888, 40);
     private static final Dimension DIMENSIONS_MAIN_FRAME = new Dimension(888, 500);
     private static final Rectangle DISPLAY_PANE_BOUNDS = BOUNDS_TASK_PANE;
+    
+    private static final int HEIGHT_VIEWPORT_TASK_ITEM = DIMENSIONS_TASK_ITEM.height + VERTICAL_GAP_BETWEEN_ITEMS; 
 
     // Input color filter:
     private static InputColorFilter colorFilter;
+    private static JPanel displayPanel;
     static {
 	StyleConstants.setBold((MutableAttributeSet) parameterSetting, false);
 	StyleConstants.setForeground((MutableAttributeSet) parameterSetting, Color.WHITE);
@@ -322,8 +334,9 @@ public class MainInterface {
 	    msgEmptyList.setVisible(false);
 	}
 
-	JPanel displayPanel = initDisplayPanel(folderSortedTimedTasks, folderSortedFloatingTasks); 
+	displayPanel = initDisplayPanel(folderSortedTimedTasks, folderSortedFloatingTasks); 
 	rebuildItemList(currentScrollPos, folderSortedTimedTasks,folderSortedFloatingTasks, displayPanel);
+	resetTaskHighlighter();
 	refreshColorFilter();
     }
 
@@ -666,11 +679,39 @@ public class MainInterface {
 	} else if (isPageDownShortcut(event)) {
 	    
 	    taskPane.getVerticalScrollBar().setValue((taskPane.getVerticalScrollBar().getValue()) + VIEWPORT_HEIGHT_DISPLAY_PANE);
-	}
+	    
+	} else if (isToggleDateShortcut(event)) {
+	    
+	    toggleDateView();
+	    
+	} else if (isModifyDescriptionShortcut(event)) {
+	    
+	    TaskItem currentTask = (TaskItem) displayPanel.getComponent(selectedTaskGuiId - 1);
+	    currentTask.modifyDescriptionShortcut();
+	    
+	} else if (isSettingsShortcut(event)) {
+	    
+	   if (!isSettingsPaneActive()) {
+	       initiateSettingsPane(mainFrame);
+	   }
 
+	}
+	
 	refreshColorFilter();
     }
+    
+    private static boolean isSettingsShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_P && event.isShiftDown();	
+    }
 
+    private static boolean isModifyDescriptionShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_ENTER && event.isShiftDown();
+    }
+    
+    private static boolean isToggleDateShortcut(KeyEvent event) {
+	return event.getKeyCode() == KeyEvent.VK_T && event.isShiftDown();
+    }
+    
     private static void executeFolderLeftSwitch() {
 	setCycleRef((getCycleRef() + NUM_FOLDERS - 1) % NUM_FOLDERS);
 	FolderName nextFolder = getFolderCycle()[getCycleRef()];
@@ -687,11 +728,11 @@ public class MainInterface {
     }
 
     private static boolean isPageDownShortcut(KeyEvent event) {
-	return isInputHistoryForwardShortcut(event);
+	return event.getKeyCode() == KeyEvent.VK_DOWN;
     }
 
     private static boolean isPageUpShortcut(KeyEvent event) {
-	return isInputHistoryBackShortcut(event);
+	return event.getKeyCode() == KeyEvent.VK_UP;
     }
 
     private static boolean isFolderLeftSwitchShortcut(KeyEvent event) {
@@ -703,7 +744,7 @@ public class MainInterface {
     }
 
     private static boolean isTextPaneFocusShortcut(KeyEvent event) {
-	return event.getKeyCode() == KeyEvent.VK_T;
+	return event.getKeyCode() == KeyEvent.VK_T && !event.isShiftDown();
     }
 
     private static boolean isFolderShortcut(KeyEvent event) {
@@ -719,7 +760,7 @@ public class MainInterface {
     }
 
     private static boolean isPriorityShortcut(KeyEvent event) {
-	return event.getKeyCode() == KeyEvent.VK_P;
+	return event.getKeyCode() == KeyEvent.VK_P && !event.isShiftDown();
     }
 
     private static boolean isEndTimeShortcut(KeyEvent event) {
@@ -966,7 +1007,7 @@ public class MainInterface {
         mainFrame.setResizable(false); 
         mainFrame.setLocationRelativeTo(null); 
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	
+        
     }
 
     private static void initiateSettingsPane(final JFrame frame) {
@@ -1095,7 +1136,97 @@ public class MainInterface {
     private static boolean isInputHistoryBackShortcut(KeyEvent event) {
 	return event.getKeyCode() == KeyEvent.VK_UP;
     }
+    
+    private static int getTaskViewportPos(int guiId) {
+	if (guiId == FIRST_ITEM) {
+	    return POSITION_INITIAL;
+	}
+	
+	return HEIGHT_VIEWPORT_TASK_ITEM * (guiId - 1);	
+    }
+    
+    private static boolean isTaskVisible(int guiId) {
+	return getTaskViewportPos(guiId) <= (taskPane.getViewport().getViewPosition().y + BOUNDS_TASK_PANE.height) && getTaskViewportPos(guiId) >= (taskPane.getViewport().getViewPosition().y);
+    }
+    
+    private static boolean isValidGuiId(Integer guiId) {
+	if (guiId != null && guiId != INVALID_GUI_ID_REF) {
+	    return true;
+	}
+	
+	return false;
+    }
+    
+    private static void focusViewportToTask(Integer guiId) {
+	
+//	System.out.println("new viewport: " + new Point(BOUNDS_TASK_PANE.x, getTaskViewportPos(guiId)) + " visible rect: " + taskPane.getViewport().getViewPosition());
+	
+	if (isValidGuiId(guiId) && !isTaskVisible(guiId)) {
+	    taskPane.getViewport().setViewPosition(new Point(BOUNDS_TASK_PANE.x, getTaskViewportPos(guiId)));
+	}
+    }
+    
+    private static void highlightSelectedTask(Integer curr, Integer prev) {
+	
+	TaskItem previousTask = (TaskItem) displayPanel.getComponent(prev - 1);
+	TaskItem currentTask = (TaskItem) displayPanel.getComponent(curr - 1);
+	
+	previousTask.setTaskHighlighter(false);
+	previousTask.deactivateToggelSwitch();
+	
+	currentTask.setTaskHighlighter(true);
+    }
+    
+    public static void selectTaskItem(Integer guiId) {
+	
+	if (!interpreter.hasUserFinishedId()) {
+	    return;
+	}
 
+	prevSelectedTaskGuiId = selectedTaskGuiId;
+	selectedTaskGuiId = guiId;
+	
+	if (!isValidGuiRef(prevSelectedTaskGuiId) || !isValidGuiRef(selectedTaskGuiId)) {
+	    resetTaskHighlighter();
+	    return;
+	}
+
+	focusViewportToTask(selectedTaskGuiId);
+	highlightSelectedTask(selectedTaskGuiId, prevSelectedTaskGuiId);
+    }
+
+    private static void resetTaskHighlighter() {
+	selectedTaskGuiId = DEFAULT_SELECTED_TASK;
+	prevSelectedTaskGuiId = DEFAULT_SELECTED_TASK;
+    }
+    
+    private static boolean isValidGuiRef(int guiId) {
+	return guiId > 0 && guiId <= Interpreter.getGuiMapSize();
+    }
+    
+    private static void toggleDateView() {
+	TaskItem currentTask = (TaskItem) displayPanel.getComponent(selectedTaskGuiId - 1);
+	
+	if (currentTask.isFloatingTask()) {
+	    return;
+	}
+	
+	if (currentTask.isInDateDisplayState()) {
+	    currentTask.activateInfoState();
+	} else {
+	    currentTask.activateDateState();
+	}
+	
+    }
+
+    public static boolean isSettingsPaneActive() {
+	return isSettingsPaneActive;
+    }
+
+    public static void setSettingsPaneActive(boolean isSettingsPaneActive) {
+	MainInterface.isSettingsPaneActive = isSettingsPaneActive;
+    }
+    
 }
 
 

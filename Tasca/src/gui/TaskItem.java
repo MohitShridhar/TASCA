@@ -48,6 +48,7 @@ public class TaskItem extends JLayeredPane {
     private static final Rectangle BOUNDS_TEXT_LABEL = new Rectangle(126, -2, 600, 42);
     private static final Rectangle BOUNDS_DELETE_ICON = new Rectangle(35, 3, 34, 34);
     private static final Rectangle BOUNDS_APPARENT_ID = new Rectangle(34, 2, 34, 34);
+    private static final Rectangle BOUNDS_TASK_HIGHLIGHTER = new Rectangle(82, 0, 764, 40);
     
     private static final int YPOS_PRIORITY_ICON = 10;
     private static final int YPOS_TOGGLE_ICONS = 7;
@@ -144,7 +145,7 @@ public class TaskItem extends JLayeredPane {
 
     private ActionListener updateTime = new ActionListener() {
 	public void actionPerformed(ActionEvent evt) {
-	    if (!inDateDisplayState && !isFloatingTask) {
+	    if (!isInDateDisplayState() && !isFloatingTask()) {
 		setTimedDisplayText(description, location, formatInfoTimings());
 	    }
 	}
@@ -152,11 +153,12 @@ public class TaskItem extends JLayeredPane {
     
     private ActionListener updateProgressBar = new ActionListener() {
 	public void actionPerformed(ActionEvent evt) {
-	    if (!isFloatingTask) {
+	    if (!isFloatingTask()) {
 		updateProgressBar();
 	    }
 	}
     };
+    private JLabel taskHighlighter;
 
     public TaskItem(JTextPane textPane, Controller controller, final int guiId, Interpreter interpreter) {
 
@@ -191,9 +193,19 @@ public class TaskItem extends JLayeredPane {
 
     private void addTaskItemBackground() {
 	
+	addTaskHighlightingFrame();
 	addStatusProgressBar();
 	addDefaultPlainBackground();
-	
+
+    }
+    
+    private void addTaskHighlightingFrame() {
+	taskHighlighter = new JLabel(bufferedGraphics.getTaskHighlighter());
+	taskHighlighter.setBounds(BOUNDS_TASK_HIGHLIGHTER);
+	taskHighlighter.setOpaque(false);
+	taskHighlighter.setBorder(SETTINGS_EMPTY_BORDER);
+	taskHighlighter.setVisible(false);
+	this.add(taskHighlighter);
     }
 
     private void addStatusProgressBar() {
@@ -296,7 +308,7 @@ public class TaskItem extends JLayeredPane {
 	priorityIcon.addMouseListener(new MouseAdapter() {
 	    @Override
 	    public void mouseClicked(MouseEvent e) {
-		if (isFloatingTask) {
+		if (isFloatingTask()) {
 		    cyclePriorities(floatingTask.getPriority());
 		} else {
 		    cyclePriorities(timedTask.getPriority());
@@ -449,9 +461,9 @@ public class TaskItem extends JLayeredPane {
 	text.setText(stringWithStartAndEndTag);
     }
 
-    private void activateInfoState() {
+    public void activateInfoState() {
 
-	inDateDisplayState = false;
+	setInDateDisplayState(false);
 	infoIcon.setVisible(false);
 	dateIcon.setVisible(true);
 
@@ -459,14 +471,21 @@ public class TaskItem extends JLayeredPane {
 	placeEllipsis(description, location, infoDisplayTime);
     }
 
-    private void activateDateState() {
+    public void activateDateState() {
 
-	inDateDisplayState = true;
+	setInDateDisplayState(true);
 	dateIcon.setVisible(false);
 	infoIcon.setVisible(true);
 
 	text.setText(dateDisplayTime);
 	ellipsis.setVisible(false);
+    }
+    
+    public void deactivateToggelSwitch() {
+	
+	dateIcon.setVisible(false);
+	infoIcon.setVisible(false);
+	
     }
 
     private void reminderShortcut() {
@@ -488,16 +507,16 @@ public class TaskItem extends JLayeredPane {
 	MainInterface.updateTaskDisplay();
     }
 
-    private void modifyDescriptionShortcut() {
+    public void modifyDescriptionShortcut() {
 
 	MainInterface.clearTextPane();
 
-	if (isFloatingTask) {
+	if (isFloatingTask()) {
 	    generateFloatingTaskDetails(); 
 	    return;
 	}
 
-	if (!inDateDisplayState) {
+	if (!isInDateDisplayState()) {
 	    generateInfoDetails();
 	} else {
 	    generateTimeDetails();
@@ -560,7 +579,7 @@ public class TaskItem extends JLayeredPane {
 	
 	String currentFolder = MainInterface.getCurrentFolderName(); // fall-back folder
 	
-	if (!isFloatingTask) {
+	if (!isFloatingTask()) {
 	    currentFolder = getTimedTaskFolder(cfg);
 	} else {
 	    currentFolder = getFloatingTaskFolder(cfg);
@@ -682,7 +701,7 @@ public class TaskItem extends JLayeredPane {
 
     private void loadTimedTaskGuiSettings(Calendar reminderTime) {
 	this.reminderTime = reminderTime;
-	isFloatingTask = false;
+	setFloatingTask(false);
 
 	reminderIcon.setEnabled(true);
 	infoIcon.setEnabled(true);
@@ -721,7 +740,7 @@ public class TaskItem extends JLayeredPane {
     }
 
     private void loadFloatingTaskGuiSettings() {
-	isFloatingTask = true;
+	setFloatingTask(true);
 
 	this.remove(reminderIcon);
 	this.remove(infoIcon);
@@ -782,7 +801,7 @@ public class TaskItem extends JLayeredPane {
 	// The following int constants were generated on a trial&error basis::
 	withoutReminderXPosOffset = 45;
 
-	if (!isFloatingTask && isThereReminder) {
+	if (!isFloatingTask() && isThereReminder) {
 	    withoutReminderXPosOffset = 10;
 	}
 
@@ -868,7 +887,7 @@ public class TaskItem extends JLayeredPane {
     }
 
     private void showDateInfoIcon() {
-	if (inDateDisplayState) {
+	if (isInDateDisplayState()) {
 	    infoIcon.setVisible(true);
 	    dateIcon.setVisible(false);
 	} else {
@@ -894,6 +913,26 @@ public class TaskItem extends JLayeredPane {
 	TaskItem.controller.executeCommands(TaskItem.interpreter.getDefaultCommandSyn(CommandType.MARK) + INPUT_DELIMITER + TaskItem.interpreter.getDefaultParaSyn(ParameterType.TASK_ID) + SINGLE_SPACE + guiId);
 	MainInterface.getSystemStatusMessage().setText(TaskItem.controller.getSystemMessageString());
 	addStrikeThrough();
+    }
+    
+    public void setTaskHighlighter(Boolean state) {
+	taskHighlighter.setVisible(state);
+    }
+
+    public boolean isInDateDisplayState() {
+	return inDateDisplayState;
+    }
+
+    private void setInDateDisplayState(boolean inDateDisplayState) {
+	this.inDateDisplayState = inDateDisplayState;
+    }
+
+    public boolean isFloatingTask() {
+	return isFloatingTask;
+    }
+
+    private void setFloatingTask(boolean isFloatingTask) {
+	this.isFloatingTask = isFloatingTask;
     }
 
 }
