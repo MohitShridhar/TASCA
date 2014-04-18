@@ -15,18 +15,18 @@ import org.junit.Test;
 public class InterpreterTest {
     
     // Exception Messages:
-    private static final String INVALID_COMMAND_TYPE = "Invalid command type";
-    private static final String EXCEPTION_EMPTY_ARGUMENT = "Cannot accept empty parameter argument";
-    private static final String INVALID_START_TIME = "Invalid start time";
-    private static final String INVALID_END_TIME = "Invalid end time";
-    private static final String INVALID_REMINDER_TIME = "Invalid remind time";
-    private static final String INVALID_PRIORITY_REF = "Invalid priority reference";
-    private static final String INVALID_FOLDER_REF = "Invalid folder reference";
-    private static final String INVALID_TASK_ID = "Invalid task id reference";
-    private static final String INVALID_PARAMETER_TYPE = "Invalid parameter type";
-    private static final String INVALID_COMMAND_ARGUMENT = "The description for this command cannot be empty";
+    private static final String INVALID_COMMAND_TYPE = "Make sure that the first word is a valid command";
+    private static final String EXCEPTION_EMPTY_ARGUMENT = "\"-loc\" is empty, please provide more info";
+    private static final String INVALID_START_TIME = "Is the Start Time correct? Eg: tues, 19 May 2015 13:45, 05/19/2015, tonight, 10 min from now etc.";
+    private static final String INVALID_END_TIME = "Is the End Time correct? Eg: tues, 19 May 2015 13:45, 05/19/2015, tonight, 10 min from now etc.";
+    private static final String INVALID_REMINDER_TIME = "Is the Remind Time correct? Eg: tues, 19 May 2015 13:45, 05/19/2015, tonight, 10 min from now etc.";
+    private static final String INVALID_PRIORITY_REF = "Is the priority high OR med OR low OR none (default)?";
+    private static final String INVALID_FOLDER_REF = "Make sure that the name of the folder actually exists above";
+    private static final String INVALID_TASK_ID = "Can't find Task Number '5', check that it actually exists";
+    private static final String INVALID_PARAMETER_TYPE = "What is \"-awd\"? Please correct the parameter name";
+    private static final String INVALID_COMMAND_ARGUMENT = "You must add a description after \"add\"";
     private static final String EXCEPTION_END_TIME_BEFORE_START_TIME = "Please check that 'start time' occurs chronologically before 'end time'";
-    private static final String EXCEPTION_ID_NOT_SPECIFIED = "Please specify the ID of the task";
+    private static final String EXCEPTION_ID_NOT_SPECIFIED = "Please specify the Task Number of the task";
     
     // Initialize interpreter:
     Interpreter interpreter = new Interpreter();
