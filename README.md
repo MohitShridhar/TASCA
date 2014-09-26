@@ -31,9 +31,9 @@ See [developer's guide](guides/developers_guide.pdf)
 
 **NUS CS2103** (Software Engineering):
 
-Narinderpal Singh Dhillon (Deadlines & Integration)
-Nigel Cheok Jianxing (Documentation & Testing) 
-Wu Haoyang (Testing & Deliverables)
+Narinderpal Singh Dhillon (Deadlines & Integration)  
+Nigel Cheok Jianxing (Documentation & Testing)  
+Wu Haoyang (Testing & Deliverables)  
 Mohit Shridhar (Team Lead, Scheduling, Deliverables & Code quality)  
 
 Semester 2 (AY2013/2014) 
