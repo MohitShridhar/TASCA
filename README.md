@@ -34,6 +34,6 @@ See [developer's guide](guides/developers_guide.pdf)
 Narinderpal Singh Dhillon (Deadlines & Integration)  
 Nigel Cheok Jianxing (Documentation & Testing)  
 Wu Haoyang (Testing & Deliverables)  
-Mohit Shridhar (Team Lead, Scheduling, Deliverables & Code quality)  
+Mohit Shridhar (Team Lead, Scheduling, Deliverables & Code quality) – [Collated Contributions](collated/a0105912n.col)
 
 Semester 2 (AY2013/2014) 
